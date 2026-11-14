@@ -8,12 +8,13 @@ RUN npm run build
 
 FROM python:3.12-slim
 WORKDIR /app
-ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PORT=8000
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 COPY backend ./backend
 COPY data ./data
 COPY --from=web /app/frontend/dist ./frontend/dist
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s CMD python -c "import urllib.request as u; u.urlopen('http://127.0.0.1:8000/api/health', timeout=4)"
-CMD ["uvicorn", "backend.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s CMD python -c "import os, urllib.request as u; u.urlopen('http://127.0.0.1:%s/api/health' % os.environ.get('PORT', '8000'), timeout=4)"
+# Render injects $PORT; locally it defaults to 8000. Shell form so the variable is expanded; exec keeps uvicorn as PID 1.
+CMD exec uvicorn backend.api.main:app --host 0.0.0.0 --port ${PORT:-8000}
