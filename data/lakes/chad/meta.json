@@ -1,0 +1,92 @@
+{
+ "lake_id": "custom-86ec7953",
+ "alias": "chad",
+ "name": "Lake Chad",
+ "country": "TD/NE/NG/CM",
+ "generated": "2026-11-14T14:47:24+00:00",
+ "code_version": "90aedf6",
+ "resolution_m": 60,
+ "thermal_erosion_m": 150,
+ "utm_epsg": 32633,
+ "bbox": [
+  13.0,
+  12.0,
+  15.3,
+  14.6
+ ],
+ "seed": [
+  14.536,
+  13.061
+ ],
+ "years": [
+  2013,
+  2025
+ ],
+ "years_analysed": [
+  2013,
+  2014,
+  2015,
+  2016,
+  2017,
+  2018,
+  2019,
+  2020,
+  2021,
+  2022,
+  2023,
+  2024,
+  2025
+ ],
+ "cadence_years": 1,
+ "cadence_note": "every year",
+ "resolution_reason": "adaptive by polygon area",
+ "window": [
+  "08-01",
+  "09-30"
+ ],
+ "group": "reference",
+ "why_selected": "Sahel climate variability; shared by Chad, Niger, Nigeria and Cameroon. Data-only description.",
+ "mndwi_note": "Series starts in 2013: the Planetary Computer Landsat 5/8/9 collection has no Aug-Sep scenes over the lake before 2013 (checked with STAC searches for 1985-2010), and Landsat 7 is excluded by design, so there is no 1985-1990 baseline (the first 3 valid years are used instead). MNDWI limitation: shallow lake with extensive floating/emergent vegetation and seasonal flooding; open water is under- or mis-estimated and the Aug-Sep window is the rising season (the lake peaks in Dec-Feb), so annual values depend on rainfall timing. Treat the trend as indicative only.",
+ "scene_counts": {
+  "total": 52,
+  "per_year": {
+   "2013": 4,
+   "2014": 4,
+   "2015": 3,
+   "2016": 3,
+   "2017": 3,
+   "2018": 3,
+   "2019": 2,
+   "2020": 3,
+   "2021": 4,
+   "2022": 3,
+   "2023": 6,
+   "2024": 6,
+   "2025": 8
+  }
+ },
+ "lake_polygon": {
+  "method": "largest connected MNDWI>0 component (pixel water in >=50% of valid years) containing the seed, +1 km buffer",
+  "years_used": [
+   1986
+  ],
+  "detect_resolution_m": 120,
+  "detect_crs": "EPSG:32633",
+  "component_km2": 444.9,
+  "box_water_km2": 705.2,
+  "polygon_km2": 658.1,
+  "window": [
+   "08-01",
+   "09-30"
+  ],
+  "seed_fallback": null
+ },
+ "basin": {
+  "source": "buffer 25 km around lake polygon",
+  "fallback": true,
+  "fallback_reason": "ValueError: no basin intersects the lake polygon",
+  "area_km2": 5406.1
+ },
+ "min_lst_px": 84116,
+ "masks_encoding": "PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape"
+}

@@ -27,7 +27,7 @@ test("map -> click Burdur -> panel within 2 s -> add to compare", async ({ page 
   await expect(page.getByTestId("panel")).toBeVisible({ timeout: 2000 });
   await expect(page.getByRole("heading", { name: "Burdur" })).toBeVisible({ timeout: 2000 });
   expect(Date.now() - t0).toBeLessThan(2000);
-  await expect(page.getByTestId("summary")).toContainText("Burdur has lost");
+  await expect(page.getByTestId("summary")).toContainText("Burdur: the mean area of its last 3 valid years");
   await page.getByRole("button", { name: "Add to compare" }).click();
   await page.getByRole("link", { name: /Open compare/ }).click();
   await expect(page).toHaveURL(/\/compare$/);
@@ -56,7 +56,7 @@ test("analyze shows the backend 422 message for oversized areas", async ({ page 
   await page.route("**/api/analyze", (r) => r.fulfill({ status: 422, json: { detail: "area of 52,000 km2 is larger than the 20,000 km2 limit: please select a smaller area around the lake" } }));
   await openMap(page);
   await page.getByTestId("draw-rect").click();
-  const a = await px(page, 31, 41), b = await px(page, 33, 39);
+  const a = await px(page, 31, 41), b = await px(page, 32.4, 39.6);
   await page.mouse.click(a.x, a.y); await page.mouse.move(b.x, b.y, { steps: 5 }); await page.mouse.click(b.x, b.y);
   await page.getByTestId("analyze").click();
   await expect(page.getByRole("alert")).toContainText("20,000 km2");

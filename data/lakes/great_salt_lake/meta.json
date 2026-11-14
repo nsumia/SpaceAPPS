@@ -1,0 +1,113 @@
+{
+ "lake_id": "custom-4ade3404",
+ "alias": "great_salt_lake",
+ "name": "Great Salt Lake",
+ "country": "US",
+ "generated": "2026-11-14T14:55:08+00:00",
+ "code_version": "90aedf6",
+ "resolution_m": 120,
+ "thermal_erosion_m": 150,
+ "utm_epsg": 32612,
+ "bbox": [
+  -113.4,
+  40.5,
+  -111.7,
+  41.9
+ ],
+ "seed": [
+  -112.575,
+  41.183
+ ],
+ "years": [
+  1985,
+  2025
+ ],
+ "years_analysed": [
+  1985,
+  1987,
+  1989,
+  1991,
+  1993,
+  1995,
+  1997,
+  1999,
+  2001,
+  2003,
+  2005,
+  2007,
+  2009,
+  2011,
+  2013,
+  2015,
+  2017,
+  2019,
+  2021,
+  2023,
+  2025
+ ],
+ "cadence_years": 2,
+ "cadence_note": "every 2th year (plus 2025) to fit the time budget; not interpolated",
+ "resolution_reason": "adaptive by polygon area",
+ "window": [
+  "08-01",
+  "09-30"
+ ],
+ "group": "reference",
+ "why_selected": "Arid region; water use and drought. Record high in 1986-87, record low in 2022.",
+ "mndwi_note": "Salt evaporation ponds and wetlands along the shore may count as water; disconnected ponds are excluded by the largest-component rule, connected ones are not. Level changes at the shallow flats change area strongly.",
+ "scene_counts": {
+  "total": 142,
+  "per_year": {
+   "1985": 6,
+   "1987": 7,
+   "1989": 7,
+   "1991": 6,
+   "1993": 8,
+   "1995": 8,
+   "1997": 6,
+   "1999": 8,
+   "2001": 6,
+   "2003": 5,
+   "2005": 6,
+   "2007": 6,
+   "2009": 7,
+   "2011": 7,
+   "2013": 5,
+   "2015": 8,
+   "2017": 3,
+   "2019": 7,
+   "2021": 4,
+   "2023": 13,
+   "2025": 9
+  }
+ },
+ "lake_polygon": {
+  "method": "largest connected MNDWI>0 component (pixel water in >=50% of valid years) containing the seed, +1 km buffer",
+  "years_used": [
+   1985,
+   1986,
+   1987,
+   1988,
+   1989,
+   1990
+  ],
+  "detect_resolution_m": 120,
+  "detect_crs": "EPSG:32612",
+  "component_km2": 6561.6,
+  "box_water_km2": 6734.0,
+  "polygon_km2": 7741.3,
+  "window": [
+   "08-01",
+   "09-30"
+  ],
+  "seed_fallback": null
+ },
+ "basin": {
+  "source": "buffer 25 km around lake polygon",
+  "fallback": true,
+  "fallback_reason": "ValueError: no basin intersects the lake polygon",
+  "area_km2": 23223.7
+ },
+ "min_lst_px": 182119,
+ "masks_encoding": "PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape"
+}

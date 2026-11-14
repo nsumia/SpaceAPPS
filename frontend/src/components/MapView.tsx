@@ -73,7 +73,7 @@ export default function MapView(props: MapProps) {
     type: "FeatureCollection",
     features: pr.current.lakes.filter((l) => l.centre).map((l) => ({
       type: "Feature", geometry: { type: "Point", coordinates: l.centre as [number, number] },
-      properties: { id: l.id, name: l.name, colour: trendColour(l), r: circleRadius(l.latest_area_km2), area: l.latest_area_km2 ?? 0 } })),
+      properties: { id: l.id, name: l.name, colour: trendColour(l), ring: l.group === "turkey" ? "#ffd166" : "#0b0f14", r: circleRadius(l.latest_area_km2), area: l.latest_area_km2 ?? 0 } })),
   });
 
   const syncAll = () => {
@@ -90,7 +90,7 @@ export default function MapView(props: MapProps) {
       map.addLayer({ id: "hl-fill", type: "fill", source: "hl", paint: { "fill-color": "#ffffff", "fill-opacity": 0.1 } });
       map.addLayer({ id: "hl-line", type: "line", source: "hl", paint: { "line-color": "#ffffff", "line-width": 2, "line-dasharray": [2, 1] } });
       map.addLayer({ id: "lakes-circle", type: "circle", source: "lakes", paint: {
-        "circle-color": ["get", "colour"], "circle-radius": ["get", "r"], "circle-opacity": 0.85, "circle-stroke-color": "#0b0f14", "circle-stroke-width": 1.5 } });
+        "circle-color": ["get", "colour"], "circle-radius": ["get", "r"], "circle-opacity": 0.85, "circle-stroke-color": ["get", "ring"], "circle-stroke-width": 2 } });
       map.addLayer({ id: "lakes-sel", type: "circle", source: "lakes", filter: ["==", ["get", "id"], ""], paint: {
         "circle-color": "rgba(0,0,0,0)", "circle-radius": ["+", ["get", "r"], 4], "circle-stroke-color": "#ffffff", "circle-stroke-width": 2.5 } });
     }

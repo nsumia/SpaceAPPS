@@ -2,7 +2,7 @@ import type { LakeFull, LakeSummary } from "./lib/types";
 
 export const burdur: LakeSummary = {
   id: "burdur", alias: "burdur", name: "Burdur", country: "TR", centre: [30.17, 37.75], group: "turkey", validated: true, unverified: false,
-  years: [1985, 2025], latest_area_km2: 122.6, latest_area_year: 2025, ref_mean_km2: 200.5, total_loss_pct: 41.2, total_loss_basis: "x",
+  years: [1985, 2025], latest_area_km2: 122.6, latest_area_year: 2025, ref_mean_km2: 200.5, total_loss_pct: 41.2, total_loss_basis: "x", ref_years: [1985, 1990], recent_years: [2023, 2024, 2025],
   trend_pct_per_decade: -10.5, trend_p: 3e-6, trend_direction: "decreasing", emergence_year: 1997, emergence_status: "emerged",
   emergence_censored_at_ref_end: true, emergence_note: "left-censored", warming_c_per_decade: 1.04, warming_basis: "Landsat 5 only", warming_pooled_c_per_decade: 1.2,
   warming_sensor_break_caveat: "step", climate_explained_share: null, climate_explained_ci90: null, climate_interpretable: false, climate_ci_includes_zero: false,

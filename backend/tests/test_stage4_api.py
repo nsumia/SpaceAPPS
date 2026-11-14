@@ -40,14 +40,17 @@ def test_lakes_contract(client):
     r = client.get("/api/lakes")
     assert r.status_code == 200
     lakes = {x["alias"]: x for x in r.json()["lakes"]}
-    assert set(lakes) == {"burdur", "van", "aksehir", "egirdir"}
+    assert {"burdur", "van", "aksehir", "egirdir"} <= set(lakes)   # plus the Stage 6 reference lakes
     b = lakes["burdur"]
     for k in ("id", "name", "country", "centre", "total_loss_pct", "trend_pct_per_decade", "trend_p", "emergence_year",
               "emergence_censored_at_ref_end", "warming_c_per_decade", "warming_sensor_break_caveat",
               "climate_explained_share", "climate_interpretable", "group", "validated", "reliability"):
         assert k in b, k
-    assert b["group"] == "turkey" and b["validated"] is True and lakes["van"]["validated"] is False
+    assert b["group"] == "turkey" and b["validated"] is True and lakes["van"]["validated"] is True       # Stage 6: all Turkish lakes carry the badge
     assert 35 < b["total_loss_pct"] < 50 and b["trend_pct_per_decade"] < 0 and 36 < b["centre"][1] < 39
+    ref = [x for x in lakes.values() if x["group"] == "reference"]
+    assert len(ref) >= 10 and all(x["why_selected"] and x["mndwi_note"] and x["cadence_note"] for x in ref)
+    assert all(x["validated"] == (x["literature_agrees"] is True and x["reliability"] != "low") for x in ref)      # badge only when direction agrees
     assert b["emergence_censored_at_ref_end"] is True            # 1997 = first post-reference year
     assert lakes["egirdir"]["emergence_censored_at_ref_end"] is False
     # not computable flags (Stage 3 review item 3)
@@ -300,3 +303,26 @@ def test_index_endpoint_and_spa_serving(st, tmp_path):
     for p in ("/", "/compare", "/methods"):
         assert c.get(p).text == "<html>app</html>", p
     assert c.get("/assets/a.js").status_code == 200 and c.get("/api/health").json() == {"status": "ok"}
+
+
+def test_no_committed_series_has_errors_or_tokens():
+    import glob
+    import json
+    import os
+    root = os.path.join(os.path.dirname(__file__), "..", "..", "data", "lakes")
+    for p in glob.glob(os.path.join(root, "*", "series.json")):
+        txt = open(p).read()
+        assert "sig=" not in txt and "se=20" not in txt, f"signed URL fragment in {p}"
+        bad = [r["year"] for r in json.loads(txt)["series"] if r.get("error")]
+        assert not bad, f"{p}: error rows {bad}"
+
+
+def test_badge_rules_and_agreement_states(client):
+    lakes = {x["alias"]: x for x in client.get("/api/lakes").json()["lakes"]}
+    for x in lakes.values():
+        if x["reliability"] == "low":
+            assert x["validated"] is False, x["alias"]
+    assert lakes["aksehir"]["validated"] is False
+    assert lakes["aral_north"]["literature_agreement"] == "inconclusive" and lakes["aral_north"]["validated"] is False
+    assert lakes["titicaca"]["literature_agreement"] in ("unverified_expectation", "agrees")
+    assert lakes["burdur"]["validation_basis"].startswith("quantitative")

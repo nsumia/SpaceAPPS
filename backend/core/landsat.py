@@ -120,12 +120,22 @@ def open_catalog():
     return pystac_client.Client.open(STAC_URL, modifier=planetary_computer.sign_inplace, timeout=60)
 
 
+EXCLUDE_ITEMS = set()      # scene ids with unreadable assets (set per lake from LAKES[..]["exclude_items"])
+
+
 def search_items(catalog, geom_json, start, end, max_cloud=40):
+    # signed URLs are used lazily for minutes: drop cached SAS tokens that expire within 20 min so they cannot die mid-load
+    try:
+        from planetary_computer import sas
+        for k in [k for k, v in sas.TOKEN_CACHE.items() if v.ttl() < 1200]:
+            del sas.TOKEN_CACHE[k]
+    except Exception:  # noqa: BLE001
+        pass
     items = list(catalog.search(
         collections=["landsat-c2-l2"], intersects=geom_json, datetime=f"{start}/{end}",
         query={"platform": {"in": PLATFORMS}, "eo:cloud_cover": {"lt": max_cloud}}).items())
     # belt and braces: never trust the server filter alone
-    return [i for i in items if i.properties.get("platform") in THERMAL_ASSET]
+    return [i for i in items if i.properties.get("platform") in THERMAL_ASSET and i.id not in EXCLUDE_ITEMS]
 
 
 def _empty(**kw):
@@ -185,11 +195,11 @@ def window_area(catalog, geom, geom_json, start, end, thresh=0.0, max_cloud=40, 
     return row
 
 
-def year_with_retries(catalog, geom, geom_json, year, thresh, max_cloud, **kw):
+def year_with_retries(catalog, geom, geom_json, year, thresh, max_cloud, window=("08-01", "09-30"), **kw):
     err = None
     for attempt in range(RETRIES + 1):
         try:
-            row = window_area(catalog, geom, geom_json, f"{year}-08-01", f"{year}-09-30", thresh, max_cloud, **kw)
+            row = window_area(catalog, geom, geom_json, f"{year}-{window[0]}", f"{year}-{window[1]}", thresh, max_cloud, **kw)
             return dict(year=year, error=None, **row)
         except Exception as e:  # noqa: BLE001
             err = f"{type(e).__name__}: {e}"[:300]

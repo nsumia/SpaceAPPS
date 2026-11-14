@@ -1,0 +1,111 @@
+{
+ "lake_id": "custom-0aac1b71",
+ "alias": "aral_north",
+ "name": "Aral Sea (North / Small Aral)",
+ "country": "KZ",
+ "generated": "2026-11-14T15:14:20+00:00",
+ "code_version": "90aedf6",
+ "resolution_m": 60,
+ "thermal_erosion_m": 150,
+ "utm_epsg": 32641,
+ "bbox": [
+  59.8,
+  46.1,
+  61.9,
+  47.5
+ ],
+ "seed": [
+  60.9,
+  46.75
+ ],
+ "years": [
+  1985,
+  2025
+ ],
+ "years_analysed": [
+  1985,
+  1987,
+  1989,
+  1991,
+  1993,
+  1995,
+  1997,
+  1999,
+  2001,
+  2003,
+  2005,
+  2007,
+  2009,
+  2011,
+  2013,
+  2015,
+  2017,
+  2019,
+  2021,
+  2023,
+  2025
+ ],
+ "cadence_years": 2,
+ "cadence_note": "every 2th year (plus 2025) to fit the time budget; not interpolated",
+ "resolution_reason": "adaptive by polygon area",
+ "window": [
+  "08-01",
+  "09-30"
+ ],
+ "group": "reference",
+ "why_selected": "Part of the Aral Sea separated by a dam (Kokaral, 2005); partial recovery afterwards. Data-only description.",
+ "mndwi_note": "Boundary with the South Aral at 46.1 N is approximate (the sea was one water body until about 1987); every 2nd year.",
+ "scene_counts": {
+  "total": 108,
+  "per_year": {
+   "1985": 0,
+   "1987": 7,
+   "1989": 2,
+   "1991": 3,
+   "1993": 5,
+   "1995": 4,
+   "1997": 5,
+   "1999": 2,
+   "2001": 5,
+   "2003": 0,
+   "2005": 0,
+   "2007": 8,
+   "2009": 6,
+   "2011": 1,
+   "2013": 6,
+   "2015": 6,
+   "2017": 6,
+   "2019": 8,
+   "2021": 7,
+   "2023": 13,
+   "2025": 14
+  }
+ },
+ "lake_polygon": {
+  "method": "largest connected MNDWI>0 component (pixel water in >=50% of valid years) containing the seed, +1 km buffer",
+  "years_used": [
+   1987,
+   1988,
+   1989,
+   1990
+  ],
+  "detect_resolution_m": 120,
+  "detect_crs": "EPSG:32641",
+  "component_km2": 3121.7,
+  "box_water_km2": 3782.0,
+  "polygon_km2": 3640.9,
+  "window": [
+   "08-01",
+   "09-30"
+  ],
+  "seed_fallback": "seed not on water (seed is 68 px from the nearest water); largest water component of the box used"
+ },
+ "basin": {
+  "source": "buffer 25 km around lake polygon",
+  "fallback": true,
+  "fallback_reason": "ValueError: no basin intersects the lake polygon",
+  "area_km2": 15085.4
+ },
+ "min_lst_px": 637469,
+ "masks_encoding": "PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape"
+}

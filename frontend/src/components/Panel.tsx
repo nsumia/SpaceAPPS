@@ -16,9 +16,23 @@ export function Badges({ d }: { d: LakeFull }) {
   const s = d.summary, rel = s.reliability;
   return (
     <div className="badges">
-      <span className={"badge " + (s.validated ? "good" : "warn")}>{s.validated ? "✔ " : "? "}{t(s.validated ? "badge.validated" : "badge.unverified")}</span>
+      <span className={"badge " + (s.validated ? "good" : "warn")}>{s.validated ? "✔ " : "? "}{t(s.validated ? "badge.validated" : "badge.unverified")}{s.validated && s.validation_basis ? ` (${s.validation_basis})` : ""}</span>
       <span className={"badge " + (rel === "low" ? "bad" : rel === "ok" ? "good" : "")}>{rel === "low" ? "⚠ " : ""}{t(`badge.rel.${rel === "ok" || rel === "low" ? rel : "unknown"}`)}</span>
     </div>
+  );
+}
+
+export function RefInfo({ s }: { s: LakeFull["summary"] }) {
+  const { t } = useI18n();
+  if (!s.why_selected && !s.cadence_note) return null;
+  const lit = s.literature_direction;
+  return (
+    <section className="refinfo" data-testid="refinfo">
+      {s.why_selected && <p><strong>{t("ref.why")}:</strong> {s.why_selected}</p>}
+      {s.mndwi_note && <p className="note warn"><strong>{t("ref.mndwi")}:</strong> {s.mndwi_note}</p>}
+      <p className="small"><strong>{t("ref.cadence")}:</strong> {s.cadence_note ?? "?"}; {s.resolution_m ?? "?"} m{s.window ? `; ${s.window[0]} to ${s.window[1]}` : ""}</p>
+      {lit && <p className="small"><strong>{t("ref.lit")}:</strong> {lit} ({t(`ref.a.${s.literature_agreement ?? "not_tested"}`)})</p>}
+    </section>
   );
 }
 
@@ -80,6 +94,7 @@ export default function Panel({ sel, onClose }: { sel: Selection; onClose: () =>
       <button className="close" onClick={onClose} aria-label={t("panel.close")}>×</button>
       <h2>{d?.summary.name ?? sel.name ?? "…"}</h2>
       {d && <Badges d={d} />}
+      {d && <RefInfo s={d.summary} />}
       {d?.reliability?.note && d.summary.reliability === "low" && <div className="note bad">{d.reliability.note}</div>}
       {d && (
         <div className="actions">

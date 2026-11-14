@@ -9,7 +9,8 @@ describe("summary sentence", () => {
   const t = makeT("en");
   it("uses data values, 'by <year>' for censored emergence and says climate share is not computable", () => {
     const s = summarySentence(burdur, t);
-    expect(s).toContain("Burdur has lost 41% of its area since 1985");
+    expect(s).toContain("Burdur: the mean area of its last 3 valid years (2023-2025) is 41% below its 1985-1990 average");
+    expect(s).not.toContain("since 1985");
     expect(s).toContain("significant, p<0.001");
     expect(s).toContain("by 1997");
     expect(s).toContain("not computable");
@@ -19,11 +20,11 @@ describe("summary sentence", () => {
     expect(s).toContain("about 35%");
     expect(s).toContain("20-50%");
     expect(s).toContain("separated from natural variability in 1997");
-    expect(summarySentence(burdur, makeT("tr"))).toContain("alanının %41'ini kaybetti");
+    expect(summarySentence(burdur, makeT("tr"))).toContain("ortalamasının %41 altında");
   });
   it("calls an insignificant trend not significant and handles gains", () => {
     const s = summarySentence({ ...burdur, total_loss_pct: -12, trend_p: 0.4 }, t);
-    expect(s).toContain("gained 12%");
+    expect(s).toContain("12% above its 1985-1990 average");
     expect(s).toContain("not significant, p=0.400");
   });
 });

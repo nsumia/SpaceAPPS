@@ -1,0 +1,115 @@
+{
+ "lake_id": "custom-79f79bcf",
+ "alias": "urmia",
+ "name": "Urmia",
+ "country": "IR",
+ "generated": "2026-11-14T14:49:33+00:00",
+ "code_version": "90aedf6",
+ "resolution_m": 120,
+ "thermal_erosion_m": 150,
+ "utm_epsg": 32638,
+ "bbox": [
+  44.8,
+  36.9,
+  46.1,
+  38.4
+ ],
+ "seed": [
+  45.512,
+  37.698
+ ],
+ "years": [
+  1985,
+  2025
+ ],
+ "years_analysed": [
+  1985,
+  1987,
+  1989,
+  1991,
+  1993,
+  1995,
+  1997,
+  1999,
+  2001,
+  2003,
+  2005,
+  2007,
+  2009,
+  2011,
+  2013,
+  2015,
+  2017,
+  2019,
+  2021,
+  2023,
+  2025
+ ],
+ "cadence_years": 2,
+ "cadence_note": "every 2th year (plus 2025) to fit the time budget; not interpolated",
+ "resolution_reason": "adaptive by polygon area",
+ "window": [
+  "08-01",
+  "09-30"
+ ],
+ "group": "reference",
+ "why_selected": "Neighbour of Turkiye; fast-shrinking hypersaline lake; irrigation pressure and drought.",
+ "mndwi_note": "Salt flats, causeway and evaporation/salt ponds can be classified as water; only the connected main water body is kept.",
+ "scene_counts": {
+  "total": 140,
+  "per_year": {
+   "1985": 1,
+   "1987": 8,
+   "1989": 4,
+   "1991": 4,
+   "1993": 2,
+   "1995": 8,
+   "1997": 7,
+   "1999": 5,
+   "2001": 8,
+   "2003": 1,
+   "2005": 5,
+   "2007": 8,
+   "2009": 5,
+   "2011": 5,
+   "2013": 8,
+   "2015": 8,
+   "2017": 8,
+   "2019": 8,
+   "2021": 8,
+   "2023": 14,
+   "2025": 15
+  }
+ },
+ "lake_polygon": {
+  "method": "largest connected MNDWI>0 component (pixel water in >=50% of valid years) containing the seed, +1 km buffer",
+  "years_used": [
+   1985,
+   1986,
+   1987,
+   1988,
+   1989,
+   1990
+  ],
+  "detect_resolution_m": 120,
+  "detect_crs": "EPSG:32638",
+  "component_km2": 5293.1,
+  "box_water_km2": 5307.0,
+  "polygon_km2": 6165.8,
+  "window": [
+   "08-01",
+   "09-30"
+  ],
+  "seed_fallback": null
+ },
+ "basin": {
+  "source": "HydroBASINS v1c",
+  "region": "eu",
+  "level": 6,
+  "n_basins": 4,
+  "fallback": false,
+  "area_km2": 49342.1
+ },
+ "min_lst_px": 141590,
+ "masks_encoding": "PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape"
+}
