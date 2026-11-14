@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+dist/
+data/live_cache/
+data/jobs.sqlite
+.env
