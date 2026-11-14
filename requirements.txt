@@ -1,0 +1,15 @@
+odc-stac
+planetary-computer
+pystac-client
+rasterio
+xarray
+shapely
+pyproj
+scipy
+pymannkendall
+pandas
+numpy
+matplotlib
+requests
+pytest
+dask
