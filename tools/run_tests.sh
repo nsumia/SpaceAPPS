@@ -6,7 +6,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PY=.venv/bin/python
-[ -x "$PY" ] || { echo "missing .venv: uv venv --python 3.12 .venv && uv pip install -p .venv/bin/python -r requirements.txt"; exit 2; }
+[ -x "$PY" ] || { echo "missing .venv: uv venv --python 3.12 .venv && uv pip install -p .venv/bin/python -r requirements-dev.txt"; exit 2; }
 "$PY" -m pytest -q -W error::RuntimeWarning backend/tests "$@"
 
 cd frontend

@@ -1,0 +1,14 @@
+# Render Blueprint: New -> Blueprint -> pick this repo. Free plan, no secrets, no disk (data is ephemeral).
+services:
+  - type: web
+    name: lake-loss-detective
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: frankfurt
+    branch: main
+    autoDeployTrigger: commit
+    healthCheckPath: /api/health
+    envVars:
+      - key: LLD_BASIN_FALLBACK   # 512 MB RAM: skip the 360 MB HydroBASINS download, use the buffer basin
+        value: "1"

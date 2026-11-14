@@ -28,7 +28,7 @@ but did not change the main layouts. They were not regenerated in Stage 8.)
 ## Install
 Requirements: Python 3.12 (uv recommended), Node 20+.
 ```bash
-uv venv --python 3.12 .venv && uv pip install -p .venv/bin/python -r requirements.txt
+uv venv --python 3.12 .venv && uv pip install -p .venv/bin/python -r requirements-dev.txt   # runtime only: requirements.txt
 cd frontend && npm ci && cd ..
 ```
 HydroBASINS (about 360 MB) is downloaded once into `data/raw/` (gitignored) when a precompute needs it.
@@ -47,6 +47,18 @@ cd frontend && npm run build && cd ..           # -> frontend/dist
 ```
 Docker: `docker compose up` serves the same single port 8000 with `./data` mounted.
 **Docker was NOT verified**: the build machine has no Docker. Try it once online before relying on it.
+
+### Deploy on Render
+**The Render deploy was NOT verified by us** (no Docker here, no Render account used). `render.yaml` follows the Render Blueprint spec.
+1. Render dashboard: New -> Blueprint -> select this repo (reads `render.yaml`: Docker web service, free plan, Frankfurt, health check `/api/health`, auto-deploy on commits to `main`).
+   Or New -> Web Service -> Docker, same repo, branch `main`, health check path `/api/health`, and add env var `LLD_BASIN_FALLBACK=1`.
+2. The container listens on Render's `$PORT` (default 8000 locally). No secrets are needed.
+
+Free-tier caveats:
+- Sleeps after about 15 min idle; the first request then has a cold start (up to a minute).
+- 512 MB RAM. `LLD_BASIN_FALLBACK=1` (set in `render.yaml`) makes new-lake analysis use the 50 km buffer basin instead of downloading the 360 MB HydroBASINS (flagged `fallback` in the result). Analysis of new lakes can still be slow or run out of memory.
+- Ephemeral disk: custom analyses, the job database and the live cache are lost on restart/redeploy. Precomputed lakes, the index and the demo cache are in the image. The live cache is re-seeded from `data/demo_cache`; live cards refresh on demand, and `backend.scripts.prefetch --demo` locally then committing `data/demo_cache` refreshes the shipped snapshot.
+- For persistence, a paid plan with a disk mounted at `/app/data/custom` would keep custom analyses (not configured here).
 
 ### Before a demo (needs internet, once)
 ```bash

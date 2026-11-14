@@ -58,6 +58,8 @@ def basin_for_lake(lake_ll, area_km2, region="eu", download=True):
     from shapely.ops import unary_union
     level = 7 if area_km2 < 1000 else 6
     try:
+        if os.environ.get("LLD_BASIN_FALLBACK") == "1":   # small hosts (e.g. 512 MB): never download the 360 MB HydroBASINS
+            raise RuntimeError("LLD_BASIN_FALLBACK=1, HydroBASINS download skipped")
         path = extract_level(region, level, download)
         meta, _, geoms, _ = raw.read(path, bbox=tuple(lake_ll.bounds), columns=[])[:4]
         polys = [from_wkb(g) for g in geoms]
