@@ -1,0 +1,98 @@
+{
+ "lake_id": "custom-0107d645",
+ "alias": "balkhash",
+ "name": "Balkhash",
+ "country": "KZ",
+ "generated": "2026-11-14T16:30:43+00:00",
+ "code_version": "90aedf6+dirty",
+ "resolution_m": 120,
+ "thermal_erosion_m": 150,
+ "utm_epsg": 32643,
+ "bbox": [
+  72.8,
+  44.6,
+  79.6,
+  47.2
+ ],
+ "seed": [
+  73.953,
+  45.903
+ ],
+ "years": [
+  1985,
+  2025
+ ],
+ "years_analysed": [
+  1985,
+  1988,
+  1991,
+  1994,
+  1997,
+  2000,
+  2003,
+  2006,
+  2009,
+  2012,
+  2015,
+  2018,
+  2021,
+  2024,
+  2025
+ ],
+ "cadence_years": 3,
+ "cadence_note": "every 3th year (plus 2025) to fit the time budget; not interpolated",
+ "resolution_reason": "adaptive by polygon area",
+ "window": [
+  "08-01",
+  "09-30"
+ ],
+ "group": "reference",
+ "why_selected": "Closed basin; irrigation and inflow (Ili) pressure.",
+ "mndwi_note": "Very large lake: 120 m resolution and every 3rd year; the box is wider than one UTM zone so edges are slightly distorted; shallow eastern part has reeds and variable shore.",
+ "scene_counts": {
+  "total": 180,
+  "per_year": {
+   "1985": 0,
+   "1988": 0,
+   "1991": 1,
+   "1994": 10,
+   "1997": 3,
+   "2000": 0,
+   "2003": 0,
+   "2006": 15,
+   "2009": 14,
+   "2012": 0,
+   "2015": 20,
+   "2018": 19,
+   "2021": 24,
+   "2024": 39,
+   "2025": 35
+  }
+ },
+ "lake_polygon": {
+  "method": "largest connected MNDWI>0 component (pixel water in >=50% of valid years) containing the seed, +1 km buffer",
+  "years_used": [
+   1990,
+   1992,
+   1993
+  ],
+  "detect_resolution_m": 120,
+  "detect_crs": "EPSG:32643",
+  "component_km2": 16756.6,
+  "box_water_km2": 18121.2,
+  "polygon_km2": 19203.0,
+  "window": [
+   "08-01",
+   "09-30"
+  ],
+  "seed_fallback": null
+ },
+ "basin": {
+  "source": "buffer 25 km around lake polygon",
+  "fallback": true,
+  "fallback_reason": "ValueError: no basin intersects the lake polygon",
+  "area_km2": 53695.0
+ },
+ "min_lst_px": 44258,
+ "masks_encoding": "PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape"
+}

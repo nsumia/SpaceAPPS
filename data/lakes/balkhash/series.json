@@ -1,0 +1,220 @@
+{
+ "lake": "Balkhash",
+ "bbox": [
+  72.8,
+  44.6,
+  79.6,
+  47.2
+ ],
+ "window": "08-01 to 09-30 (MM-DD)",
+ "platforms": [
+  "landsat-5",
+  "landsat-8",
+  "landsat-9"
+ ],
+ "thresh": 0.0,
+ "min_valid": 0.8,
+ "resolution_m": 120,
+ "crs": "EPSG:32643",
+ "series": [
+  {
+   "year": 1985,
+   "error": null,
+   "area_km2": null,
+   "n_scenes": 0,
+   "valid_frac": 0.0,
+   "lst_c": null,
+   "lst_px": 0,
+   "latest_scene": null,
+   "n_items": null,
+   "volatile": false
+  },
+  {
+   "year": 1988,
+   "error": null,
+   "area_km2": null,
+   "n_scenes": 0,
+   "valid_frac": 0.0,
+   "lst_c": null,
+   "lst_px": 0,
+   "latest_scene": null,
+   "n_items": null,
+   "volatile": false
+  },
+  {
+   "year": 1991,
+   "error": null,
+   "area_km2": 664.0272,
+   "n_scenes": 1,
+   "valid_frac": 0.04,
+   "lst_c": 15.32,
+   "lst_px": 44258,
+   "latest_scene": "1991-09-20",
+   "n_items": 2.0,
+   "volatile": false
+  },
+  {
+   "year": 1994,
+   "error": null,
+   "area_km2": 15901.4592,
+   "n_scenes": 10,
+   "valid_frac": 0.93,
+   "lst_c": 20.06,
+   "lst_px": 1076391,
+   "latest_scene": "1994-09-24",
+   "n_items": 20.0,
+   "volatile": false
+  },
+  {
+   "year": 1997,
+   "error": null,
+   "area_km2": 6684.9696,
+   "n_scenes": 3,
+   "valid_frac": 0.403,
+   "lst_c": 16.6,
+   "lst_px": 433331,
+   "latest_scene": "1997-09-20",
+   "n_items": 4.0,
+   "volatile": false
+  },
+  {
+   "year": 2000,
+   "error": null,
+   "area_km2": null,
+   "n_scenes": 0,
+   "valid_frac": 0.0,
+   "lst_c": null,
+   "lst_px": 0,
+   "latest_scene": null,
+   "n_items": null,
+   "volatile": false
+  },
+  {
+   "year": 2003,
+   "error": null,
+   "area_km2": null,
+   "n_scenes": 0,
+   "valid_frac": 0.0,
+   "lst_c": null,
+   "lst_px": 0,
+   "latest_scene": null,
+   "n_items": null,
+   "volatile": false
+  },
+  {
+   "year": 2006,
+   "error": null,
+   "area_km2": 16785.4032,
+   "n_scenes": 15,
+   "valid_frac": 0.987,
+   "lst_c": 19.95,
+   "lst_px": 1138157,
+   "latest_scene": "2006-09-27",
+   "n_items": 28.0,
+   "volatile": false
+  },
+  {
+   "year": 2009,
+   "error": null,
+   "area_km2": 16275.5856,
+   "n_scenes": 14,
+   "valid_frac": 0.954,
+   "lst_c": 19.04,
+   "lst_px": 1102624,
+   "latest_scene": "2009-09-28",
+   "n_items": 25.0,
+   "volatile": false
+  },
+  {
+   "year": 2012,
+   "error": null,
+   "area_km2": null,
+   "n_scenes": 0,
+   "valid_frac": 0.0,
+   "lst_c": null,
+   "lst_px": 0,
+   "latest_scene": null,
+   "n_items": null,
+   "volatile": false
+  },
+  {
+   "year": 2015,
+   "error": null,
+   "area_km2": 16866.9072,
+   "n_scenes": 20,
+   "valid_frac": 1.0,
+   "lst_c": 22.41,
+   "lst_px": 1143748,
+   "latest_scene": "2015-09-29",
+   "n_items": 35.0,
+   "volatile": false
+  },
+  {
+   "year": 2018,
+   "error": null,
+   "area_km2": 16903.0656,
+   "n_scenes": 19,
+   "valid_frac": 1.0,
+   "lst_c": 19.57,
+   "lst_px": 1146223,
+   "latest_scene": "2018-09-30",
+   "n_items": 42.0,
+   "volatile": false
+  },
+  {
+   "year": 2021,
+   "error": null,
+   "area_km2": 16889.2416,
+   "n_scenes": 24,
+   "valid_frac": 1.0,
+   "lst_c": 22.2,
+   "lst_px": 1145213,
+   "latest_scene": "2021-09-29",
+   "n_items": 47.0,
+   "volatile": false
+  },
+  {
+   "year": 2024,
+   "error": null,
+   "area_km2": 16827.2208,
+   "n_scenes": 39,
+   "valid_frac": 1.0,
+   "lst_c": 21.89,
+   "lst_px": 1141675,
+   "latest_scene": "2024-09-30",
+   "n_items": 73.0,
+   "volatile": false
+  },
+  {
+   "year": 2025,
+   "error": null,
+   "area_km2": 16746.048,
+   "n_scenes": 35,
+   "valid_frac": 0.999,
+   "lst_c": 22.57,
+   "lst_px": 1130309,
+   "latest_scene": "2025-09-29",
+   "n_items": 64.0,
+   "volatile": false
+  }
+ ],
+ "stats": {
+  "area": null,
+  "lst_all": null,
+  "lst_1985_2012": null,
+  "lst_2013_2025": null,
+  "area_emergence": null,
+  "lst_emergence": null,
+  "lst_emergence_note": "LST switches Landsat 5 -> 8 at 2012/13 (step of ~3 C); the pooled emergence year is dominated by this sensor break, see lst_emergence_1985_2012 (Landsat 5 only)",
+  "lst_emergence_1985_2012": null
+ },
+ "reliability": {
+  "reliability": "ok",
+  "n_valid": 8,
+  "volatile_years": [],
+  "volatile_share": 0.0,
+  "volatile_frac_threshold": 0.15,
+  "ref_mean_km2": 16603.6,
+  "note": null
+ }
+}

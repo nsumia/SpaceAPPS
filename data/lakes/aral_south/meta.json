@@ -1,0 +1,100 @@
+{
+ "lake_id": "custom-b256e239",
+ "alias": "aral_south",
+ "name": "Aral Sea (South / Large Aral)",
+ "country": "KZ/UZ",
+ "generated": "2026-11-14T15:53:56+00:00",
+ "code_version": "90aedf6+dirty",
+ "resolution_m": 240,
+ "thermal_erosion_m": 150,
+ "utm_epsg": 32640,
+ "bbox": [
+  57.8,
+  43.2,
+  62.0,
+  46.1
+ ],
+ "seed": [
+  58.527,
+  45.22
+ ],
+ "years": [
+  1985,
+  2025
+ ],
+ "years_analysed": [
+  1985,
+  1988,
+  1991,
+  1994,
+  1997,
+  2000,
+  2003,
+  2006,
+  2009,
+  2012,
+  2015,
+  2018,
+  2021,
+  2024,
+  2025
+ ],
+ "cadence_years": 3,
+ "cadence_note": "every 3th year (plus 2025) to fit the time budget; not interpolated",
+ "resolution_reason": "override for very large lake",
+ "window": [
+  "08-01",
+  "09-30"
+ ],
+ "group": "reference",
+ "why_selected": "Classic irrigation-driven collapse (Amu Darya / Syr Darya diversion). Data-only description; shared by Kazakhstan and Uzbekistan.",
+ "mndwi_note": "Very large lake: 240 m resolution and every 3rd year. Southern/eastern basins dried up; the 1985-90 extent defines the analysis polygon, so later shrinkage is measured inside it. Boundary with the North Aral at 46.1 N is approximate.",
+ "scene_counts": {
+  "total": 138,
+  "per_year": {
+   "1985": 0,
+   "1988": 9,
+   "1991": 8,
+   "1994": 11,
+   "1997": 10,
+   "2000": 10,
+   "2003": 0,
+   "2006": 9,
+   "2009": 9,
+   "2012": 0,
+   "2015": 10,
+   "2018": 11,
+   "2021": 11,
+   "2024": 21,
+   "2025": 19
+  }
+ },
+ "lake_polygon": {
+  "method": "largest connected MNDWI>0 component (pixel water in >=50% of valid years) containing the seed, +1 km buffer",
+  "years_used": [
+   1986,
+   1987,
+   1988,
+   1989,
+   1990
+  ],
+  "detect_resolution_m": 240,
+  "detect_crs": "EPSG:32640",
+  "component_km2": 38765.7,
+  "box_water_km2": 40378.4,
+  "polygon_km2": 42865.0,
+  "window": [
+   "08-01",
+   "09-30"
+  ],
+  "seed_fallback": null
+ },
+ "basin": {
+  "source": "buffer 25 km around lake polygon",
+  "fallback": true,
+  "fallback_reason": "ValueError: no basin intersects the lake polygon",
+  "area_km2": 68003.0
+ },
+ "min_lst_px": 64373,
+ "masks_encoding": "PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape"
+}

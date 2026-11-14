@@ -1,0 +1,113 @@
+{
+ "lake_id": "custom-ce834aa0",
+ "alias": "titicaca",
+ "name": "Titicaca",
+ "country": "PE/BO",
+ "generated": "2026-11-14T15:06:32+00:00",
+ "code_version": "90aedf6",
+ "resolution_m": 120,
+ "thermal_erosion_m": 150,
+ "utm_epsg": 32719,
+ "bbox": [
+  -70.2,
+  -17.0,
+  -68.4,
+  -15.1
+ ],
+ "seed": [
+  -69.354,
+  -15.921
+ ],
+ "years": [
+  1985,
+  2025
+ ],
+ "years_analysed": [
+  1985,
+  1987,
+  1989,
+  1991,
+  1993,
+  1995,
+  1997,
+  1999,
+  2001,
+  2003,
+  2005,
+  2007,
+  2009,
+  2011,
+  2013,
+  2015,
+  2017,
+  2019,
+  2021,
+  2023,
+  2025
+ ],
+ "cadence_years": 2,
+ "cadence_note": "every 2th year (plus 2025) to fit the time budget; not interpolated",
+ "resolution_reason": "adaptive by polygon area",
+ "window": [
+  "08-01",
+  "09-30"
+ ],
+ "group": "reference",
+ "why_selected": "Large, relatively stable lake; control example. Shared by Peru and Bolivia. Data-only description.",
+ "mndwi_note": "Control lake: level varies by about 1-2 m, which changes area only a little in the deep basin; shallow bays with reeds are uncertain. Southern hemisphere: water year Apr-Mar for climate.",
+ "scene_counts": {
+  "total": 211,
+  "per_year": {
+   "1985": 2,
+   "1987": 3,
+   "1989": 10,
+   "1991": 10,
+   "1993": 8,
+   "1995": 11,
+   "1997": 8,
+   "1999": 8,
+   "2001": 10,
+   "2003": 7,
+   "2005": 11,
+   "2007": 10,
+   "2009": 9,
+   "2011": 10,
+   "2013": 9,
+   "2015": 10,
+   "2017": 10,
+   "2019": 11,
+   "2021": 9,
+   "2023": 24,
+   "2025": 21
+  }
+ },
+ "lake_polygon": {
+  "method": "largest connected MNDWI>0 component (pixel water in >=50% of valid years) containing the seed, +1 km buffer",
+  "years_used": [
+   1985,
+   1986,
+   1987,
+   1988,
+   1989,
+   1990
+  ],
+  "detect_resolution_m": 120,
+  "detect_crs": "EPSG:32719",
+  "component_km2": 8853.0,
+  "box_water_km2": 9147.6,
+  "polygon_km2": 10336.6,
+  "window": [
+   "08-01",
+   "09-30"
+  ],
+  "seed_fallback": null
+ },
+ "basin": {
+  "source": "buffer 25 km around lake polygon",
+  "fallback": true,
+  "fallback_reason": "ValueError: no basin intersects the lake polygon",
+  "area_km2": 28615.4
+ },
+ "min_lst_px": 100920,
+ "masks_encoding": "PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape"
+}

@@ -1,0 +1,263 @@
+{
+ "lake": "Lake Chad",
+ "bbox": [
+  13.0,
+  12.0,
+  15.3,
+  14.6
+ ],
+ "window": "08-01 to 09-30 (MM-DD)",
+ "platforms": [
+  "landsat-5",
+  "landsat-8",
+  "landsat-9"
+ ],
+ "thresh": 0.0,
+ "min_valid": 0.8,
+ "resolution_m": 60,
+ "crs": "EPSG:32633",
+ "series": [
+  {
+   "year": 2013,
+   "error": null,
+   "area_km2": 391.6044,
+   "valid_frac": 0.991,
+   "lst_c": 29.94,
+   "lst_px": 93120,
+   "n_scenes": 4,
+   "n_items": 4,
+   "latest_scene": "2013-09-28",
+   "volatile": false
+  },
+  {
+   "year": 2014,
+   "error": null,
+   "area_km2": 398.0412,
+   "valid_frac": 1.0,
+   "lst_c": 29.76,
+   "lst_px": 94195,
+   "n_scenes": 4,
+   "n_items": 4,
+   "latest_scene": "2014-09-22",
+   "volatile": false
+  },
+  {
+   "year": 2015,
+   "error": null,
+   "area_km2": 396.6624,
+   "valid_frac": 1.0,
+   "lst_c": 30.58,
+   "lst_px": 94138,
+   "n_scenes": 3,
+   "n_items": 3,
+   "latest_scene": "2015-09-25",
+   "volatile": false
+  },
+  {
+   "year": 2016,
+   "error": null,
+   "area_km2": 397.3644,
+   "valid_frac": 1.0,
+   "lst_c": 29.46,
+   "lst_px": 94490,
+   "n_scenes": 3,
+   "n_items": 3,
+   "latest_scene": "2016-09-27",
+   "volatile": false
+  },
+  {
+   "year": 2017,
+   "error": null,
+   "area_km2": 356.9112,
+   "valid_frac": 0.925,
+   "lst_c": 27.7,
+   "lst_px": 84116,
+   "n_scenes": 3,
+   "n_items": 3,
+   "latest_scene": "2017-09-23",
+   "volatile": false
+  },
+  {
+   "year": 2018,
+   "error": null,
+   "area_km2": 392.868,
+   "valid_frac": 1.0,
+   "lst_c": 30.75,
+   "lst_px": 93912,
+   "n_scenes": 3,
+   "n_items": 3,
+   "latest_scene": "2018-09-26",
+   "volatile": false
+  },
+  {
+   "year": 2019,
+   "error": null,
+   "area_km2": 390.6504,
+   "valid_frac": 1.0,
+   "lst_c": 28.98,
+   "lst_px": 93442,
+   "n_scenes": 2,
+   "n_items": 2,
+   "latest_scene": "2019-09-20",
+   "volatile": false
+  },
+  {
+   "year": 2020,
+   "error": null,
+   "area_km2": 391.4028,
+   "valid_frac": 0.999,
+   "lst_c": 29.65,
+   "lst_px": 92984,
+   "n_scenes": 3,
+   "n_items": 3,
+   "latest_scene": "2020-09-22",
+   "volatile": false
+  },
+  {
+   "year": 2021,
+   "error": null,
+   "area_km2": 396.3168,
+   "valid_frac": 0.996,
+   "lst_c": 30.58,
+   "lst_px": 93190,
+   "n_scenes": 4,
+   "n_items": 4,
+   "latest_scene": "2021-09-25",
+   "volatile": false
+  },
+  {
+   "year": 2022,
+   "error": null,
+   "area_km2": 391.3272,
+   "valid_frac": 0.989,
+   "lst_c": 28.4,
+   "lst_px": 91923,
+   "n_scenes": 3,
+   "n_items": 3,
+   "latest_scene": "2022-09-28",
+   "volatile": false
+  },
+  {
+   "year": 2023,
+   "error": null,
+   "area_km2": 396.0828,
+   "valid_frac": 1.0,
+   "lst_c": 29.33,
+   "lst_px": 93221,
+   "n_scenes": 6,
+   "n_items": 6,
+   "latest_scene": "2023-09-23",
+   "volatile": false
+  },
+  {
+   "year": 2024,
+   "error": null,
+   "area_km2": 398.7648,
+   "valid_frac": 1.0,
+   "lst_c": 28.71,
+   "lst_px": 93789,
+   "n_scenes": 6,
+   "n_items": 6,
+   "latest_scene": "2024-09-26",
+   "volatile": false
+  },
+  {
+   "year": 2025,
+   "error": null,
+   "area_km2": 398.7648,
+   "valid_frac": 1.0,
+   "lst_c": 26.41,
+   "lst_px": 94169,
+   "n_scenes": 8,
+   "n_items": 8,
+   "latest_scene": "2025-09-29",
+   "volatile": false
+  }
+ ],
+ "stats": {
+  "area": {
+   "n": 13,
+   "trend": "no trend",
+   "p": 0.541049008790059,
+   "sen_slope_per_year": 0.21792000000000183,
+   "sen_slope_per_decade": 2.1792000000000185,
+   "intercept": 394.77528,
+   "intercept_year": 2013,
+   "year_gaps": 0,
+   "first_year": 2013,
+   "last_year": 2025
+  },
+  "lst_all": {
+   "n": 13,
+   "trend": "decreasing",
+   "p": 0.024415992749281745,
+   "sen_slope_per_year": -0.16000000000000014,
+   "sen_slope_per_decade": -1.6000000000000014,
+   "intercept": 30.420000000000016,
+   "intercept_year": 2013,
+   "year_gaps": 0,
+   "first_year": 2013,
+   "last_year": 2025
+  },
+  "lst_1985_2012": null,
+  "lst_2013_2025": {
+   "n": 13,
+   "trend": "decreasing",
+   "p": 0.024415992749281745,
+   "sen_slope_per_year": -0.16000000000000014,
+   "sen_slope_per_decade": -1.6000000000000014,
+   "intercept": 30.420000000000016,
+   "intercept_year": 2013,
+   "year_gaps": 0,
+   "first_year": 2013,
+   "last_year": 2025
+  },
+  "area_emergence": {
+   "sigma": 11.724941334449362,
+   "ref_mean": 391.4997,
+   "ref_years": [
+    2013,
+    2024
+   ],
+   "k": 2.0,
+   "threshold": 23.449882668898724,
+   "direction": "increasing",
+   "emerged": false,
+   "year": null,
+   "status": "not_yet_distinguishable",
+   "censored_at_ref_end": false,
+   "censored_note": null,
+   "label_tr": "Hen\u00fcz ay\u0131rt edilemiyor",
+   "years_needed": 80.57664587416741
+  },
+  "lst_emergence": {
+   "sigma": 0.9289052257442231,
+   "ref_mean": 29.48666666666666,
+   "ref_years": [
+    2013,
+    2024
+   ],
+   "k": 2.0,
+   "threshold": 1.8578104514884461,
+   "direction": "decreasing",
+   "emerged": false,
+   "year": null,
+   "status": "not_yet_distinguishable",
+   "censored_at_ref_end": false,
+   "censored_note": null,
+   "label_tr": "Hen\u00fcz ay\u0131rt edilemiyor",
+   "years_needed": 5.444648655136241
+  },
+  "lst_emergence_note": "LST switches Landsat 5 -> 8 at 2012/13 (step of ~3 C); the pooled emergence year is dominated by this sensor break, see lst_emergence_1985_2012 (Landsat 5 only)",
+  "lst_emergence_1985_2012": null
+ },
+ "reliability": {
+  "reliability": "ok",
+  "n_valid": 13,
+  "volatile_years": [],
+  "volatile_share": 0.0,
+  "volatile_frac_threshold": 0.15,
+  "ref_mean_km2": 388.9,
+  "note": null
+ }
+}

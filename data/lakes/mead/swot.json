@@ -1,0 +1,6 @@
+{
+ "alias": "mead",
+ "ok": false,
+ "pld_id": null,
+ "reason": "No SWOT Prior Lake Database (PLD) id for this lake: Hydrocron has no lookup-by-location endpoint and the PLD file (PO.DAAC SWOT_PRIOR_LAKE_DATABASE) needs an Earthdata login that this pipeline does not use. Set pld_id in backend/core/lakes.py to enable; nothing is estimated or faked."
+}

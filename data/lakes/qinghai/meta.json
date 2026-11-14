@@ -1,0 +1,111 @@
+{
+ "lake_id": "custom-83b6bba2",
+ "alias": "qinghai",
+ "name": "Qinghai",
+ "country": "CN",
+ "generated": "2026-11-14T15:01:35+00:00",
+ "code_version": "90aedf6",
+ "resolution_m": 60,
+ "thermal_erosion_m": 150,
+ "utm_epsg": 32647,
+ "bbox": [
+  99.4,
+  36.4,
+  100.9,
+  37.3
+ ],
+ "seed": [
+  100.114,
+  36.879
+ ],
+ "years": [
+  1985,
+  2025
+ ],
+ "years_analysed": [
+  1985,
+  1987,
+  1989,
+  1991,
+  1993,
+  1995,
+  1997,
+  1999,
+  2001,
+  2003,
+  2005,
+  2007,
+  2009,
+  2011,
+  2013,
+  2015,
+  2017,
+  2019,
+  2021,
+  2023,
+  2025
+ ],
+ "cadence_years": 2,
+ "cadence_note": "every 2th year (plus 2025) to fit the time budget; not interpolated",
+ "resolution_reason": "adaptive by polygon area",
+ "window": [
+  "08-01",
+  "09-30"
+ ],
+ "group": "reference",
+ "why_selected": "Increasing-lake example (Tibetan Plateau); rising since about 2004.",
+ "mndwi_note": "Saline lake; seasonal ice does not affect the Aug-Sep window.",
+ "scene_counts": {
+  "total": 143,
+  "per_year": {
+   "1985": 0,
+   "1987": 5,
+   "1989": 6,
+   "1991": 10,
+   "1993": 5,
+   "1995": 4,
+   "1997": 9,
+   "1999": 5,
+   "2001": 7,
+   "2003": 6,
+   "2005": 7,
+   "2007": 6,
+   "2009": 5,
+   "2011": 8,
+   "2013": 8,
+   "2015": 10,
+   "2017": 4,
+   "2019": 5,
+   "2021": 7,
+   "2023": 10,
+   "2025": 16
+  }
+ },
+ "lake_polygon": {
+  "method": "largest connected MNDWI>0 component (pixel water in >=50% of valid years) containing the seed, +1 km buffer",
+  "years_used": [
+   1987,
+   1988,
+   1989,
+   1990
+  ],
+  "detect_resolution_m": 120,
+  "detect_crs": "EPSG:32647",
+  "component_km2": 4346.0,
+  "box_water_km2": 4408.8,
+  "polygon_km2": 4760.1,
+  "window": [
+   "08-01",
+   "09-30"
+  ],
+  "seed_fallback": null
+ },
+ "basin": {
+  "source": "buffer 25 km around lake polygon",
+  "fallback": true,
+  "fallback_reason": "ValueError: no basin intersects the lake polygon",
+  "area_km2": 14430.1
+ },
+ "min_lst_px": 126521,
+ "masks_encoding": "PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape"
+}
