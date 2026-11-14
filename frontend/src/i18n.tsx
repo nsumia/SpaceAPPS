@@ -39,7 +39,7 @@ const en: Record<string, string> = {
   "cmp.res": "Resolution differs between lakes (30 m for small lakes, 60/120 m for large ones); compare trends, not single-year values.",
   "cmp.x": "Warming, Landsat 5 only (C/decade)", "cmp.y": "Area trend (%/decade)", "cmp.size": "bubble size = latest lake area", "cmp.colour": "colour = climate share", "cmp.nocl": "no climate share",
   "cmp.turkey": "Turkish lake", "cmp.reference": "Reference lake", "cmp.na": "n/a", "grp.all": "All", "grp.turkey": "Turkish", "grp.reference": "Reference", "col.group": "Group",
-  "ref.why": "Why selected", "ref.mndwi": "Method limitation", "ref.cadence": "Cadence and resolution", "ref.lit": "Literature direction", "ref.agree": "agrees with our trend", "ref.conflict": "conflicts with our trend (see VALIDATION.md)", "ref.mixed": "no single direction in the literature, so no agreement test", "leg.turkey": "gold ring = Turkish lake, dark ring = reference lake",
+  "ref.why": "Why selected", "ref.mndwi": "Method limitation", "ref.cadence": "Cadence and resolution", "ref.lit": "Literature direction", "ref.a.agrees": "agrees with our trend", "ref.a.conflict": "conflicts with our trend (see VALIDATION.md)", "ref.a.inconclusive": "inconclusive: our trend is not significant", "ref.a.unverified_expectation": "unverified expectation (no source confirmed this direction); our trend differs", "ref.a.not_tested": "no single or confirmed direction in the literature, so no agreement test", "leg.turkey": "gold ring = Turkish lake, dark ring = reference lake",
   "methods.title": "Methods and limitations",
   "err.generic": "Something went wrong", "retry": "Retry",
 };
@@ -79,7 +79,7 @@ const tr: Record<string, string> = {
   "cmp.res": "Çözünürlük göller arasında farklıdır (küçüklerde 30 m, büyüklerde 60/120 m); tek yıl değerlerini değil trendleri karşılaştırın.",
   "cmp.x": "Isınma, yalnız Landsat 5 (C/on yıl)", "cmp.y": "Alan trendi (%/on yıl)", "cmp.size": "balon boyutu = son göl alanı", "cmp.colour": "renk = iklim payı", "cmp.nocl": "iklim payı yok",
   "cmp.turkey": "Türkiye gölü", "cmp.reference": "Referans göl", "cmp.na": "yok", "grp.all": "Hepsi", "grp.turkey": "Türkiye", "grp.reference": "Referans", "col.group": "Grup",
-  "ref.why": "Neden seçildi", "ref.mndwi": "Yöntem sınırlaması", "ref.cadence": "Örnekleme sıklığı ve çözünürlük", "ref.lit": "Literatürdeki yön", "ref.agree": "bizim eğilimle uyumlu", "ref.conflict": "bizim eğilimle çelişiyor (bkz. VALIDATION.md)", "ref.mixed": "literatürde tek bir yön yok, uyum testi yapılmadı", "leg.turkey": "altın halka = Türkiye gölü, koyu halka = referans göl",
+  "ref.why": "Neden seçildi", "ref.mndwi": "Yöntem sınırlaması", "ref.cadence": "Örnekleme sıklığı ve çözünürlük", "ref.lit": "Literatürdeki yön", "ref.a.agrees": "bizim eğilimle uyumlu", "ref.a.conflict": "bizim eğilimle çelişiyor (bkz. VALIDATION.md)", "ref.a.inconclusive": "sonuçsuz: bizim eğilim anlamlı değil", "ref.a.unverified_expectation": "doğrulanmamış beklenti (yönü teyit eden kaynak yok); bizim eğilim farklı", "ref.a.not_tested": "literatürde tek ya da teyitli yön yok, uyum testi yapılmadı", "leg.turkey": "altın halka = Türkiye gölü, koyu halka = referans göl",
   "methods.title": "Yöntem ve sınırlamalar",
   "err.generic": "Bir sorun oluştu", "retry": "Tekrar dene",
 };

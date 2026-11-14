@@ -53,6 +53,8 @@ class LakeSummary(BaseModel):
     literature_direction: Optional[str] = None
     our_direction: Optional[str] = None
     literature_agrees: Optional[bool] = None
+    literature_agreement: Optional[str] = None
+    validation_basis: Optional[str] = None
 
 
 class LakesResponse(BaseModel):

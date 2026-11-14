@@ -67,7 +67,7 @@ LAKES.update({
     "qinghai": dict(name="Qinghai", country="CN", bbox=(99.4, 36.4, 100.9, 37.3), seed=(100.114, 36.879), pld_id=None, step=2, **REF,
                     why="Increasing-lake example (Tibetan Plateau); rising since about 2004.",
                     note="Saline lake; seasonal ice does not affect the Aug-Sep window."),
-    "dead_sea": dict(name="Dead Sea", country="IL/JO", bbox=(35.2, 31.0, 35.8, 31.95), seed=(35.478, 31.526), pld_id=None, step=1, **REF,
+    "dead_sea": dict(name="Dead Sea", country="IL/JO", bbox=(35.2, 31.0, 35.8, 31.95), seed=(35.478, 31.526), pld_id=None, step=1, exclude_items=("LC09_L2SP_174038_20220806_02_T1",), **REF,
                      why="Fast level fall (about 1 m per year). Shared by Israel, Jordan (and the West Bank coast). Data-only description.",
                      note="Southern evaporation ponds are industrial and may count as water; only the connected main water body around the seed is kept. Hypersaline water gives a different MNDWI signal near the shore."),
 })

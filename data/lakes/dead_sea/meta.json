@@ -115,7 +115,7 @@
    "2019": 4,
    "2020": 4,
    "2021": 4,
-   "2022": 0,
+   "2022": 1,
    "2023": 8,
    "2024": 8,
    "2025": 7
@@ -151,5 +151,8 @@
   "area_km2": 12163.9
  },
  "min_lst_px": 158791,
- "masks_encoding": "PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape"
+ "masks_encoding": "PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape",
+ "excluded_items": [
+  "LC09_L2SP_174038_20220806_02_T1 (HTTP 403 on QA_PIXEL)"
+ ]
 }

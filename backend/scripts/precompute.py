@@ -141,6 +141,7 @@ def make_plot(df, stats, path, name, min_valid, ref=None):
 def run(alias, start=1985, end=2025, out_dir=None, thresh=0.0, max_cloud=40, min_valid=0.8, rebuild_polygon=False,
         no_basin=False, plot=None, no_masks=False, legacy_box_mask=False, log=print, cadence=True):
     cfg = LAKES[alias]
+    landsat.EXCLUDE_ITEMS.update(cfg.get("exclude_items", ()))
     window = tuple(cfg.get("window", ("08-01", "09-30")))
     years = years_for(cfg, start, end) if cadence else list(range(start, end + 1))
     if legacy_box_mask and not out_dir:

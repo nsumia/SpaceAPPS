@@ -120,6 +120,9 @@ def open_catalog():
     return pystac_client.Client.open(STAC_URL, modifier=planetary_computer.sign_inplace, timeout=60)
 
 
+EXCLUDE_ITEMS = set()      # scene ids with unreadable assets (set per lake from LAKES[..]["exclude_items"])
+
+
 def search_items(catalog, geom_json, start, end, max_cloud=40):
     # signed URLs are used lazily for minutes: drop cached SAS tokens that expire within 20 min so they cannot die mid-load
     try:
@@ -132,7 +135,7 @@ def search_items(catalog, geom_json, start, end, max_cloud=40):
         collections=["landsat-c2-l2"], intersects=geom_json, datetime=f"{start}/{end}",
         query={"platform": {"in": PLATFORMS}, "eo:cloud_cover": {"lt": max_cloud}}).items())
     # belt and braces: never trust the server filter alone
-    return [i for i in items if i.properties.get("platform") in THERMAL_ASSET]
+    return [i for i in items if i.properties.get("platform") in THERMAL_ASSET and i.id not in EXCLUDE_ITEMS]
 
 
 def _empty(**kw):

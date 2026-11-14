@@ -18,6 +18,7 @@ LITERATURE = {
     "chad": "mixed", "poopo": "decline", "titicaca": "stable", "balkhash": "mixed", "sevan": "mixed",
     "tuz": "decline", "qinghai": "increase", "dead_sea": "decline",
 }
+LIT_UNVERIFIED = {"titicaca", "balkhash"}      # direction not confirmed by any source seen (VALIDATION.md)
 _DIRS = {"decreasing": "decline", "increasing": "increase", "no trend": "stable"}
 LST_SENSOR_BREAK = ("Landsat 5 -> 8 step of about +3 C at 2012/13 (Stage 1): warming_c_per_decade uses Landsat 5 only "
                     "(1985-2012); the pooled slope (warming_pooled_c_per_decade) contains the sensor break and overstates warming.")
@@ -133,21 +134,33 @@ def summary(st, key):
     em = stats.get("area_emergence") or {}
     lit = LITERATURE.get(alias_of(meta, key))
     ours = _DIRS.get(area["trend"]) if area else None
-    lit_agrees = None if (lit is None or ours is None or lit in ("mixed",)) else (ours == lit)
+    if lit is None or ours is None or lit == "mixed":
+        agreement = "not_tested"
+    elif ours == "stable" and lit != "stable":
+        agreement = "inconclusive"          # our trend is not significant: neither agrees nor conflicts
+    elif ours == lit:
+        agreement = "agrees"
+    else:
+        agreement = "unverified_expectation" if alias_of(meta, key) in LIT_UNVERIFIED else "conflict"
+    lit_agrees = True if agreement == "agrees" else (False if agreement in ("conflict",) else None)
     l5 = stats.get("lst_1985_2012")
     pooled = stats.get("lst_all")
     dec = ((rec["climate"] or {}).get("decomposition")) or {}
     custom = rec["custom"]
     alias = meta.get("alias")
+    reliability = (s.get("reliability") or {}).get("reliability", "unknown")
     group = meta.get("group") or ("custom" if custom else ("turkey" if meta.get("country") == "TR" else "reference"))
     return dict(
         why_selected=meta.get("why_selected"), mndwi_note=meta.get("mndwi_note"), resolution_m=meta.get("resolution_m"),
         cadence_note=_cadence(meta), cadence_years=meta.get("cadence_years"), years_analysed=meta.get("years_analysed"),
-        window=meta.get("window"), literature_direction=lit, our_direction=ours, literature_agrees=lit_agrees,
+        window=meta.get("window"), literature_direction=lit, our_direction=ours, literature_agrees=lit_agrees, literature_agreement=agreement,
         ref_years=ref_years, recent_years=[r["year"] for r in rows[-3:]],
         recent_mean_km2=round(float(np.mean(last)), 1) if last else None,
         id=meta.get("lake_id", key), alias=alias, name=meta.get("name") or s.get("lake"), country=meta.get("country"),
-        centre=centre(rec), group=group, validated=bool(not custom and (group == "turkey" or lit_agrees is True)), unverified=bool(custom),
+        centre=centre(rec), group=group, validated=bool(not custom and (group == "turkey" or lit_agrees is True) and reliability != "low"),
+        validation_basis=("quantitative vs Sabuncu 2020 + direction" if alias == "burdur" else
+                          "direction checked against literature/Stage 2-3 checks" if group == "turkey" else
+                          "trend direction matches the general literature direction" if lit_agrees else None), unverified=bool(custom),
         years=meta.get("years"), latest_area_km2=latest_area(st, key)[0], latest_area_year=latest_area(st, key)[1],
         ref_mean_km2=None if ref_mean is None else round(ref_mean, 1),
         total_loss_pct=loss, total_loss_basis=f"mean {ref_years[0]}-{ref_years[1]} vs mean of last 3 valid years",

@@ -16,7 +16,7 @@ export function Badges({ d }: { d: LakeFull }) {
   const s = d.summary, rel = s.reliability;
   return (
     <div className="badges">
-      <span className={"badge " + (s.validated ? "good" : "warn")}>{s.validated ? "✔ " : "? "}{t(s.validated ? "badge.validated" : "badge.unverified")}</span>
+      <span className={"badge " + (s.validated ? "good" : "warn")}>{s.validated ? "✔ " : "? "}{t(s.validated ? "badge.validated" : "badge.unverified")}{s.validated && s.validation_basis ? ` (${s.validation_basis})` : ""}</span>
       <span className={"badge " + (rel === "low" ? "bad" : rel === "ok" ? "good" : "")}>{rel === "low" ? "⚠ " : ""}{t(`badge.rel.${rel === "ok" || rel === "low" ? rel : "unknown"}`)}</span>
     </div>
   );
@@ -31,7 +31,7 @@ export function RefInfo({ s }: { s: LakeFull["summary"] }) {
       {s.why_selected && <p><strong>{t("ref.why")}:</strong> {s.why_selected}</p>}
       {s.mndwi_note && <p className="note warn"><strong>{t("ref.mndwi")}:</strong> {s.mndwi_note}</p>}
       <p className="small"><strong>{t("ref.cadence")}:</strong> {s.cadence_note ?? "?"}; {s.resolution_m ?? "?"} m{s.window ? `; ${s.window[0]} to ${s.window[1]}` : ""}</p>
-      {lit && <p className="small"><strong>{t("ref.lit")}:</strong> {lit} ({s.literature_agrees == null ? t("ref.mixed") : s.literature_agrees ? t("ref.agree") : t("ref.conflict")})</p>}
+      {lit && <p className="small"><strong>{t("ref.lit")}:</strong> {lit} ({t(`ref.a.${s.literature_agreement ?? "not_tested"}`)})</p>}
     </section>
   );
 }
