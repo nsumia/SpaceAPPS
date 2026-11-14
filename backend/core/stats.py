@@ -62,11 +62,15 @@ def emergence(values, years, ref_len=12, k=2.0):
     if len(grid) and exceed[-1]:
         bad = np.flatnonzero(~exceed)
         first = int(grid[(bad[-1] + 1) if len(bad) else 0])
-        return dict(out, emerged=True, year=first, status="emerged", years_needed=0.0)
+        cens = first == ref_end + 1
+        return dict(out, emerged=True, year=first, status="emerged", years_needed=0.0, censored_at_ref_end=cens,
+                    censored_note=("Emergence year is the first post-reference year: the Sen line was already outside the "
+                                   "reference variability when the reference period ended, so the true emergence year is "
+                                   "EARLIER or equal (left-censored); read it as 'by <year>', not as a detected date.") if cens else None)
     slope = abs(s["sen_slope_per_year"])
     last_dev = float(dev[-1]) if len(grid) else 0.0
     need = (k * sigma - last_dev) / slope if slope > 0 and sigma >= 0 else None
-    return dict(out, emerged=False, year=None, status="not_yet_distinguishable",
+    return dict(out, emerged=False, year=None, status="not_yet_distinguishable", censored_at_ref_end=False, censored_note=None,
                 label_tr="Henüz ayırt edilemiyor", years_needed=None if need is None else float(max(need, 0.0)))
 
 

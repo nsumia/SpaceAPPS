@@ -26,7 +26,8 @@
    "lst_px": 214263,
    "n_scenes": 7,
    "n_items": 7.0,
-   "latest_scene": "1985-09-28"
+   "latest_scene": "1985-09-28",
+   "volatile": false
   },
   {
    "year": 1986,
@@ -37,7 +38,8 @@
    "lst_px": 213272,
    "n_scenes": 4,
    "n_items": 4.0,
-   "latest_scene": "1986-09-08"
+   "latest_scene": "1986-09-08",
+   "volatile": false
   },
   {
    "year": 1987,
@@ -48,7 +50,8 @@
    "lst_px": 211135,
    "n_scenes": 8,
    "n_items": 8.0,
-   "latest_scene": "1987-09-27"
+   "latest_scene": "1987-09-27",
+   "volatile": false
   },
   {
    "year": 1988,
@@ -59,7 +62,8 @@
    "lst_px": 208222,
    "n_scenes": 8,
    "n_items": 8.0,
-   "latest_scene": "1988-09-29"
+   "latest_scene": "1988-09-29",
+   "volatile": false
   },
   {
    "year": 1989,
@@ -70,7 +74,8 @@
    "lst_px": 204516,
    "n_scenes": 6,
    "n_items": 6.0,
-   "latest_scene": "1989-09-23"
+   "latest_scene": "1989-09-23",
+   "volatile": false
   },
   {
    "year": 1990,
@@ -81,7 +86,8 @@
    "lst_px": 199631,
    "n_scenes": 8,
    "n_items": 8.0,
-   "latest_scene": "1990-09-26"
+   "latest_scene": "1990-09-26",
+   "volatile": false
   },
   {
    "year": 1991,
@@ -92,7 +98,8 @@
    "lst_px": 195954,
    "n_scenes": 8,
    "n_items": 8.0,
-   "latest_scene": "1991-09-29"
+   "latest_scene": "1991-09-29",
+   "volatile": false
   },
   {
    "year": 1992,
@@ -103,7 +110,8 @@
    "lst_px": 191599,
    "n_scenes": 6,
    "n_items": 6.0,
-   "latest_scene": "1992-09-24"
+   "latest_scene": "1992-09-24",
+   "volatile": false
   },
   {
    "year": 1993,
@@ -114,7 +122,8 @@
    "lst_px": 187632,
    "n_scenes": 8,
    "n_items": 8.0,
-   "latest_scene": "1993-09-27"
+   "latest_scene": "1993-09-27",
+   "volatile": false
   },
   {
    "year": 1994,
@@ -125,7 +134,8 @@
    "lst_px": 183066,
    "n_scenes": 8,
    "n_items": 8.0,
-   "latest_scene": "1994-09-30"
+   "latest_scene": "1994-09-30",
+   "volatile": false
   },
   {
    "year": 1995,
@@ -136,7 +146,8 @@
    "lst_px": 178768,
    "n_scenes": 7,
    "n_items": 7.0,
-   "latest_scene": "1995-09-24"
+   "latest_scene": "1995-09-24",
+   "volatile": false
   },
   {
    "year": 1996,
@@ -147,7 +158,8 @@
    "lst_px": 174486,
    "n_scenes": 8,
    "n_items": 8.0,
-   "latest_scene": "1996-09-26"
+   "latest_scene": "1996-09-26",
+   "volatile": false
   },
   {
    "year": 1997,
@@ -158,7 +170,8 @@
    "lst_px": 170441,
    "n_scenes": 7,
    "n_items": 7.0,
-   "latest_scene": "1997-09-29"
+   "latest_scene": "1997-09-29",
+   "volatile": false
   },
   {
    "year": 1998,
@@ -169,7 +182,8 @@
    "lst_px": 170113,
    "n_scenes": 6,
    "n_items": 6.0,
-   "latest_scene": "1998-09-25"
+   "latest_scene": "1998-09-25",
+   "volatile": false
   },
   {
    "year": 1999,
@@ -180,7 +194,8 @@
    "lst_px": 167927,
    "n_scenes": 7,
    "n_items": 7.0,
-   "latest_scene": "1999-09-28"
+   "latest_scene": "1999-09-28",
+   "volatile": false
   },
   {
    "year": 2000,
@@ -191,7 +206,8 @@
    "lst_px": 163680,
    "n_scenes": 8,
    "n_items": 8.0,
-   "latest_scene": "2000-09-30"
+   "latest_scene": "2000-09-30",
+   "volatile": false
   },
   {
    "year": 2001,
@@ -202,7 +218,8 @@
    "lst_px": 160272,
    "n_scenes": 7,
    "n_items": 7.0,
-   "latest_scene": "2001-09-24"
+   "latest_scene": "2001-09-24",
+   "volatile": false
   },
   {
    "year": 2002,
@@ -213,7 +230,8 @@
    "lst_px": 160204,
    "n_scenes": 2,
    "n_items": 2.0,
-   "latest_scene": "2002-08-10"
+   "latest_scene": "2002-08-10",
+   "volatile": false
   },
   {
    "year": 2003,
@@ -224,7 +242,8 @@
    "lst_px": 162305,
    "n_scenes": 6,
    "n_items": 6.0,
-   "latest_scene": "2003-09-23"
+   "latest_scene": "2003-09-23",
+   "volatile": false
   },
   {
    "year": 2004,
@@ -235,7 +254,8 @@
    "lst_px": 166013,
    "n_scenes": 6,
    "n_items": 6.0,
-   "latest_scene": "2004-09-25"
+   "latest_scene": "2004-09-25",
+   "volatile": false
   },
   {
    "year": 2005,
@@ -246,7 +266,8 @@
    "lst_px": 162732,
    "n_scenes": 3,
    "n_items": 3.0,
-   "latest_scene": "2005-09-19"
+   "latest_scene": "2005-09-19",
+   "volatile": false
   },
   {
    "year": 2006,
@@ -257,7 +278,8 @@
    "lst_px": 158932,
    "n_scenes": 5,
    "n_items": 5.0,
-   "latest_scene": "2006-09-22"
+   "latest_scene": "2006-09-22",
+   "volatile": false
   },
   {
    "year": 2007,
@@ -268,7 +290,8 @@
    "lst_px": 156679,
    "n_scenes": 4,
    "n_items": 4.0,
-   "latest_scene": "2007-09-18"
+   "latest_scene": "2007-09-18",
+   "volatile": false
   },
   {
    "year": 2008,
@@ -279,7 +302,8 @@
    "lst_px": 152803,
    "n_scenes": 5,
    "n_items": 5.0,
-   "latest_scene": "2008-09-27"
+   "latest_scene": "2008-09-27",
+   "volatile": false
   },
   {
    "year": 2009,
@@ -290,7 +314,8 @@
    "lst_px": 150329,
    "n_scenes": 7,
    "n_items": 7.0,
-   "latest_scene": "2009-09-30"
+   "latest_scene": "2009-09-30",
+   "volatile": false
   },
   {
    "year": 2010,
@@ -301,7 +326,8 @@
    "lst_px": 149612,
    "n_scenes": 4,
    "n_items": 4.0,
-   "latest_scene": "2010-09-01"
+   "latest_scene": "2010-09-01",
+   "volatile": false
   },
   {
    "year": 2011,
@@ -312,7 +338,8 @@
    "lst_px": 147690,
    "n_scenes": 4,
    "n_items": 4.0,
-   "latest_scene": "2011-09-29"
+   "latest_scene": "2011-09-29",
+   "volatile": false
   },
   {
    "year": 2012,
@@ -323,7 +350,8 @@
    "lst_px": 0,
    "n_scenes": 0,
    "n_items": null,
-   "latest_scene": null
+   "latest_scene": null,
+   "volatile": false
   },
   {
    "year": 2013,
@@ -334,7 +362,8 @@
    "lst_px": 143917,
    "n_scenes": 8,
    "n_items": 8.0,
-   "latest_scene": "2013-09-25"
+   "latest_scene": "2013-09-25",
+   "volatile": false
   },
   {
    "year": 2014,
@@ -345,7 +374,8 @@
    "lst_px": 141427,
    "n_scenes": 7,
    "n_items": 7.0,
-   "latest_scene": "2014-09-21"
+   "latest_scene": "2014-09-21",
+   "volatile": false
   },
   {
    "year": 2015,
@@ -356,7 +386,8 @@
    "lst_px": 142820,
    "n_scenes": 7,
    "n_items": 7.0,
-   "latest_scene": "2015-09-24"
+   "latest_scene": "2015-09-24",
+   "volatile": false
   },
   {
    "year": 2016,
@@ -367,7 +398,8 @@
    "lst_px": 139566,
    "n_scenes": 7,
    "n_items": 7.0,
-   "latest_scene": "2016-09-26"
+   "latest_scene": "2016-09-26",
+   "volatile": false
   },
   {
    "year": 2017,
@@ -378,7 +410,8 @@
    "lst_px": 136203,
    "n_scenes": 8,
    "n_items": 8.0,
-   "latest_scene": "2017-09-29"
+   "latest_scene": "2017-09-29",
+   "volatile": false
   },
   {
    "year": 2018,
@@ -389,7 +422,8 @@
    "lst_px": 133375,
    "n_scenes": 7,
    "n_items": 7.0,
-   "latest_scene": "2018-09-23"
+   "latest_scene": "2018-09-23",
+   "volatile": false
   },
   {
    "year": 2019,
@@ -400,7 +434,8 @@
    "lst_px": 131621,
    "n_scenes": 8,
    "n_items": 8.0,
-   "latest_scene": "2019-09-26"
+   "latest_scene": "2019-09-26",
+   "volatile": false
   },
   {
    "year": 2020,
@@ -411,7 +446,8 @@
    "lst_px": 129820,
    "n_scenes": 8,
    "n_items": 8.0,
-   "latest_scene": "2020-09-28"
+   "latest_scene": "2020-09-28",
+   "volatile": false
   },
   {
    "year": 2021,
@@ -422,7 +458,8 @@
    "lst_px": 126999,
    "n_scenes": 6,
    "n_items": 6.0,
-   "latest_scene": "2021-09-24"
+   "latest_scene": "2021-09-24",
+   "volatile": false
   },
   {
    "year": 2022,
@@ -433,7 +470,8 @@
    "lst_px": 125432,
    "n_scenes": 9,
    "n_items": 9.0,
-   "latest_scene": "2022-09-27"
+   "latest_scene": "2022-09-27",
+   "volatile": false
   },
   {
    "year": 2023,
@@ -444,7 +482,8 @@
    "lst_px": 124115,
    "n_scenes": 14,
    "n_items": 14.0,
-   "latest_scene": "2023-09-29"
+   "latest_scene": "2023-09-29",
+   "volatile": false
   },
   {
    "year": 2024,
@@ -455,7 +494,8 @@
    "lst_px": 122434,
    "n_scenes": 13,
    "n_items": 13.0,
-   "latest_scene": "2024-09-23"
+   "latest_scene": "2024-09-23",
+   "volatile": false
   },
   {
    "year": 2025,
@@ -466,7 +506,8 @@
    "lst_px": 121028,
    "n_scenes": 16,
    "n_items": 16.0,
-   "latest_scene": "2025-09-27"
+   "latest_scene": "2025-09-27",
+   "volatile": false
   }
  ],
  "stats": {
@@ -531,7 +572,9 @@
    "emerged": true,
    "year": 1997,
    "status": "emerged",
-   "years_needed": 0.0
+   "years_needed": 0.0,
+   "censored_at_ref_end": true,
+   "censored_note": "Emergence year is the first post-reference year: the Sen line was already outside the reference variability when the reference period ended, so the true emergence year is EARLIER or equal (left-censored); read it as 'by <year>', not as a detected date."
   },
   "lst_emergence": {
    "sigma": 0.984559708962751,
@@ -546,7 +589,9 @@
    "emerged": true,
    "year": 2006,
    "status": "emerged",
-   "years_needed": 0.0
+   "years_needed": 0.0,
+   "censored_at_ref_end": false,
+   "censored_note": null
   },
   "lst_emergence_note": "LST switches Landsat 5 -> 8 at 2012/13 (step of ~3 C); the pooled emergence year is dominated by this sensor break, see lst_emergence_1985_2012 (Landsat 5 only)",
   "lst_emergence_1985_2012": {
@@ -562,7 +607,18 @@
    "emerged": true,
    "year": 2011,
    "status": "emerged",
-   "years_needed": 0.0
+   "years_needed": 0.0,
+   "censored_at_ref_end": false,
+   "censored_note": null
   }
+ },
+ "reliability": {
+  "reliability": "ok",
+  "n_valid": 40,
+  "volatile_years": [],
+  "volatile_share": 0.0,
+  "volatile_frac_threshold": 0.15,
+  "ref_mean_km2": 200.5,
+  "note": null
  }
 }
