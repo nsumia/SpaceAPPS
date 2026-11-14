@@ -155,4 +155,8 @@ def test_landsat5_plus_landsat8_scenes_merge_into_one_composite():
     res = ba.finish(comp, t)
     assert res["valid_frac"] == pytest.approx(1.0, abs=0.01)
     assert res["area_km2"] == pytest.approx(lake.sum() * 900 / 1e6, rel=0.01)
-    assert res["lst_c"] == pytest.approx(20.0, abs=1.2)
+    # left half is seen only by L8 (20 C), right half only by L5 (21 C, +1 K offset): each half of the
+    # composite must come from its own family (a merge that dropped one family would give one value everywhere)
+    assert np.nanmean(t[lake & (np.arange(200) < 100)[None, :]]) == pytest.approx(20.0, abs=0.05)
+    assert np.nanmean(t[lake & (np.arange(200) >= 100)[None, :]]) == pytest.approx(21.0, abs=0.05)
+    assert res["lst_c"] in (pytest.approx(20.0, abs=0.05), pytest.approx(21.0, abs=0.05))  # pixel median

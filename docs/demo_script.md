@@ -31,7 +31,7 @@ Sources: `data/lakes/<alias>/series.json`, `climate.json`, and `GET /api/lakes` 
 5. **Live cards.** Latest Landsat scene, POWER precipitation vs normal, VIIRS picture; stale/cached labels. SWOT shows "no data":
    needs Earthdata login. Be explicit about this.
 6. **Select a new lake.** Use the button "Demo: replay a pre-computed sample" (Sevan: 1,244.9 to 1,263.0 km2, trend +0.45 %/decade,
-   p = 0.021; `sevan/series.json`). Do NOT run a real new lake live: a real job (Lake Hazar in testing) took about 9 minutes.
+   p = 0.021; `sevan/series.json`). Do NOT run a real new lake live: a real job (Lake Hazar in testing, 42 years) took roughly 8–10 minutes (debug run on 2026-11-14; not formally timed).
    If asked about real runs: Hazar finished with 42 years, area ~77-79 km2, no trend, p = 0.77 (PR #7 description).
 7. **Method, limits, team.** MNDWI, Hamed-Rao MK + Sen, emergence, P-E decomposition; limits: Landsat 5 to 8 sensor break
    (about 2.9 C step for Burdur), EVLAND is a land proxy, coarse large-lake cadence, SWOT unavailable. Team Augmented 6th.
