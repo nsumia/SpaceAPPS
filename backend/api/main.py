@@ -64,6 +64,12 @@ def load_index(path):
 
 
 def create_app(settings=None, runner=None):
+    if os.environ.get("LLD_OFFLINE") == "1":          # demo/test: behave like a machine without internet
+        from backend.core import offline
+        offline.block_network()
+    import logging
+    if not logging.getLogger().handlers:
+        logging.basicConfig(level=logging.INFO)      # job errors (log.exception) must reach the server log
     st = settings or Settings()
     idx = {"v": None, "loaded": False}
 
@@ -73,7 +79,9 @@ def create_app(settings=None, runner=None):
         return idx["v"]
 
     def _runner(jid, lake_id, request, progress):
-        from backend.jobs.runner import run_analysis
+        from backend.jobs.runner import run_analysis, run_sample
+        if request.get("sample_of"):
+            return run_sample(st, lake_id, request, progress)
         return run_analysis(st, lake_id, request, progress)
 
     jobs_holder = {}
@@ -139,6 +147,22 @@ def create_app(settings=None, runner=None):
         rec = store.record(st, lake_id)
         return live_cache.get_live(st, rec["meta"].get("lake_id", lake_id), rec["meta"])
 
+    @app.get("/api/lakes/{lake_id}/snapshot.jpg", summary="Stored VIIRS true-colour picture (works offline)")
+    def snapshot(lake_id: str):
+        need(lake_id)
+        rec = store.record(st, lake_id)
+        p = live_cache.snapshot_path(st, rec["meta"].get("lake_id", lake_id))
+        if not p:
+            raise HTTPException(404, "no stored snapshot for this lake (run backend/scripts/prefetch.py)")
+        return FileResponse(p, media_type="image/jpeg", headers={"Cache-Control": "public, max-age=3600"})
+
+    @app.get("/api/basemap/countries", summary="Offline basemap: Natural Earth 50m country borders (GeoJSON)")
+    def countries():
+        p = os.path.join(os.path.dirname(st.index_path), "countries.geojson")
+        if not os.path.exists(p):
+            raise HTTPException(503, "offline basemap missing: run backend/scripts/build_countries.py")
+        return FileResponse(p, media_type="application/geo+json", headers={"Cache-Control": "public, max-age=86400"})
+
     @app.get("/api/index", summary="Lake index (GeoJSON polygons, for the map layer)")
     def lake_index():
         if not os.path.exists(st.index_path):
@@ -169,9 +193,21 @@ def create_app(settings=None, runner=None):
                     error=("analysis failed; see the server log for details" if j["status"] == "failed" else None),
                     result_url=f"/api/lakes/{j['lake_id']}")
 
+    def start_sample(alias):
+        """Replay of a pre-computed lake as a job (progress, years, preliminary -> full), a few seconds. Always labelled."""
+        src = store.resolve(st, alias)
+        if not src or src[1] or alias.startswith(store.SAMPLE_PREFIX):
+            raise HTTPException(404, f"no pre-computed lake '{alias}' to use as a sample")
+        lake_id = store.SAMPLE_PREFIX + os.path.basename(src[0])
+        job, created = jobs().submit(lake_id, dict(sample_of=src[0], name=os.path.basename(src[0])))
+        return JSONResponse(dict(job_view(job), status=job["status"], attached_to_existing=not created, unverified=True,
+                                 sample=True), status_code=202)
+
     @app.post("/api/analyze", summary="Start an on-demand analysis (or return the computed result)")
     def analyze(body: dict = Body(..., examples=[{"lake_id": "burdur"}, {"polygon": {"type": "Polygon", "coordinates": []}}])):
         lake_key, poly = body.get("lake_id"), body.get("polygon")
+        if body.get("sample"):
+            return start_sample(str(body["sample"]))
         if bool(lake_key) == bool(poly):
             raise HTTPException(422, "send exactly one of {lake_id} or {polygon}")
         request = {}

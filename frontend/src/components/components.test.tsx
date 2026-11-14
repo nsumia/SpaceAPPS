@@ -7,7 +7,7 @@ import { AnalysisProgress, eta } from "./Panel";
 import { makeT } from "../i18n";
 import type { Live } from "../lib/types";
 
-vi.mock("echarts-for-react", () => ({ default: () => <div data-testid="echart" /> }));
+vi.mock("../lib/ReactECharts", () => ({ default: () => <div data-testid="echart" /> }));
 
 describe("charts", () => {
   it("climate chart says 'not computable' with the reason instead of a chart when not interpretable", () => {

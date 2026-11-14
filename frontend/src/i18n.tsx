@@ -5,7 +5,7 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
 
 const en: Record<string, string> = {
   "app.title": "Lake Loss Detective", "nav.map": "Map", "nav.compare": "Compare", "nav.methods": "Methods",
-  "map.basemap": "Basemap", "bm.vector": "Vector (dark)", "bm.blue": "NASA Blue Marble", "bm.viirs": "NASA VIIRS daily", "bm.none": "Offline (plain)",
+  "map.basemap": "Basemap", "bm.vector": "Vector (dark)", "bm.blue": "NASA Blue Marble", "bm.viirs": "NASA VIIRS daily", "bm.offline": "Offline (country borders)", "map.offline_auto": "Online map unreachable: showing the local offline basemap.", "sample.btn": "Demo: replay a pre-computed sample analysis", "sample.label": "PRE-COMPUTED SAMPLE, replayed in seconds (not computed just now)", "sample.replay": "Replay sample", "chart.onescene": "Hollow points: that year rests on a single Landsat scene (less reliable).", "tip.1scene": "1 scene", "live.snapshot": "VIIRS true colour (stored picture)",
   "map.date": "Date", "map.draw": "Draw area", "map.rect": "Rectangle", "map.poly": "Polygon", "map.clear": "Clear",
   "map.legend": "Trend", "leg.fast": "fast loss", "leg.slow": "loss", "leg.ns": "not significant", "leg.inc": "increase", "leg.size": "marker size = lake area",
   "map.loading": "Loading lakes...", "map.hint": "Click a lake or draw an area to analyse.",
@@ -13,7 +13,7 @@ const en: Record<string, string> = {
   "badge.validated": "validated", "badge.unverified": "unverified", "badge.rel.ok": "reliability: ok", "badge.rel.low": "reliability: LOW", "badge.rel.unknown": "reliability: unknown",
   "live.title": "Live now", "live.area": "Water area", "live.lst": "Surface temperature", "live.swot": "SWOT water level", "live.precip": "Water-year precipitation",
   "live.loading": "Fetching live data (the first call can take about 30 s)...", "live.cache": "cache", "live.stale": "stale", "live.data": "data", "live.source": "source",
-  "live.unavailable": "unavailable", "live.vsly": "vs same window last year", "live.ofnormal": "of 1991-2020 normal", "live.nodata": "no data",
+  "live.unavailable": "unavailable", "live.vsly": "vs same window last year", "live.ofnormal": "of 1991-2020 normal", "live.nodata": "no data", "live.nocache": "No cached data for this lake (not available offline)",
   "chart.area": "Lake area", "chart.lst": "Land/lake surface temperature (Aug-Sep)", "chart.climate": "Climate or human? Cumulative loss since 1999", "chart.volume": "Volume change (SWOT area-level curve)",
   "chart.source.landsat": "Source: Landsat C2 L2 via Planetary Computer, Aug-Sep median composite",
   "chart.source.climate": "Source: NASA POWER / MERRA-2 (P-E) + Landsat area; model output, not stations",
@@ -45,7 +45,7 @@ const en: Record<string, string> = {
 };
 const tr: Record<string, string> = {
   "app.title": "Göl Kaybı Dedektifi", "nav.map": "Harita", "nav.compare": "Karşılaştır", "nav.methods": "Yöntem",
-  "map.basemap": "Altlık", "bm.vector": "Vektör (koyu)", "bm.blue": "NASA Blue Marble", "bm.viirs": "NASA VIIRS günlük", "bm.none": "Çevrimdışı (düz)",
+  "map.basemap": "Altlık", "bm.vector": "Vektör (koyu)", "bm.blue": "NASA Blue Marble", "bm.viirs": "NASA VIIRS günlük", "bm.offline": "Çevrimdışı (ülke sınırları)", "map.offline_auto": "Çevrimiçi harita erişilemiyor: yerel çevrimdışı altlık gösteriliyor.", "sample.btn": "Demo: önceden hesaplanmış örnek analizi oynat", "sample.label": "ÖNCEDEN HESAPLANMIŞ ÖRNEK, saniyeler içinde yeniden oynatıldı (şimdi hesaplanmadı)", "sample.replay": "Örneği yeniden oynat", "chart.onescene": "İçi boş noktalar: o yıl tek bir Landsat sahnesine dayanır (daha az güvenilir).", "tip.1scene": "1 sahne", "live.snapshot": "VIIRS gerçek renk (kayıtlı görüntü)",
   "map.date": "Tarih", "map.draw": "Alan çiz", "map.rect": "Dikdörtgen", "map.poly": "Poligon", "map.clear": "Temizle",
   "map.legend": "Eğilim", "leg.fast": "hızlı kayıp", "leg.slow": "kayıp", "leg.ns": "anlamsız", "leg.inc": "artış", "leg.size": "işaret boyutu = göl alanı",
   "map.loading": "Göller yükleniyor...", "map.hint": "Bir göle tıklayın ya da analiz için alan çizin.",
@@ -53,7 +53,7 @@ const tr: Record<string, string> = {
   "badge.validated": "doğrulanmış", "badge.unverified": "doğrulanmamış", "badge.rel.ok": "güvenilirlik: iyi", "badge.rel.low": "güvenilirlik: DÜŞÜK", "badge.rel.unknown": "güvenilirlik: bilinmiyor",
   "live.title": "Şu an (canlı)", "live.area": "Su alanı", "live.lst": "Yüzey sıcaklığı", "live.swot": "SWOT su seviyesi", "live.precip": "Su yılı yağışı",
   "live.loading": "Canlı veri alınıyor (ilk çağrı yaklaşık 30 sn sürebilir)...", "live.cache": "önbellek", "live.stale": "eski", "live.data": "veri", "live.source": "kaynak",
-  "live.unavailable": "alınamadı", "live.vsly": "geçen yılın aynı dönemine göre", "live.ofnormal": "1991-2020 normalinin", "live.nodata": "veri yok",
+  "live.unavailable": "alınamadı", "live.vsly": "geçen yılın aynı dönemine göre", "live.ofnormal": "1991-2020 normalinin", "live.nodata": "veri yok", "live.nocache": "Bu göl için önbellekte veri yok (çevrimdışı kullanılamaz)",
   "chart.area": "Göl alanı", "chart.lst": "Yüzey sıcaklığı (Ağu-Eyl)", "chart.climate": "İklim mi, insan mı? 1999'dan beri kümülatif kayıp", "chart.volume": "Hacim değişimi (SWOT alan-seviye eğrisi)",
   "chart.source.landsat": "Kaynak: Landsat C2 L2 (Planetary Computer), Ağu-Eyl medyan kompozit",
   "chart.source.climate": "Kaynak: NASA POWER / MERRA-2 (P-E) + Landsat alanı; model çıktısı, istasyon değil",

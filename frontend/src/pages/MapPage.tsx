@@ -14,7 +14,8 @@ export default function MapPage() {
   const lakes = useLakes();
   const index = useIndex();
   const [sel, setSel] = useState<Selection | null>(null);
-  const [basemap, setBasemap] = useState<Basemap>("vector");
+  const [basemap, setBasemap] = useState<Basemap>(typeof navigator !== "undefined" && navigator.onLine === false ? "offline" : "vector");
+  const [autoOffline, setAutoOffline] = useState(false);
   const [date, setDate] = useState(yesterday());
   const [draw, setDraw] = useState<DrawMode>("off");
   const [year, setYear] = useState(2025);
@@ -33,12 +34,12 @@ export default function MapPage() {
         <MapView lakes={lakes.data ?? []} index={index.data} selectedId={sel?.id ?? null} highlight={sel?.polygon ?? null}
           basemap={basemap} date={date} drawMode={draw} masks={masks} onSelect={select}
           onDraw={(g) => { setSel({ id: null, name: t("map.draw"), polygon: g }); setDraw("off"); }}
-          onBasemapFallback={() => setBasemap("none")} />
+          onBasemapFallback={() => { setBasemap("offline"); setAutoOffline(true); }} />
         <div className="toolbar" data-testid="toolbar">
           <label>{t("map.basemap")}
-            <select value={basemap} onChange={(e) => setBasemap(e.target.value as Basemap)}>
+            <select value={basemap} onChange={(e) => { setBasemap(e.target.value as Basemap); setAutoOffline(false); }}>
               <option value="vector">{t("bm.vector")}</option><option value="bluemarble">{t("bm.blue")}</option>
-              <option value="viirs">{t("bm.viirs")}</option><option value="none">{t("bm.none")}</option>
+              <option value="viirs">{t("bm.viirs")}</option><option value="offline">{t("bm.offline")}</option>
             </select></label>
           {basemap === "viirs" && <label>{t("map.date")} <input type="date" value={date} max={yesterday()} onChange={(e) => e.target.value && setDate(e.target.value)} /></label>}
           <div className="seg" role="group" aria-label={t("map.draw")}>
@@ -47,6 +48,7 @@ export default function MapPage() {
             <button className={draw === "polygon" ? "on" : ""} onClick={() => setDraw(draw === "polygon" ? "off" : "polygon")} data-testid="draw-poly">{t("map.poly")}</button>
             {sel && <button onClick={() => { setSel(null); setDraw("off"); }}>{t("map.clear")}</button>}
           </div>
+          <button onClick={() => { setSel({ id: "sample-sevan", name: "Sevan (pre-computed sample)", sample: "sevan" }); setDraw("off"); }} data-testid="sample-btn">{t("sample.btn")}</button>
         </div>
         <div className="legend">
           <strong>{t("map.legend")}</strong>
@@ -57,6 +59,7 @@ export default function MapPage() {
           <div className="small muted">{t("leg.size")}</div>
           <div className="small muted">{t("leg.turkey")}</div>
         </div>
+        {autoOffline && <div className="hint" style={{ bottom: 52 }} role="status" data-testid="offline-note">{t("map.offline_auto")}</div>}
         {!sel && <div className="hint">{lakes.isLoading ? t("map.loading") : t("map.hint")}</div>}
         {lake && years && <Timeline lakeId={lake.id} years={years} year={y} setYear={setYear} />}
       </div>

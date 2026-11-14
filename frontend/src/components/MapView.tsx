@@ -11,7 +11,7 @@ import type { Selection } from "./Panel";
 
 maplibregl.setWorkerUrl(workerUrl);
 
-export type Basemap = "vector" | "bluemarble" | "viirs" | "none";
+export type Basemap = "vector" | "bluemarble" | "viirs" | "offline";
 export type DrawMode = "off" | "rectangle" | "polygon";
 const GIBS = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
 const BG = "#0f141b";
@@ -27,7 +27,11 @@ export function basemapStyle(bm: Basemap, date: string): StyleSpecification | st
     return raster("gibs", `${GIBS}/BlueMarble_ShadedRelief_Bathymetry/default/2004-08-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg`, 8, "NASA GIBS Blue Marble");
   if (bm === "viirs")
     return raster("gibs", `${GIBS}/VIIRS_NOAA20_CorrectedReflectance_TrueColor/default/${date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`, 9, "NASA GIBS VIIRS NOAA-20");
-  return { version: 8, sources: {}, layers: [{ id: "bg", type: "background", paint: { "background-color": BG } }] };
+  // offline: local Natural Earth 50m country borders served by the API (no external host)
+  return { version: 8, sources: { countries: { type: "geojson", data: "/api/basemap/countries" } }, layers: [
+    { id: "bg", type: "background", paint: { "background-color": BG } },
+    { id: "countries-fill", type: "fill", source: "countries", paint: { "fill-color": "#1b2634" } },
+    { id: "countries-line", type: "line", source: "countries", paint: { "line-color": "#51657d", "line-width": 0.9 } }] };
 }
 
 export function circleRadius(area: number | null): number {
@@ -141,9 +145,14 @@ export default function MapView(props: MapProps) {
     (window as any).__map = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
     map.on("style.load", () => { styleOk.current = true; syncAll(); startDraw(); });
+    let netErrors = 0;
     map.on("error", (e) => {
-      const url = String((e as any).error?.url ?? (e as any).error?.message ?? "");
-      if (!styleOk.current && pr.current.basemap === "vector" && /openfreemap|Failed to fetch|NetworkError|style/i.test(url)) pr.current.onBasemapFallback();
+      const err = (e as any).error;
+      const url = String(err?.url ?? err?.message ?? "");
+      if (pr.current.basemap === "offline") return;
+      if (!styleOk.current && pr.current.basemap === "vector" && /openfreemap|Failed to fetch|NetworkError|style/i.test(url)) { pr.current.onBasemapFallback(); return; }
+      // tile servers unreachable after the style loaded (GIBS, OpenFreeMap tiles): after a few failures use the offline basemap
+      if (/Failed to fetch|NetworkError|Load failed|ERR_INTERNET|ERR_NAME|ERR_FAILED/i.test(String(err?.message ?? "")) && ++netErrors >= 3) pr.current.onBasemapFallback();
     });
     const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12 });
     map.on("mousemove", "lakes-circle", (e) => {

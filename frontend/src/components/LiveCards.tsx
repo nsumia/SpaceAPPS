@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useI18n } from "../i18n";
 import type { Live, LiveCard } from "../lib/types";
 
@@ -18,6 +19,26 @@ function Card({ title, card, children, date }: { title: string; card?: LiveCard;
         {t("live.source")}: {card?.source ?? "-"}{date ? <> | {t("live.data")}: {date}</> : null}
         {card?.refresh_error ? <div>{card.refresh_error}</div> : null}
       </div>
+    </div>
+  );
+}
+
+function Snapshot({ card }: { card?: LiveCard }) {
+  const { t } = useI18n();
+  const live = typeof card?.image_url === "string" ? card.image_url : null;
+  const snap = typeof card?.snapshot_url === "string" ? card.snapshot_url : null;
+  const [src, setSrc] = useState(live ?? snap);
+  if (!src) return (
+    <div className="card" data-testid="gibs-card-empty">
+      <div className="card-h"><span>{t("live.snapshot")}</span></div>
+      <div className="card-v muted">{t("live.nocache")}</div>
+    </div>
+  );
+  return (
+    <div className="card" data-testid="gibs-card">
+      <div className="card-h"><span>{t("live.snapshot")}</span>{src === snap && <span className="tag" data-testid="cache-tag">{t("live.cache")}</span>}</div>
+      <img src={src} alt="VIIRS" style={{ width: "100%", borderRadius: 4 }} onError={() => { if (snap && src !== snap) setSrc(snap); else setSrc(null); }} />
+      <div className="src small">{t("live.source")}: {card?.source ?? "NASA GIBS"}</div>
     </div>
   );
 }
@@ -47,6 +68,7 @@ export function LiveCards({ live, loading, error }: { live?: Live; loading: bool
         <b>{num(p?.precip_mm, 0)}</b> mm
         <div className="small">{String(p?.pct_of_normal ?? "-")}% {t("live.ofnormal")}</div>
       </Card>
+      <Snapshot card={c.gibs} />
     </div>
   );
 }

@@ -14,7 +14,7 @@ export default defineConfig({
     },
   },
   webServer: process.env.NO_SERVER ? undefined : {
-    command: "../.venv/bin/uvicorn backend.api.main:app --port 8000 --app-dir ..",
+    command: "LLD_OFFLINE=1 LLD_LIVE_TTL_S=1 ../.venv/bin/uvicorn backend.api.main:app --port 8000 --app-dir ..",
     url: "http://127.0.0.1:8000/api/health",
     reuseExistingServer: true,
     timeout: 60_000,

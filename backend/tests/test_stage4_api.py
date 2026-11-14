@@ -26,7 +26,7 @@ def fake_runner(jid, lake_id, request, progress):
 
 @pytest.fixture
 def st(tmp_path):
-    return Settings(custom_dir=str(tmp_path / "custom"), cache_dir=str(tmp_path / "cache"),
+    return Settings(custom_dir=str(tmp_path / "custom"), cache_dir=str(tmp_path / "cache"), demo_dir=str(tmp_path / "demo"),
                     jobs_db=str(tmp_path / "jobs.sqlite"), start_worker=False)
 
 
@@ -326,3 +326,25 @@ def test_badge_rules_and_agreement_states(client):
     assert lakes["aral_north"]["literature_agreement"] == "inconclusive" and lakes["aral_north"]["validated"] is False
     assert lakes["titicaca"]["literature_agreement"] in ("unverified_expectation", "agrees")
     assert lakes["burdur"]["validation_basis"].startswith("quantitative")
+
+
+def test_restart_failed_job_can_be_resubmitted(tmp_path):
+    """Regression (Lake Hazar run): a server restart during 'detecting lake polygon' marks the job failed with a clear
+    message (not a code error); resubmitting the same lake must start a NEW job, not attach to the failed one."""
+    calls = []
+
+    def runner(jid, lake, req, progress):
+        progress(phase="detecting lake polygon", progress=1.0)
+        calls.append(jid)
+    db = str(tmp_path / "j.sqlite")
+    m = JobManager(db, runner, start=False)
+    old = m.submit("custom-x", {})[0]
+    assert m._claim()["id"] == old["id"]                       # running, phase 'starting'
+    m.update(old["id"], phase="detecting lake polygon")
+    m2 = JobManager(db, runner, start=False)                   # simulated restart
+    f = m2.get(old["id"])
+    assert f["status"] == "failed" and "restarted" in f["error"] and f["phase"] == "detecting lake polygon"
+    new, created = m2.submit("custom-x", {})
+    assert created and new["id"] != old["id"]
+    m2.run_pending()
+    assert m2.get(new["id"])["status"] == "done" and calls == [new["id"]]

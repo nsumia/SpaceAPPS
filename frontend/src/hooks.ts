@@ -5,7 +5,7 @@ import { api } from "./lib/api";
 export const useLakes = () => useQuery({ queryKey: ["lakes"], queryFn: api.lakes, staleTime: 60_000 });
 export const useIndex = () => useQuery({ queryKey: ["index"], queryFn: api.index, staleTime: Infinity });
 export const useLake = (id: string | null, running = false) =>
-  useQuery({ queryKey: ["lake", id], queryFn: () => api.lake(id!), enabled: !!id, refetchInterval: running ? 4000 : false });
+  useQuery({ queryKey: ["lake", id], queryFn: () => api.lake(id!), enabled: !!id, refetchInterval: running ? 1500 : false });
 export const useLive = (id: string | null) =>
   useQuery({ queryKey: ["live", id], queryFn: () => api.live(id!), enabled: !!id, staleTime: 180_000, retry: 0 });
 
