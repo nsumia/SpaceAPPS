@@ -6,13 +6,17 @@ from contextlib import asynccontextmanager
 from functools import partial
 
 from fastapi import Body, FastAPI, HTTPException, Query
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from backend.api import live_cache, store
 from backend.api.jobs import JobManager
 from backend.api.store import Settings
 
 MAX_POLYGON_KM2 = 20_000.0
+DIST = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
+SPA_ROUTES = ("compare", "methods")
 
 
 def polygon_area_km2(geom):
@@ -85,6 +89,7 @@ def create_app(settings=None, runner=None):
                   description="Lake area / surface temperature / climate attribution from Landsat, NASA POWER, SWOT. "
                               "On-demand (custom) results are unverified.")
     app.state.settings = st
+    app.add_middleware(GZipMiddleware, minimum_size=2000)
 
     def jobs():
         # TestClient without a `with` block does not run lifespan; create lazily
@@ -132,6 +137,12 @@ def create_app(settings=None, runner=None):
         need(lake_id)
         rec = store.record(st, lake_id)
         return live_cache.get_live(st, rec["meta"].get("lake_id", lake_id), rec["meta"])
+
+    @app.get("/api/index", summary="Lake index (GeoJSON polygons, for the map layer)")
+    def lake_index():
+        if not os.path.exists(st.index_path):
+            raise HTTPException(503, "lake index missing: run backend/scripts/build_lake_index.py")
+        return FileResponse(st.index_path, media_type="application/geo+json")
 
     @app.get("/api/identify", summary="Lake at a point, from the lake index")
     def identify(lon: float = Query(..., ge=-180, le=180), lat: float = Query(..., ge=-90, le=90)):
@@ -217,6 +228,14 @@ def create_app(settings=None, runner=None):
             notes.append(store.LST_SENSOR_BREAK)
         return dict(metric=metric, base_period=list(store.REF), series=series, notes=notes)
 
+    dist = os.path.abspath(st.dist_dir if getattr(st, "dist_dir", None) else DIST)
+    index_html = os.path.join(dist, "index.html")
+    if os.path.exists(index_html):          # built frontend: one port for the demo
+        for route in SPA_ROUTES:
+            app.add_api_route("/" + route, lambda: FileResponse(index_html), include_in_schema=False)
+        if os.path.isdir(os.path.join(dist, "assets")):
+            app.mount("/assets", StaticFiles(directory=os.path.join(dist, "assets")), name="assets")
+        app.add_api_route("/", lambda: FileResponse(index_html), include_in_schema=False)
     return app
 
 

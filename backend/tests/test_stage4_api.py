@@ -283,3 +283,19 @@ def test_job_error_is_generic_and_runner_marks_failed(client, st, tmp_path):
     import json as _j
     m = _j.load(open(f"{st.custom_dir}/custom-bad/meta.json"))
     assert m["analysis"]["status"] == "failed"
+
+
+def test_index_endpoint_and_spa_serving(st, tmp_path):
+    c = TestClient(create_app(st, runner=fake_runner))
+    r = c.get("/api/index")
+    assert r.status_code == 200 and r.json()["features"][0]["properties"]["polygon_area_km2"] > 0
+    assert c.get("/compare").status_code == 404                       # no build: API only
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<html>app</html>")
+    (dist / "assets" / "a.js").write_text("1")
+    st.dist_dir = str(dist)
+    c = TestClient(create_app(st, runner=fake_runner))
+    for p in ("/", "/compare", "/methods"):
+        assert c.get(p).text == "<html>app</html>", p
+    assert c.get("/assets/a.js").status_code == 200 and c.get("/api/health").json() == {"status": "ok"}

@@ -25,6 +25,7 @@ class Settings:
     index_path: str = os.path.join(ROOT, "data", "index", "lakes.geojson")
     live_ttl_s: int = 3 * 3600
     start_worker: bool = True
+    dist_dir: str = ""
     _cache: dict = field(default_factory=dict, repr=False)
 
 
