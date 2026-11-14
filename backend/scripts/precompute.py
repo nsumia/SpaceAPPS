@@ -114,14 +114,21 @@ def make_plot(df, stats, path, name, min_valid, ref=None):
 
 
 def run(alias, start=1985, end=2025, out_dir=None, thresh=0.0, max_cloud=40, min_valid=0.8, rebuild_polygon=False,
-        no_basin=False, plot=None, no_masks=False, log=print):
+        no_basin=False, plot=None, no_masks=False, legacy_box_mask=False, log=print):
     cfg = LAKES[alias]
+    if legacy_box_mask and not out_dir:
+        raise SystemExit("--legacy-box-mask needs --out-dir (it must not overwrite the lake record)")
     out = out_dir or lake_dir(alias)
     os.makedirs(os.path.join(out, "masks"), exist_ok=True)
     catalog = landsat.open_catalog()
     seed, bbox = cfg["seed"], cfg["bbox"]
     poly_path = os.path.join(out, "masks", "lake_polygon.geojson")
-    if os.path.exists(poly_path) and not rebuild_polygon:
+    if legacy_box_mask:      # verification mode: Stage 1 masking (whole box, 30 m), no polygon detection
+        from shapely.geometry import box as _box
+        poly = _box(*bbox)
+        pinfo = dict(method="legacy: whole bounding box (Stage 1 masking)", polygon_km2=round(geo.bbox_area_km2(bbox), 1),
+                     component_km2=round(geo.bbox_area_km2(bbox), 1))
+    elif os.path.exists(poly_path) and not rebuild_polygon:
         from shapely.geometry import shape
         with open(poly_path) as f:
             feat = json.load(f)
@@ -133,7 +140,7 @@ def run(alias, start=1985, end=2025, out_dir=None, thresh=0.0, max_cloud=40, min
         write_geojson(poly_path, poly, pinfo)
         log(f"lake polygon: {pinfo}")
     epsg = geo.utm_epsg(seed[0], seed[1], width_deg=bbox[2] - bbox[0])
-    res = geo.pick_resolution(pinfo["polygon_km2"])      # adaptive: by analysis-polygon area (lake + 1 km), see VALIDATION.md
+    res = 30 if legacy_box_mask else geo.pick_resolution(pinfo["polygon_km2"])      # adaptive: by analysis-polygon area (lake + 1 km), see VALIDATION.md
     crs = f"EPSG:{epsg}"
     gj = box_geojson(poly)
     rows, scenes, grid = [], 0, None
@@ -189,10 +196,11 @@ def main(argv=None):
     p.add_argument("--rebuild-polygon", action="store_true")
     p.add_argument("--no-basin", action="store_true")
     p.add_argument("--no-masks", action="store_true")
+    p.add_argument("--legacy-box-mask", action="store_true", help="verification: whole-box mask at 30 m like Stage 1 (needs --out-dir)")
     p.add_argument("--plot", default=None)
     a = p.parse_args(argv)
     run(a.lake, a.start, a.end, a.out_dir, a.thresh, a.max_cloud, a.min_valid, a.rebuild_polygon, a.no_basin,
-        a.plot, a.no_masks)
+        a.plot, a.no_masks, a.legacy_box_mask)
 
 
 if __name__ == "__main__":

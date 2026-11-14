@@ -27,6 +27,20 @@ def ensure_zip(region="eu", download=True):
     return p
 
 
+def extract_level(region, level, download=True):
+    """Extract one level's shp/shx/dbf/prj (no .sbn/.sbx: the level-6 spatial index is rejected by GDAL) next to the zip."""
+    import zipfile
+    zp = ensure_zip(region, download)
+    d = os.path.join(os.path.dirname(zp), f"lev{level:02d}")
+    shp = os.path.join(d, f"hybas_{region}_lev{level:02d}_v1c.shp")
+    if not os.path.exists(shp):
+        os.makedirs(d, exist_ok=True)
+        with zipfile.ZipFile(zp) as z:
+            for ext in ("shp", "shx", "dbf", "prj"):
+                z.extract(f"hybas_{region}_lev{level:02d}_v1c.{ext}", d)
+    return shp
+
+
 def select_basins(polys, lake_geom, min_overlap=MIN_OVERLAP):
     """Pure function: indices of basin polygons that overlap >= min_overlap of the lake area (plus the best one)."""
     la = lake_geom.area
@@ -44,8 +58,7 @@ def basin_for_lake(lake_ll, area_km2, region="eu", download=True):
     from shapely.ops import unary_union
     level = 7 if area_km2 < 1000 else 6
     try:
-        zp = ensure_zip(region, download)
-        path = f"/vsizip/{zp}/hybas_{region}_lev{level:02d}_v1c.shp"
+        path = extract_level(region, level, download)
         meta, _, geoms, _ = raw.read(path, bbox=tuple(lake_ll.bounds), columns=[])[:4]
         polys = [from_wkb(g) for g in geoms]
         idx = select_basins(polys, lake_ll)
