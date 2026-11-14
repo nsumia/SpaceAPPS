@@ -23,6 +23,7 @@ _DIRS = {"decreasing": "decline", "increasing": "increase", "no trend": "stable"
 LST_SENSOR_BREAK = ("Landsat 5 -> 8 step of about +3 C at 2012/13 (Stage 1): warming_c_per_decade uses Landsat 5 only "
                     "(1985-2012); the pooled slope (warming_pooled_c_per_decade) contains the sensor break and overstates warming.")
 REF = (1985, 1990)
+SAMPLE_PREFIX = "sample-"
 
 
 @dataclass
@@ -30,9 +31,11 @@ class Settings:
     lakes_dir: str = os.path.join(ROOT, "data", "lakes")
     custom_dir: str = os.path.join(ROOT, "data", "custom")
     cache_dir: str = os.path.join(ROOT, "data", "live_cache")
+    demo_dir: str = os.path.join(ROOT, "data", "demo_cache")     # committed snapshot: seed when live_cache has no entry
     jobs_db: str = os.path.join(ROOT, "data", "jobs.sqlite")
     index_path: str = os.path.join(ROOT, "data", "index", "lakes.geojson")
     live_ttl_s: int = 3 * 3600
+    sample_delay_s: float = 0.12                  # pause per replayed year of a pre-computed sample job
     start_worker: bool = True
     dist_dir: str = ""
     _cache: dict = field(default_factory=dict, repr=False)
@@ -184,7 +187,7 @@ def summary(st, key):
 def list_lakes(st):
     seen, out = set(), []
     for key, (d, _) in lake_dirs(st).items():
-        if d in seen:
+        if d in seen or os.path.basename(d).startswith(SAMPLE_PREFIX):      # replayed samples are not map lakes
             continue
         seen.add(d)
         out.append(summary(st, key))

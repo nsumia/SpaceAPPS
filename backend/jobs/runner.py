@@ -100,3 +100,44 @@ def _run_analysis(st, lake_id, request, progress, catalog=None, analyze_year=Non
                                          reliability=quality.assess(rows, MIN_VALID), unverified=True))
         meta["analysis"].update(years_done=i + 1, phase=phase, status="running" if i + 1 < len(years) else "done")
         _write(out, "meta.json", dict(meta, generated=datetime.now(timezone.utc).isoformat(timespec="seconds")))
+
+
+def run_sample(st, lake_id, request, progress):
+    """Replay a pre-computed lake as an on-demand job: copies masks, then writes series.json/meta.json progressively
+    (every 5th year first = preliminary, then the rest) with a short pause per year. No network, no Landsat.
+    The record is flagged analysis.sample=true and unverified so the UI says "pre-computed sample"."""
+    import shutil
+    import time
+    src = request["sample_of"]
+    ser, meta = json.load(open(os.path.join(src, "series.json"))), json.load(open(os.path.join(src, "meta.json")))
+    out = os.path.join(st.custom_dir, lake_id)
+    shutil.rmtree(out, ignore_errors=True)
+    os.makedirs(out)
+    shutil.copytree(os.path.join(src, "masks"), os.path.join(out, "masks"))
+    for n in ("climate.json", "swot.json", "basin.geojson"):
+        if os.path.exists(os.path.join(src, n)):
+            shutil.copy(os.path.join(src, n), out)
+    rows_all = ser["series"]
+    yrs = [r["year"] for r in rows_all]
+    first, rest = plan_years(min(yrs), max(yrs))
+    order = [y for y in first if y in yrs] + [y for y in rest if y in yrs]
+    note = ("PRE-COMPUTED SAMPLE: this is the stored result for " + str(meta.get("name")) + ", replayed in a few seconds "
+            "to show the on-demand job flow. It was not computed just now.")
+    m = dict(meta, lake_id=lake_id, alias=None, name=f"{meta.get('name')} (pre-computed sample)", group="custom",
+             analysis=dict(status="running", unverified=True, sample=True, sample_of=meta.get("lake_id"), years_done=0,
+                           years_total=len(order), phase=None, note=note))
+    rows = []
+    for i, y in enumerate(order):
+        phase = "preliminary (every 5th year)" if y in first else "filling gaps"
+        progress(phase=phase, current_year=int(y), progress=round(5 + 90 * i / len(order), 1))
+        rows.append(next(r for r in rows_all if r["year"] == y))
+        rows.sort(key=lambda r: r["year"])
+        last = i + 1 == len(order)
+        part = dict(ser, series=list(rows), unverified=True,
+                    stats=ser.get("stats") if (last or len(rows) >= 10) else None,
+                    reliability=ser.get("reliability") if last else None)
+        _write(out, "series.json", part)
+        m["analysis"].update(years_done=i + 1, phase=phase, status="done" if last else "running")
+        _write(out, "meta.json", dict(m, generated=datetime.now(timezone.utc).isoformat(timespec="seconds")))
+        if st.sample_delay_s:
+            time.sleep(st.sample_delay_s)
