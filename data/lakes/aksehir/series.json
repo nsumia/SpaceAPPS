@@ -1,0 +1,558 @@
+{
+ "lake": "Ak\u015fehir",
+ "bbox": [
+  31.05,
+  38.25,
+  31.7,
+  38.8
+ ],
+ "window": "Aug 1 - Sep 30",
+ "platforms": [
+  "landsat-5",
+  "landsat-8",
+  "landsat-9"
+ ],
+ "thresh": 0.0,
+ "min_valid": 0.8,
+ "resolution_m": 30,
+ "crs": "EPSG:32636",
+ "series": [
+  {
+   "year": 1985,
+   "error": null,
+   "area_km2": 299.9403,
+   "valid_frac": 1.0,
+   "lst_c": 22.85,
+   "lst_px": 284417,
+   "n_scenes": 3,
+   "n_items": 3.0,
+   "latest_scene": "1985-09-21"
+  },
+  {
+   "year": 1986,
+   "error": null,
+   "area_km2": 288.963,
+   "valid_frac": 1.0,
+   "lst_c": 23.0,
+   "lst_px": 277904,
+   "n_scenes": 5,
+   "n_items": 5.0,
+   "latest_scene": "1986-09-17"
+  },
+  {
+   "year": 1987,
+   "error": null,
+   "area_km2": 291.5892,
+   "valid_frac": 1.0,
+   "lst_c": 20.58,
+   "lst_px": 281745,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "1987-09-27"
+  },
+  {
+   "year": 1988,
+   "error": null,
+   "area_km2": 290.1753,
+   "valid_frac": 1.0,
+   "lst_c": 19.68,
+   "lst_px": 284553,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "1988-09-29"
+  },
+  {
+   "year": 1989,
+   "error": null,
+   "area_km2": 284.9328,
+   "valid_frac": 0.997,
+   "lst_c": 18.5,
+   "lst_px": 276542,
+   "n_scenes": 6,
+   "n_items": 6.0,
+   "latest_scene": "1989-09-25"
+  },
+  {
+   "year": 1990,
+   "error": null,
+   "area_km2": 283.0752,
+   "valid_frac": 1.0,
+   "lst_c": 20.86,
+   "lst_px": 273702,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "1990-09-19"
+  },
+  {
+   "year": 1991,
+   "error": null,
+   "area_km2": 279.6606,
+   "valid_frac": 1.0,
+   "lst_c": 20.07,
+   "lst_px": 273570,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "1991-09-22"
+  },
+  {
+   "year": 1992,
+   "error": null,
+   "area_km2": 271.8936,
+   "valid_frac": 0.991,
+   "lst_c": 19.04,
+   "lst_px": 266831,
+   "n_scenes": 6,
+   "n_items": 6.0,
+   "latest_scene": "1992-09-24"
+  },
+  {
+   "year": 1993,
+   "error": null,
+   "area_km2": 255.2319,
+   "valid_frac": 0.965,
+   "lst_c": 19.71,
+   "lst_px": 255742,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "1993-09-27"
+  },
+  {
+   "year": 1994,
+   "error": null,
+   "area_km2": 243.3186,
+   "valid_frac": 0.99,
+   "lst_c": 21.21,
+   "lst_px": 248375,
+   "n_scenes": 5,
+   "n_items": 5.0,
+   "latest_scene": "1994-09-30"
+  },
+  {
+   "year": 1995,
+   "error": null,
+   "area_km2": 232.6068,
+   "valid_frac": 0.986,
+   "lst_c": 20.85,
+   "lst_px": 237934,
+   "n_scenes": 7,
+   "n_items": 8.0,
+   "latest_scene": "1995-09-26"
+  },
+  {
+   "year": 1996,
+   "error": null,
+   "area_km2": 240.6078,
+   "valid_frac": 1.0,
+   "lst_c": 21.36,
+   "lst_px": 244590,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "1996-09-19"
+  },
+  {
+   "year": 1997,
+   "error": null,
+   "area_km2": 230.7375,
+   "valid_frac": 0.974,
+   "lst_c": 19.7,
+   "lst_px": 235079,
+   "n_scenes": 3,
+   "n_items": 3.0,
+   "latest_scene": "1997-09-22"
+  },
+  {
+   "year": 1998,
+   "error": null,
+   "area_km2": 223.9407,
+   "valid_frac": 0.967,
+   "lst_c": 22.09,
+   "lst_px": 227416,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "1998-09-25"
+  },
+  {
+   "year": 1999,
+   "error": null,
+   "area_km2": 220.2012,
+   "valid_frac": 0.995,
+   "lst_c": 20.35,
+   "lst_px": 222250,
+   "n_scenes": 5,
+   "n_items": 5.0,
+   "latest_scene": "1999-09-28"
+  },
+  {
+   "year": 2000,
+   "error": null,
+   "area_km2": 197.4537,
+   "valid_frac": 0.966,
+   "lst_c": 20.86,
+   "lst_px": 204854,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "2000-09-30"
+  },
+  {
+   "year": 2001,
+   "error": null,
+   "area_km2": 122.4801,
+   "valid_frac": 0.882,
+   "lst_c": 20.78,
+   "lst_px": 119285,
+   "n_scenes": 3,
+   "n_items": 3.0,
+   "latest_scene": "2001-09-17"
+  },
+  {
+   "year": 2002,
+   "error": null,
+   "area_km2": 191.3373,
+   "valid_frac": 0.981,
+   "lst_c": 24.38,
+   "lst_px": 198735,
+   "n_scenes": 2,
+   "n_items": 3.0,
+   "latest_scene": "2002-08-12"
+  },
+  {
+   "year": 2003,
+   "error": null,
+   "area_km2": 194.3523,
+   "valid_frac": 0.995,
+   "lst_c": 20.15,
+   "lst_px": 202270,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "2003-09-23"
+  },
+  {
+   "year": 2004,
+   "error": null,
+   "area_km2": 177.2316,
+   "valid_frac": 0.983,
+   "lst_c": 21.84,
+   "lst_px": 183797,
+   "n_scenes": 3,
+   "n_items": 3.0,
+   "latest_scene": "2004-09-25"
+  },
+  {
+   "year": 2005,
+   "error": null,
+   "area_km2": 74.6415,
+   "valid_frac": 0.748,
+   "lst_c": 19.53,
+   "lst_px": 70099,
+   "n_scenes": 3,
+   "n_items": 3.0,
+   "latest_scene": "2005-09-12"
+  },
+  {
+   "year": 2006,
+   "error": null,
+   "area_km2": 76.6971,
+   "valid_frac": 0.97,
+   "lst_c": 26.31,
+   "lst_px": 65733,
+   "n_scenes": 3,
+   "n_items": 3.0,
+   "latest_scene": "2006-09-15"
+  },
+  {
+   "year": 2007,
+   "error": null,
+   "area_km2": 15.768,
+   "valid_frac": 1.0,
+   "lst_c": 35.48,
+   "lst_px": 10068,
+   "n_scenes": 3,
+   "n_items": 3.0,
+   "latest_scene": "2007-09-18"
+  },
+  {
+   "year": 2008,
+   "error": null,
+   "area_km2": 1.0242,
+   "valid_frac": 1.0,
+   "lst_c": null,
+   "lst_px": 0,
+   "n_scenes": 4,
+   "n_items": 5.0,
+   "latest_scene": "2008-09-13"
+  },
+  {
+   "year": 2009,
+   "error": null,
+   "area_km2": 99.8496,
+   "valid_frac": 0.998,
+   "lst_c": 22.14,
+   "lst_px": 93474,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "2009-09-23"
+  },
+  {
+   "year": 2010,
+   "error": null,
+   "area_km2": 91.377,
+   "valid_frac": 1.0,
+   "lst_c": 24.89,
+   "lst_px": 88748,
+   "n_scenes": 5,
+   "n_items": 5.0,
+   "latest_scene": "2010-09-26"
+  },
+  {
+   "year": 2011,
+   "error": null,
+   "area_km2": 94.8672,
+   "valid_frac": 0.993,
+   "lst_c": 21.03,
+   "lst_px": 92907,
+   "n_scenes": 2,
+   "n_items": 2.0,
+   "latest_scene": "2011-09-29"
+  },
+  {
+   "year": 2012,
+   "error": null,
+   "area_km2": null,
+   "valid_frac": 0.0,
+   "lst_c": null,
+   "lst_px": 0,
+   "n_scenes": 0,
+   "n_items": null,
+   "latest_scene": null
+  },
+  {
+   "year": 2013,
+   "error": null,
+   "area_km2": 43.8462,
+   "valid_frac": 0.982,
+   "lst_c": 28.46,
+   "lst_px": 39746,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "2013-09-18"
+  },
+  {
+   "year": 2014,
+   "error": null,
+   "area_km2": 0.0747,
+   "valid_frac": 1.0,
+   "lst_c": null,
+   "lst_px": 0,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "2014-09-21"
+  },
+  {
+   "year": 2015,
+   "error": null,
+   "area_km2": 106.7778,
+   "valid_frac": 1.0,
+   "lst_c": 24.63,
+   "lst_px": 102552,
+   "n_scenes": 3,
+   "n_items": 3.0,
+   "latest_scene": "2015-09-24"
+  },
+  {
+   "year": 2016,
+   "error": null,
+   "area_km2": 49.1976,
+   "valid_frac": 1.0,
+   "lst_c": 28.05,
+   "lst_px": 44865,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "2016-09-26"
+  },
+  {
+   "year": 2017,
+   "error": null,
+   "area_km2": 29.6766,
+   "valid_frac": 1.0,
+   "lst_c": 32.77,
+   "lst_px": 26453,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "2017-09-29"
+  },
+  {
+   "year": 2018,
+   "error": null,
+   "area_km2": 0.054,
+   "valid_frac": 1.0,
+   "lst_c": null,
+   "lst_px": 0,
+   "n_scenes": 3,
+   "n_items": 3.0,
+   "latest_scene": "2018-09-16"
+  },
+  {
+   "year": 2019,
+   "error": null,
+   "area_km2": 45.3528,
+   "valid_frac": 0.997,
+   "lst_c": 28.1,
+   "lst_px": 41737,
+   "n_scenes": 3,
+   "n_items": 3.0,
+   "latest_scene": "2019-09-19"
+  },
+  {
+   "year": 2020,
+   "error": null,
+   "area_km2": 71.9001,
+   "valid_frac": 1.0,
+   "lst_c": 25.8,
+   "lst_px": 64485,
+   "n_scenes": 3,
+   "n_items": 3.0,
+   "latest_scene": "2020-09-05"
+  },
+  {
+   "year": 2021,
+   "error": null,
+   "area_km2": 0.0297,
+   "valid_frac": 1.0,
+   "lst_c": null,
+   "lst_px": 0,
+   "n_scenes": 3,
+   "n_items": 3.0,
+   "latest_scene": "2021-09-24"
+  },
+  {
+   "year": 2022,
+   "error": null,
+   "area_km2": 30.3975,
+   "valid_frac": 1.0,
+   "lst_c": 29.87,
+   "lst_px": 26047,
+   "n_scenes": 4,
+   "n_items": 4.0,
+   "latest_scene": "2022-09-27"
+  },
+  {
+   "year": 2023,
+   "error": null,
+   "area_km2": 0.2637,
+   "valid_frac": 1.0,
+   "lst_c": null,
+   "lst_px": 17,
+   "n_scenes": 7,
+   "n_items": 7.0,
+   "latest_scene": "2023-09-22"
+  },
+  {
+   "year": 2024,
+   "error": null,
+   "area_km2": 0.0279,
+   "valid_frac": 1.0,
+   "lst_c": null,
+   "lst_px": 0,
+   "n_scenes": 6,
+   "n_items": 6.0,
+   "latest_scene": "2024-09-16"
+  },
+  {
+   "year": 2025,
+   "error": null,
+   "area_km2": 0.0126,
+   "valid_frac": 1.0,
+   "lst_c": null,
+   "lst_px": 0,
+   "n_scenes": 8,
+   "n_items": 8.0,
+   "latest_scene": "2025-09-27"
+  }
+ ],
+ "stats": {
+  "area": {
+   "n": 39,
+   "trend": "decreasing",
+   "p": 0.0,
+   "sen_slope_per_year": -8.19675,
+   "sen_slope_per_decade": -81.9675,
+   "intercept": 278.218350000001,
+   "intercept_year": 1985,
+   "year_gaps": 2,
+   "first_year": 1985,
+   "last_year": 2025
+  },
+  "lst_all": {
+   "n": 32,
+   "trend": "increasing",
+   "p": 6.161157285689001e-06,
+   "sen_slope_per_year": 0.2231515151515151,
+   "sen_slope_per_decade": 2.231515151515151,
+   "intercept": 18.14115151515159,
+   "intercept_year": 1985,
+   "year_gaps": 6,
+   "first_year": 1985,
+   "last_year": 2022
+  },
+  "lst_1985_2012": {
+   "n": 25,
+   "trend": "increasing",
+   "p": 0.022055462373524293,
+   "sen_slope_per_year": 0.10282296650717707,
+   "sen_slope_per_decade": 1.0282296650717706,
+   "intercept": 19.62612440191384,
+   "intercept_year": 1985,
+   "year_gaps": 2,
+   "first_year": 1985,
+   "last_year": 2011
+  },
+  "lst_2013_2025": null,
+  "area_emergence": {
+   "sigma": 7.936024956480761,
+   "ref_mean": 271.832925,
+   "ref_years": [
+    1985,
+    1996
+   ],
+   "k": 2.0,
+   "threshold": 15.872049912961522,
+   "direction": "decreasing",
+   "emerged": true,
+   "year": 1997,
+   "status": "emerged",
+   "years_needed": 0.0
+  },
+  "lst_emergence": {
+   "sigma": 1.3796257093509467,
+   "ref_mean": 20.6425,
+   "ref_years": [
+    1985,
+    1996
+   ],
+   "k": 2.0,
+   "threshold": 2.7592514187018935,
+   "direction": "increasing",
+   "emerged": true,
+   "year": 2009,
+   "status": "emerged",
+   "years_needed": 0.0
+  },
+  "lst_emergence_note": "LST switches Landsat 5 -> 8 at 2012/13 (step of ~3 C); the pooled emergence year is dominated by this sensor break, see lst_emergence_1985_2012 (Landsat 5 only)",
+  "lst_emergence_1985_2012": {
+   "sigma": 1.3796257093509467,
+   "ref_mean": 20.6425,
+   "ref_years": [
+    1985,
+    1996
+   ],
+   "k": 2.0,
+   "threshold": 2.7592514187018935,
+   "direction": "increasing",
+   "emerged": false,
+   "year": null,
+   "status": "not_yet_distinguishable",
+   "label_tr": "Hen\u00fcz ay\u0131rt edilemiyor",
+   "years_needed": 10.71968573795729
+  }
+ }
+}

@@ -145,3 +145,40 @@ No SWOT PLD id is known/verified (needs the PLD file, Stage 3), so ids are `cust
 - `live.py` (POWER, Hydrocron, GIBS, Landsat-now) was ported and unit-tested only for pure helpers; no live network call was run in Stage 2.
 - A rasterio `NotGeoreferencedWarning` appears during real runs (from the reprojection inside odc-stac loading); results were unaffected in the checks above but the source asset was not identified.
 - Burdur `meta.json` code_version is the commit before the last two small commits (basin extraction fix, legacy flag), which do not affect series values.
+
+# Stage 3 (analyses) - real numbers, run 2026-11-14
+
+Commands: `.venv/bin/python -m backend.scripts.precompute --lake {burdur,van,aksehir,egirdir}` (full 1985-2025, 4 in parallel), then `.venv/bin/python -m backend.scripts.analyze burdur van aksehir egirdir` (stats refresh with emergence, `climate.json`, `swot.json`). POWER responses are cached in `data/power_cache/` (reruns offline). meta.json `code_version` reads `35446b5+dirty` (the working tree had the uncommitted Stage 3 edits while the series ran; precompute code itself unchanged from Stage 2, stats are refreshed by `analyze`).
+
+## Series (valid = valid_frac >= 0.8 and area not NaN)
+| Lake | area 1985/86 km2 | area 2023-25 km2 | Sen km2/decade (p) | n valid | not valid years |
+|---|---|---|---|---|---|
+| Burdur | 205.8 / 204.8 | 120.1, 118.1, 116.5 | -21.1 (3.3e-06) | 40 | 2012 |
+| Van | NaN / 3556.1 | 3547.7, 3550.4, 3532.2 | -11.4 (0.0073) | 36 | 1985, 1993, 2002, 2003, 2012 |
+| Akşehir | 299.9 / 289.0 | 0.3, 0.0, 0.0 (dry) | -82.0 (p < 1e-4) | 39 | 2005, 2012 |
+| Eğirdir | 471.4 / 469.3 | 435.2, 425.0, 412.3 | -5.7 (0.0045) | 40 | 2012 |
+Van loss (about 0.7 %/decade) is small compared with classification noise at 60 m; do not read it as a strong signal. Akşehir 2023-25 areas of ~0 km2: the lake bed is dry in the Aug-Sep composites (not independently checked).
+
+## Emergence year (stats.emergence)
+Reference = first 12 calendar years of the valid record (1985-1996; Van 1986-1997), sigma = std of the linearly detrended reference (ddof 2), threshold 2 sigma; first year after the reference after which |Sen line - reference mean| > 2 sigma in all later years. Search starts after the reference, so 1997 (Van 1998 would be the analogue) means "already separated at the end of the reference period".
+| Lake | sigma km2 | area emergence | LST emergence (pooled) | LST emergence 1985-2012 (Landsat 5 only) |
+|---|---|---|---|---|
+| Burdur | 1.6 | 1997 | 2006 | 2011 |
+| Van | 9.9 | 2017 | 2015 | not yet distinguishable (about 12 more years) |
+| Akşehir | 7.9 | 1997 | 2009 | not yet distinguishable (about 11 more years) |
+| Eğirdir | 2.1 | 2004 | 2008 | 2009 |
+LST caveat: the Landsat 5 -> 8 step at 2012/13 (about +3 C, see Stage 1) is inside the pooled series; the pooled LST emergence years are not clean warming results. The Landsat-5-only column avoids the break but has fewer years. Note also that for LST the pooled emergence years 2006-2015 precede/straddle the break: the Sen line of a pooled series with a step is steeper than the real warming.
+Unit tests: synthetic linear trend with alternating noise (true crossing 2009.5, found within 3 years), random-noise series, "not yet" case with years_needed, flat series.
+
+## Climate decomposition (climate.json)
+NASA POWER monthly PRECTOTCORR and EVLAND (mm/day x days in month), 1981-2026, basin points: Burdur 6, Akşehir 8, Eğirdir 7, Van 9 (farthest-point sampling in the HydroBASINS union polygon; MERRA-2 cells are ~0.5 x 0.625 deg so points share cells). Water year Oct-Sep. EVLAND is land evapotranspiration, **not open-water evaporation**. Model: area change between consecutive observed years = a*n_years + b*sum(P-E) fitted on 1985-1999 pairs (14), predicted for later years from the 1999 baseline; the 2012 gap pair spans two water years. Bootstrap: 2000 case resamples of the reference pairs, 90 % percentile CI. **The unexplained part is a sign, not proof, of human impact.**
+| Lake | observed loss since 1999 km2 | predicted by P-E km2 | explained share (with intercept) [90 % CI] | explained share (no intercept) | corr(dA, P-E) 1985-99 | flags |
+|---|---|---|---|---|---|---|
+| Burdur | 45.5 | 81.6 | 1.79 [1.45, 2.11] | 1.42 | 0.07 | weak skill, share > 1 |
+| Van | 59.5 | -114.4 | -1.92 [-7.12, 1.97] | -1.41 | 0.13 | weak skill, share outside 0-1, loss < 3 % |
+| Akşehir | 220.2 | 136.7 | 0.62 [0.34, 0.91] | 0.41 | 0.56 | none |
+| Eğirdir | 47.6 | 2.5 | 0.05 [-0.44, 0.49] | -0.09 | 0.66 | none |
+Reading: only Akşehir and Eğirdir have a usable reference-period relation (corr 0.56 / 0.66). For Burdur and Van the 1985-1999 correlation is ~0, the fit has no skill, and the shares (>1 or negative) are not interpretable; a "share" there only says that the P-E proxy does not reproduce the lake. The with-intercept variant treats the 1985-1999 drift as background (unexplained = change relative to that), the no-intercept variant counts that drift as unexplained; both are stored. Synthetic test: constant withdrawal recovered within 20 % (3 seeds), pure-climate case near 0.
+
+## SWOT volume (swot.json)
+`ok=false` for all four lakes: no PLD id (Hydrocron has no location lookup; the PLD file needs an Earthdata login, not used here; CMR collection search for the PLD returned no public entry). The area-level fit and dV = integral A dh code with an extrapolation flag exists and is unit-tested on synthetic data; it is NOT verified against real SWOT data.

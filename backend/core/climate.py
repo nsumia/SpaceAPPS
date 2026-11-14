@@ -130,14 +130,17 @@ def _pairs(years, area, pe):
     return pd.DataFrame(rows, columns=["y0", "y1", "dA", "n", "pe"])
 
 
-def _fit(ref):
-    """dA = a*n + b*PE (no separate intercept per pair: the offset accumulates with the number of years spanned)."""
+def _fit(ref, intercept=True):
+    """dA = a*n + b*PE (the offset accumulates with the number of years spanned); intercept=False forces a = 0."""
+    if not intercept:
+        b = float(np.sum(ref.pe.values * ref.dA.values) / np.sum(ref.pe.values ** 2))
+        return np.array([0.0, b])
     X = np.c_[ref.n.values, ref.pe.values]
     coef, *_ = np.linalg.lstsq(X, ref.dA.values, rcond=None)
     return coef
 
 
-def decompose(years, area, pe, ref=REF_YEARS, n_boot=2000, seed=0, ci=0.90):
+def decompose(years, area, pe, ref=REF_YEARS, n_boot=2000, seed=0, ci=0.90, intercept=True):
     """Regress annual area change on P-E in the reference period, predict later years, and compare cumulative losses.
 
     years/area: observed series (valid years only). pe: Series water-year P-E (mm). Pair (y_prev, y) uses the water years
@@ -153,7 +156,7 @@ def decompose(years, area, pe, ref=REF_YEARS, n_boot=2000, seed=0, ci=0.90):
     post = pr[pr.y0 >= (refp.y1.max() if len(refp) else ref[1])]
     if len(refp) < 8 or len(post) < 3:
         return dict(ok=False, reason=f"too few pairs (reference {len(refp)}, later {len(post)})")
-    coef = _fit(refp)
+    coef = _fit(refp, intercept)
     pred = coef[0] * post.n.values + coef[1] * post.pe.values
     cum_pred_loss = -np.cumsum(pred)
     cum_obs_loss = -np.cumsum(post.dA.values)
@@ -164,7 +167,7 @@ def decompose(years, area, pe, ref=REF_YEARS, n_boot=2000, seed=0, ci=0.90):
     for _ in range(n_boot):
         s = refp.iloc[rng.integers(0, len(refp), len(refp))]
         try:
-            c = _fit(s)
+            c = _fit(s, intercept)
         except np.linalg.LinAlgError:
             continue
         p = -np.sum(c[0] * post.n.values + c[1] * post.pe.values)
@@ -175,7 +178,7 @@ def decompose(years, area, pe, ref=REF_YEARS, n_boot=2000, seed=0, ci=0.90):
     share = float(cum_pred_loss[-1] / cum_obs_loss[-1]) if cum_obs_loss[-1] > 0 else None
     sh = np.array(shares)
     return dict(
-        ok=True, reference=[int(refp.y0.min()), int(refp.y1.max())], n_ref_pairs=int(len(refp)),
+        ok=True, intercept=intercept, ref_corr_dA_PE=float(np.corrcoef(refp.dA, refp.pe)[0, 1]), reference=[int(refp.y0.min()), int(refp.y1.max())], n_ref_pairs=int(len(refp)),
         coef_offset_km2_per_year=float(coef[0]), coef_km2_per_mm_PE=float(coef[1]),
         ref_r2=float(1 - resid.var() / refp.dA.var()) if refp.dA.var() > 0 else None,
         base_year=int(post.y0.iloc[0]), last_year=int(post.y1.iloc[-1]), n_years=n_years,
@@ -212,17 +215,27 @@ def run(alias, force_refetch=False, fetcher=None, cache_dir=None, log=print):
     df = pd.DataFrame(ser["series"])
     okm = (df.valid_frac >= ser["min_valid"]) & df.area_km2.notna()
     dec = decompose(df.year[okm].values, df.area_km2[okm].values, pe.PE)
+    dec0 = decompose(df.year[okm].values, df.area_km2[okm].values, pe.PE, intercept=False)
+    if dec["ok"]:
+        sh = dec["explained_share"]
+        dec["interpretation_flags"] = [f for f, c in (
+            ("weak_reference_skill: |corr(dA, P-E)| < 0.3 in 1985-1999", abs(dec["ref_corr_dA_PE"]) < 0.3),
+            ("share_outside_0_1: predicted loss is larger than observed or has the opposite sign", sh is None or not 0 <= sh <= 1),
+            ("small_observed_loss: < 3 % of 1999 area is not separable from classification noise",
+             dec["observed_loss_km2"] < 0.03 * float(df.area_km2[okm][df.year[okm] == dec["base_year"]].iloc[0]))) if c]
     out = dict(lake=meta["name"], alias=alias, basin_km2=round(basin_km2, 1), basin_source=feat["properties"].get("source"),
                points=[dict(lon=a, lat=b) for a, b in pts], n_points=len(pts), water_year="Apr-Mar" if south else "Oct-Sep",
                params=dict(P="PRECTOTCORR (mm/day x days in month)", E="EVLAND"), evaporation_label=LABEL_E,
                power_grid_note="MERRA-2 grid ~0.5 x 0.625 deg: several points can share one cell; model data, not stations",
                water_year_series=[dict(wy=int(i), P_mm=float(r.P), E_mm=float(r.E), PE_mm=float(r.PE)) for i, r in pe.iterrows()],
                model="dA(y_prev->y) = a*n_years + b*sum(P-E); fitted on reference pairs 1985-1999; unexplained = observed - predicted cumulative loss after 1999",
-               decomposition=dec, note=NOTE, generated=pd.Timestamp.now("UTC").isoformat(timespec="seconds"))
+               decomposition=dec, decomposition_no_intercept=dec0,
+               sensitivity_note="decomposition = regression with intercept (the reference-period drift continues as background, so 'unexplained' = change relative to 1985-1999 behaviour); decomposition_no_intercept = P-E only (reference drift counts as unexplained)",
+               note=NOTE, generated=pd.Timestamp.now("UTC").isoformat(timespec="seconds"))
     with open(os.path.join(d, "climate.json"), "w") as f:
         json.dump(out, f, indent=1)
     log(f"{alias}: {n} points, basin {basin_km2:.0f} km2, wy {pe.index.min()}-{pe.index.max()}, "
-        + (f"share={dec['explained_share']} ci={dec['explained_share_ci90']}" if dec["ok"] else f"decomposition failed: {dec['reason']}"))
+        + (f"share={dec['explained_share']:.2f} ci={dec['explained_share_ci90']} no-intercept share={dec0.get('explained_share')} corr={dec['ref_corr_dA_PE']:.2f}" if dec["ok"] else f"decomposition failed: {dec['reason']}"))
     return out
 
 

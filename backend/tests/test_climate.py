@@ -98,3 +98,9 @@ def test_decompose_gap_year_pair_spans_two_water_years():
     pr = cl._pairs(years, pd.Series(area, index=years), pe)
     row = pr[pr.y1 == 2013].iloc[0]
     assert row.y0 == 2011 and row.n == 2 and row.pe == pytest.approx(pe[2012] + pe[2013])
+
+
+def test_decompose_no_intercept_variant_runs():
+    years, area, pe = _synthetic(1.5, seed=0)
+    r = cl.decompose(years, area, pe, intercept=False)
+    assert r["ok"] and r["coef_offset_km2_per_year"] == 0.0 and r["unexplained_km2_per_year"] == pytest.approx(1.5, rel=0.2)
