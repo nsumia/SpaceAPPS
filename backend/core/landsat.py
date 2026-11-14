@@ -185,11 +185,11 @@ def window_area(catalog, geom, geom_json, start, end, thresh=0.0, max_cloud=40, 
     return row
 
 
-def year_with_retries(catalog, geom, geom_json, year, thresh, max_cloud, **kw):
+def year_with_retries(catalog, geom, geom_json, year, thresh, max_cloud, window=("08-01", "09-30"), **kw):
     err = None
     for attempt in range(RETRIES + 1):
         try:
-            row = window_area(catalog, geom, geom_json, f"{year}-08-01", f"{year}-09-30", thresh, max_cloud, **kw)
+            row = window_area(catalog, geom, geom_json, f"{year}-{window[0]}", f"{year}-{window[1]}", thresh, max_cloud, **kw)
             return dict(year=year, error=None, **row)
         except Exception as e:  # noqa: BLE001
             err = f"{type(e).__name__}: {e}"[:300]

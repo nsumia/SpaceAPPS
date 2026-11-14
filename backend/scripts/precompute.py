@@ -20,7 +20,7 @@ import pandas as pd
 
 from backend.core import geo, landsat
 from backend.core.basin import basin_for_lake
-from backend.core.lakes import LAKES, ROOT, lake_dir, lake_id
+from backend.core.lakes import LAKES, ROOT, lake_dir, lake_id, years_for
 from backend.core.stats import compute_stats, sen_line
 
 DETECT_YEARS = range(1985, 1991)
@@ -35,7 +35,7 @@ def git_version():
         return "unknown"
 
 
-def detect_polygon(catalog, bbox, seed, max_cloud, log=print):
+def detect_polygon(catalog, bbox, seed, max_cloud, log=print, res=None, window=("08-01", "09-30")):
     """Lake polygon (lon/lat) from pooled 1985-1990 masks. Returns (polygon_ll, info)."""
     from shapely.geometry import Point, box
     lon0, lat0, lon1, lat1 = bbox
@@ -43,14 +43,14 @@ def detect_polygon(catalog, bbox, seed, max_cloud, log=print):
     if free_seed:
         seed = ((lon0 + lon1) / 2, (lat0 + lat1) / 2)
     epsg = geo.utm_epsg(seed[0], seed[1], width_deg=lon1 - lon0)
-    res = geo.pick_resolution(geo.bbox_area_km2(bbox))
+    res = res or geo.pick_resolution(geo.bbox_area_km2(bbox))
     crs = f"EPSG:{epsg}"
     bx = box(*bbox)
     water, valid, tf = None, None, None
     used = []
     for y in DETECT_YEARS:
         row = landsat.year_with_retries(catalog, bx, box_geojson(bx), y, 0.0, max_cloud,
-                                        crs=crs, pixel_m=res, return_masks=True)
+                                        crs=crs, pixel_m=res, return_masks=True, window=window)
         if row.get("error") or row["n_scenes"] == 0 or row["valid_frac"] < 0.5:
             log(f"  detect {y}: skipped (scenes={row['n_scenes']} valid={row['valid_frac']} err={row['error']})")
             continue
@@ -73,14 +73,23 @@ def detect_polygon(catalog, bbox, seed, max_cloud, log=print):
     else:
         x, y = geo.to_utm(Point(*seed), epsg).coords[0]
         col, rowi = ~tf * (x, y)
-    comp = geo.select_lake_component(mask, (int(rowi), int(col)))
+    seed_fallback = None
+    try:
+        comp = geo.select_lake_component(mask, (int(rowi), int(col)))
+    except ValueError as e:      # seed not on 1985-90 water: use the largest water component in the box instead
+        from scipy import ndimage
+        lab, n = ndimage.label(mask, structure=np.ones((3, 3), int))
+        if n == 0:
+            raise RuntimeError("no water found in the box in 1985-1990") from e
+        comp = lab == (1 + int(np.argmax(np.bincount(lab.ravel())[1:])))
+        seed_fallback = f"seed not on water ({e}); largest water component of the box used"
     utm_poly = geo.component_to_polygon_utm(comp, tf, buffer_m=1000.0, simplify_m=res)
     poly = geo.to_lonlat(utm_poly, epsg)
     info = dict(method="largest connected MNDWI>0 component (pixel water in >=50% of valid years) containing the seed, +1 km buffer",
                 years_used=used, detect_resolution_m=res, detect_crs=crs,
                 component_km2=round(float(comp.sum() * res ** 2 / 1e6), 1),
                 box_water_km2=round(float(mask.sum() * res ** 2 / 1e6), 1),
-                polygon_km2=round(utm_poly.area / 1e6, 1))
+                polygon_km2=round(utm_poly.area / 1e6, 1), window=list(window), seed_fallback=seed_fallback)
     return poly, info
 
 
@@ -126,8 +135,10 @@ def make_plot(df, stats, path, name, min_valid, ref=None):
 
 
 def run(alias, start=1985, end=2025, out_dir=None, thresh=0.0, max_cloud=40, min_valid=0.8, rebuild_polygon=False,
-        no_basin=False, plot=None, no_masks=False, legacy_box_mask=False, log=print):
+        no_basin=False, plot=None, no_masks=False, legacy_box_mask=False, log=print, cadence=True):
     cfg = LAKES[alias]
+    window = tuple(cfg.get("window", ("08-01", "09-30")))
+    years = years_for(cfg, start, end) if cadence else list(range(start, end + 1))
     if legacy_box_mask and not out_dir:
         raise SystemExit("--legacy-box-mask needs --out-dir (it must not overwrite the lake record)")
     out = out_dir or lake_dir(alias)
@@ -148,16 +159,16 @@ def run(alias, start=1985, end=2025, out_dir=None, thresh=0.0, max_cloud=40, min
         log(f"lake polygon: cached ({pinfo.get('polygon_km2')} km2)")
     else:
         log("lake polygon: detecting from 1985-1990 masks")
-        poly, pinfo = detect_polygon(catalog, bbox, seed, max_cloud, log)
+        poly, pinfo = detect_polygon(catalog, bbox, seed, max_cloud, log, cfg.get("res_m"), window)
         write_geojson(poly_path, poly, pinfo)
         log(f"lake polygon: {pinfo}")
     epsg = geo.utm_epsg(seed[0], seed[1], width_deg=bbox[2] - bbox[0])
-    res = 30 if legacy_box_mask else geo.pick_resolution(pinfo["polygon_km2"])      # adaptive: by analysis-polygon area (lake + 1 km), see VALIDATION.md
+    res = 30 if legacy_box_mask else (cfg.get("res_m") or geo.pick_resolution(pinfo["polygon_km2"]))      # adaptive: by analysis-polygon area (lake + 1 km), see VALIDATION.md
     crs = f"EPSG:{epsg}"
     gj = box_geojson(poly)
     rows, scenes, grid = [], 0, None
-    for y in range(start, end + 1):
-        row = landsat.year_with_retries(catalog, poly, gj, y, thresh, max_cloud, crs=crs, pixel_m=res, return_masks=True)
+    for y in years:
+        row = landsat.year_with_retries(catalog, poly, gj, y, thresh, max_cloud, crs=crs, pixel_m=res, return_masks=True, window=window)
         w, v, tf = row.pop("water", None), row.pop("valid", None), row.pop("transform", None)
         if w is not None and not no_masks:
             save_mask(os.path.join(out, "masks", f"{y}.png"), w, v)
@@ -171,7 +182,7 @@ def run(alias, start=1985, end=2025, out_dir=None, thresh=0.0, max_cloud=40, min
     log(json.dumps(stats, indent=1))
     clean = [{k: (None if isinstance(v, float) and v != v else v) for k, v in r.items()} for r in df.to_dict("records")]
     with open(os.path.join(out, "series.json"), "w") as f:
-        json.dump(dict(lake=cfg["name"], bbox=list(bbox), window="Aug 1 - Sep 30", platforms=landsat.PLATFORMS,
+        json.dump(dict(lake=cfg["name"], bbox=list(bbox), window=f"{window[0]} to {window[1]} (MM-DD)", platforms=landsat.PLATFORMS,
                        thresh=thresh, min_valid=min_valid, resolution_m=res, crs=crs, series=clean, stats=stats), f, indent=1)
     if grid:
         with open(os.path.join(out, "masks", "grid.json"), "w") as f:
@@ -186,7 +197,11 @@ def run(alias, start=1985, end=2025, out_dir=None, thresh=0.0, max_cloud=40, min
     meta = dict(lake_id=lake_id(alias), alias=alias, name=cfg["name"], country=cfg["country"],
                 generated=datetime.now(timezone.utc).isoformat(timespec="seconds"), code_version=git_version(),
                 resolution_m=res, thermal_erosion_m=landsat.LST_EROSION_M, utm_epsg=epsg, bbox=list(bbox), seed=list(seed),
-                years=[int(start), int(end)], scene_counts=dict(total=scenes, per_year={int(r["year"]): int(r["n_scenes"]) for r in rows}),
+                years=[int(start), int(end)], years_analysed=[int(y) for y in years], cadence_years=int(cfg.get("step", 1)),
+                cadence_note=("every year" if int(cfg.get("step", 1)) == 1 else f"every {int(cfg.get('step', 1))}th year (plus {end}) to fit the time budget; not interpolated"),
+                resolution_reason=("override for very large lake" if cfg.get("res_m") else "adaptive by polygon area"),
+                window=list(window), group=cfg.get("group", "turkey" if cfg["country"] == "TR" else "reference"),
+                why_selected=cfg.get("why"), mndwi_note=cfg.get("note"), scene_counts=dict(total=scenes, per_year={int(r["year"]): int(r["n_scenes"]) for r in rows}),
                 lake_polygon=pinfo, basin=basin, min_lst_px=int(df.lst_px[df.lst_px > 0].min()) if (df.lst_px > 0).any() else None,
                 masks_encoding="PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape")
     with open(os.path.join(out, "meta.json"), "w") as f:
@@ -210,9 +225,10 @@ def main(argv=None):
     p.add_argument("--no-masks", action="store_true")
     p.add_argument("--legacy-box-mask", action="store_true", help="verification: whole-box mask at 30 m like Stage 1 (needs --out-dir)")
     p.add_argument("--plot", default=None)
+    p.add_argument("--every-year", action="store_true", help="ignore the lake's cadence step")
     a = p.parse_args(argv)
     run(a.lake, a.start, a.end, a.out_dir, a.thresh, a.max_cloud, a.min_valid, a.rebuild_polygon, a.no_basin,
-        a.plot, a.no_masks, a.legacy_box_mask)
+        a.plot, a.no_masks, a.legacy_box_mask, cadence=not a.every_year)
 
 
 if __name__ == "__main__":
