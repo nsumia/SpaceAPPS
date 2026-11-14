@@ -1,7 +1,7 @@
 # Stage 1 validation: Lake Burdur (real Planetary Computer data)
 
-Run date 2026-11-14. Module: `burdur_area.py` (fixed working copy; `legacy/` untouched). Series: `data/lakes/burdur/series.json`, plot: `docs/burdur_series.png`.
-Reproduce: `.venv/bin/python burdur_area.py --start 1985 --end 2025 --out data/lakes/burdur/series.json --plot docs/burdur_series.png` (about 10 min). Offline tests: `tools/run_tests.sh`.
+Run date 2026-11-14. Module: `burdur_area.py` (Stage 1, since moved to `backend/core/landsat.py` + `stats.py`; `legacy/` untouched). Series: `data/lakes/burdur/series.json`, plot: `docs/burdur_series.png`.
+Stage 1 reproduce command (script removed in Stage 2): `burdur_area.py --start 1985 --end 2025 ...`; now `.venv/bin/python -m backend.scripts.precompute --lake burdur --plot docs/burdur_series.png` (about 12 min). Stage 1 series kept as `data/lakes/burdur/series_stage1.json`. Offline tests: `tools/run_tests.sh`.
 
 ![Burdur series](docs/burdur_series.png)
 
@@ -33,12 +33,12 @@ Remaining difference: the box total in 1986 (216.7) is about 12 km2 above the co
 Caveat: 1989 to 1990 shows a drop of 14 km2 and 2002-2004 a rise (164-169 km2), both inside the noise of 2-8 scenes per year; not investigated.
 
 ## 3. Lake surface temperature
-Late-summer median of eroded (150 m) water pixels: 20.5-27.5 deg C in all years (min 20.52 in 1991, max 27.45 in 2010), inside the expected 20-28 range (the range itself is not literature-verified; Aslan and Koc-San 2021 absolute values were not checked). Pure-water pixel counts are large; no year dropped for lack of pixels.
+Late-summer median of eroded (150 m) water pixels: 20.5-27.5 deg C in all years (min 20.52 in 1991, max 27.45 in 2010), inside the expected 20-28 range (the range itself is not literature-verified; Aslan and Koc-San 2021 absolute values were not checked). Pure-water pixel counts are large; no year dropped for lack of pixels. Minimum pure-water (eroded) pixel count over all years: 121,028 px of 30 m (2025; Stage 2 run, threshold is 50 px).
 
 ## 4. Trend tests (Hamed-Rao modified Mann-Kendall + Sen slope, years with valid_frac >= 0.8)
-- Area 1985-2025: decreasing, n=40 (1985-2025), Sen -23.33/decade, p=1.91e-08 km2.
-- LST all years: increasing, n=40 (1985-2025), Sen +1.28/decade, p=1.01e-07 deg C.
-- **L5 to L8 break (2012/2013)**: LST before: increasing, n=27 (1985-2011), Sen +1.02/decade, p=0.00862 deg C; after: no trend, n=13 (2013-2025), Sen +0.21/decade, p=0.669 deg C. The step in level is visible (mean 1985-2011 about 23.5, 2013-2025 about 26.3). Part of the 1985-2025 warming may be an L5/L8 calibration offset rather than a lake change, so the pooled trend (+1.28 deg C/decade) must not be presented as a clean warming rate. The within-L5 trend (+1.0 deg C/decade) is significant; the L8/9-only trend is not. No cross-calibration was attempted. L8/9 (100 m TIRS, resampled) versus L5 (120 m) also differ in resolution and shrinking lake shifts which pixels remain pure water.
+- Area 1985-2025: decreasing, n=40 (1985-2025), Sen -23.33 km2/decade, p=1.91e-08 (Stage 1 numbers; Sen there was per observation, see Stage 2 section 3 for the fixed values).
+- LST all years: increasing, n=40 (1985-2025), Sen +1.28 deg C/decade, p=1.01e-07.
+- **L5 to L8 break (2012/2013)**: LST before ("1985_2012" window, data end 2011): increasing, n=27 (1985-2011), Sen +1.02 deg C/decade, p=0.00862; after: no trend, n=13 (2013-2025), Sen +0.21 deg C/decade, p=0.669. The step in level is visible (mean 1985-2011 about 23.5, 2013-2025 about 26.3). Part of the 1985-2025 warming may be an L5/L8 calibration offset rather than a lake change, so the pooled trend (+1.28 deg C/decade) must not be presented as a clean warming rate. The within-L5 trend (+1.0 deg C/decade) is significant; the L8/9-only trend is not. No cross-calibration was attempted. L8/9 (100 m TIRS, resampled) versus L5 (120 m) also differ in resolution and shrinking lake shifts which pixels remain pure water.
 - 2012 is NaN: Landsat 5 stopped in 2011 and Landsat 8 began in 2013; Landsat 7 is excluded by design. Error field empty (genuinely no scenes: n_scenes = 0).
 - No year failed with a network error (all `error` fields null).
 
@@ -91,3 +91,57 @@ Late-summer median of eroded (150 m) water pixels: 20.5-27.5 deg C in all years 
 - Cause of the ~12 km2 excess in the box total versus the connected lake in 1986-89.
 - Absolute LST values against literature; absolute accuracy of the thermal data.
 - Mixed-sensor consistency of area (L5 vs L8 MNDWI) beyond the 2011/2013 continuity (144.9 to 139.6 km2, consistent).
+
+---
+
+# Stage 2: backend, auto UTM, adaptive resolution, lake polygon, basin (run 2026-11-14)
+
+Code: `backend/core/{landsat,stats,geo,basin,lakes,climate,swot,live}.py`, `backend/scripts/precompute.py`, `backend/api/main.py` (health + /docs only). Decision: the top-level `burdur_area.py` was removed (not wrapped); its tests moved to `backend/tests/test_landsat.py`; the CLI is `python -m backend.scripts.precompute`. Offline tests: `tools/run_tests.sh`.
+
+## 1. Behaviour preserved (code move)
+Same masking as Stage 1 (whole box, 30 m) via `precompute --lake burdur --legacy-box-mask --out-dir <scratch>`, single years, real data:
+
+| Year | Stage 1 area | Stage 2 code, box mask | Stage 1 LST | Stage 2 LST |
+|---|---|---|---|---|
+| 1985 | 220.8 | 220.8 | 23.36 | 23.36 |
+| 1996 | 178.4 | 178.4 | 22.36 | 22.36 |
+| 2002 | 164.4 | 164.4 | 25.09 | 25.09 |
+| 2020 | 125.6 | 125.6 | 25.93 | 25.93 |
+
+So the move, the qa_radsat masking and the metric (EDT) erosion do not change the numbers at this precision.
+
+## 2. Lake polygon (largest connected component, +1 km) versus the whole box, Burdur
+Polygon from 1985-1990 (pixel water in >= 50 % of valid years, 60 m detection): component 202.5 km2, polygon (+1 km) 291.4 km2. Analysis at 30 m inside the polygon. Full 1985-2025 run, polygon masking vs Stage 1:
+- 1986: **204.8 km2** (Stage 1 216.7; Sabuncu 206: -0.6 %, was +5.2 %). 1985: 205.8 (Stage 1 220.8).
+- 2006-2008, 2013-2014, 2016-2025: within 1 % of Stage 1 (-0.3 to -0.8 %); 2009-2012 and 2015: -1.5 to -3.3 %. 1985-2004: -0.6 to -6.8 % (largest 1985 -6.8 %, 1989 -5.8 %, 1988 -5.6 %, 1999 -5.5 %, 1986 -5.5 %, 2002 -5.5 %).
+- So the +-1 % criterion holds only where the masking is the same (verified for four years in section 1: identical). The differences are caused by the masking change, not by the code: diagnostic comparing the box mask with the polygon mask (1985, 1996) shows the excess is ONE blob of water at about 29.96E 37.865N (north-west corner of the box): 14.6 km2 in 1985 and 9.0 km2 in 1996, outside the 1 km lake buffer. Identity of that water body NOT VERIFIED. It explains the "about 12 km2 box excess" flagged in Stage 1. The earlier guess that Yarisli was involved was wrong (it is outside the box).
+- Series statistics with polygon masking (Hamed-Rao MK p, Sen on actual years): area decreasing, n=40, Sen -21.13 km2/decade, p=3.3e-06; LST all years +1.23 deg C/decade (p=9.5e-08); LST 1985-2011 +1.04 deg C/decade (p=0.0081); LST 2013-2025 no trend, +0.23 deg C/decade (p=0.669). Last value 2025: 116.5 km2 (Stage 1 117.0).
+- Files: `data/lakes/burdur/{series.json,series_stage1.json,meta.json,basin.geojson,masks/}`; plot `docs/burdur_series.png`.
+
+## 3. Stage 1 SHOULD_FIX
+1. MK/Sen with missing 2012: Sen slope is now `scipy.stats.theilslopes(values, actual_years)` (per year, gap-aware; test `test_sen_slope_uses_actual_years_with_gap`). The MK p value uses ranks only; the Hamed-Rao autocorrelation correction assumes equal spacing and is not adjusted for the single gap (documented in `stats.trend`). `year_gaps` is stored in the stats.
+2. VALIDATION section 4 label slips fixed (units, "1985_2012" window with data end 2011).
+3. Minimum pure-water pixel count: 121,028 (30 m px; 2025) in the Burdur Stage 2 run, stored as `min_lst_px` in meta.json.
+4. qa_radsat: **applied.** Bits read from the STAC item `classification:bitfields` (not from memory): L5 band2 (green) bit 1, band5 (swir16) bit 4, band6 (thermal) bit 5, dropped pixel bit 9; L8/L9 band3 bit 2, band6 bit 5. The L8/L9 bitfield list has NO thermal bit (band10 is not listed), so thermal saturation for L8/9 is not masked: **open**. Result of masking at Burdur: no visible change in section 1.
+
+## 4. Auto UTM, resolution
+- `geo.utm_epsg`: Burdur 32636, Van 32638, Titicaca (-69.35, -15.9) 32719 (tests). Warning for boxes wider than 6 deg (test).
+- `geo.pick_resolution(area_km2)`: <500 km2 30 m, <5000 km2 60 m, else 120 m. DEVIATION from a literal reading of the spec: the final analysis resolution is chosen by the area of the analysis polygon (lake + 1 km buffer), not the rectangular box, because Burdur's box (1,500 km2) would otherwise drop Burdur to 60 m and break the Stage 1 comparison. The detection pass (before the polygon exists) uses the box area (Burdur 60 m, Van 120 m). Resolution, CRS and erosion are written to meta.json. Thermal erosion is metric: water pixels at Euclidean distance > 150 m from non-water (test with 30 m and 60 m grids).
+- Burdur: 30 m, EPSG:32636. Van: 60 m (polygon 4,068 km2), EPSG:32638.
+
+## 5. Van (real data, EPSG:32638)
+Run: `precompute --lake van --start 2013 --end 2025` (plus 2019-2021 before). Polygon: component 3,565.7 km2 (detection years 1986-1990; **1985 has no scenes** with cloud < 40 % in Aug-Sep), box water 3,772 km2 (the difference is other water such as Lake Erçek, identity not checked), polygon 4,068.5 km2, resolution 60 m (detection 120 m).
+Areas (km2): 2013 3546.8, 2014 3567.1, 2015 3569.8, 2016 3519.8, 2017 3560.3, 2018 3567.1, 2019 3569.3, 2020 3566.8, 2021 3555.1, 2022 3554.3, 2023 3547.7, 2024 3550.4, 2025 3532.2; MK on these 13 years: no trend (p=0.16, Sen -16.3 km2/decade, not significant). LST 22.4-24.3 deg C. Literature area for Van NOT checked. The record covers 2013-2025 only (masks only for 2019-2021: `--no-masks`); the full 1985-2025 Van run was not done.
+
+## 6. Other lakes and basin
+- Akşehir (2020 only + detection): component 285.3 km2 vs 312.7 km2 box water, so Eber Lake (~27 km2) is excluded; 2020 area 71.9 km2 with 3 scenes (not a series; box generous: 31.05-31.70E, 38.25-38.80N). Eğirdir (2020 only): polygon 608.2 km2 (lake + 1 km), 2020 area 446.5 km2 (4 scenes), basin level 7 6,787.3 km2; detection log not captured (polygon was cached from a run that hit the timeout), not a series. Scratch outputs, not committed.
+- Basin: HydroBASINS v1c, `eu` zip (360 MB, in `data/raw/`, gitignored), level 7 for lakes < 1000 km2 else level 6, union of basins that hold >= 10 % of the lake polygon (plus the best one). Burdur: 1 basin, 5,772.6 km2; Akşehir: 8,102.0 km2; Van (level 6): 17,325.4 km2. No buffer fallback was needed in the committed runs (a first Van run did fall back, flagged in meta.json, because GDAL rejected the level-6 .sbn index; fixed by extracting shp/shx/dbf/prj only). Note: this is the union of the basins containing the lake, NOT the full upstream contributing area. Basin areas were not compared with literature.
+
+## 7. Lake ids
+No SWOT PLD id is known/verified (needs the PLD file, Stage 3), so ids are `custom-<sha1 of rounded seed>[:8]`: burdur custom-1fa272fa, aksehir custom-2b08b181, egirdir custom-082105f5, van custom-e9373c68. Directory name = alias, id in meta.json.
+
+## 8. Not verified / open
+- Identity of the 29.96E 37.865N water body; absolute LST accuracy; L8/9 thermal saturation (no QA bit).
+- `live.py` (POWER, Hydrocron, GIBS, Landsat-now) was ported and unit-tested only for pure helpers; no live network call was run in Stage 2.
+- A rasterio `NotGeoreferencedWarning` appears during real runs (from the reprojection inside odc-stac loading); results were unaffected in the checks above but the source asset was not identified.
+- Burdur `meta.json` code_version is the commit before the last two small commits (basin extraction fix, legacy flag), which do not affect series values.
