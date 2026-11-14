@@ -80,6 +80,13 @@ def centre(rec):
     return rec["meta"].get("seed")
 
 
+def latest_area(st, key):
+    """(area_km2, year) of the latest valid year, or (None, None). The lake itself, not the buffered index polygon."""
+    rec = record(st, key)
+    rows = valid_rows(rec["series"]["series"], rec["series"].get("min_valid", 0.8)) if rec else []
+    return (round(rows[-1]["area_km2"], 1), rows[-1]["year"]) if rows else (None, None)
+
+
 def summary(st, key):
     rec = record(st, key)
     s, meta, stats = rec["series"], rec["meta"], rec["series"].get("stats") or {}
@@ -103,7 +110,8 @@ def summary(st, key):
     return dict(
         id=meta.get("lake_id", key), alias=alias, name=meta.get("name") or s.get("lake"), country=meta.get("country"),
         centre=centre(rec), group=group, validated=bool(alias in VALIDATED and not custom), unverified=bool(custom),
-        years=meta.get("years"), ref_mean_km2=None if ref_mean is None else round(ref_mean, 1),
+        years=meta.get("years"), latest_area_km2=latest_area(st, key)[0], latest_area_year=latest_area(st, key)[1],
+        ref_mean_km2=None if ref_mean is None else round(ref_mean, 1),
         total_loss_pct=loss, total_loss_basis=f"mean {REF[0]}-{REF[1]} vs mean of last 3 valid years",
         trend_pct_per_decade=trend, trend_p=area and round(area["p"], 6), trend_direction=area and area["trend"],
         emergence_year=em.get("year"), emergence_status=em.get("status"),

@@ -143,14 +143,18 @@ def create_app(settings=None, runner=None):
         hits = [i for i in tree.query(Point(lon, lat), predicate="intersects")]
         if not hits:
             raise HTTPException(404, "no lake at this point in the lake index")
-        i = sorted(hits, key=lambda j: (not feats[j]["properties"]["precomputed"], feats[j]["properties"]["area_km2"]))[0]
+        i = sorted(hits, key=lambda j: (not feats[j]["properties"]["precomputed"], feats[j]["properties"]["polygon_area_km2"]))[0]
         p = feats[i]["properties"]
-        return dict(id=p["id"], alias=p["alias"], name=p["name"], area_km2=p["area_km2"], precomputed=p["precomputed"],
-                    computed=store.resolve(st, p["id"]) is not None, source=p["source"], polygon=feats[i]["geometry"])
+        computed = store.resolve(st, p["id"]) is not None
+        latest = store.latest_area(st, p["id"]) if computed else (None, None)
+        return dict(id=p["id"], alias=p["alias"], name=p["name"], polygon_area_km2=p["polygon_area_km2"],
+                    lake_area_km2=latest[0], lake_area_year=latest[1], precomputed=p["precomputed"],
+                    computed=computed, source=p["source"], polygon=feats[i]["geometry"])
 
     def job_view(j):
         return dict(job_id=j["id"], lake_id=j["lake_id"], status=j["status"], progress=j["progress"] or 0.0,
-                    current_year=j["current_year"], phase=j["phase"], error=j["error"],
+                    current_year=j["current_year"], phase=j["phase"],
+                    error=("analysis failed; see the server log for details" if j["status"] == "failed" else None),
                     result_url=f"/api/lakes/{j['lake_id']}")
 
     @app.post("/api/analyze", summary="Start an on-demand analysis (or return the computed result)")

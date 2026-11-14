@@ -34,7 +34,26 @@ def _write(out, name, obj):
     os.replace(tmp, os.path.join(out, name))
 
 
-def run_analysis(st, lake_id, request, progress, catalog=None, analyze_year=None, detect=None, end_year=None):
+def run_analysis(st, lake_id, request, progress, **kw):
+    """Run the analysis; on any failure mark data/custom/<id>/meta.json analysis.status = "failed" and re-raise."""
+    try:
+        return _run_analysis(st, lake_id, request, progress, **kw)
+    except Exception:
+        mp = os.path.join(st.custom_dir, lake_id, "meta.json")
+        try:
+            if os.path.exists(mp):
+                m = json.load(open(mp))
+            else:
+                os.makedirs(os.path.dirname(mp), exist_ok=True)
+                m = dict(lake_id=lake_id, name=request.get("name"), group="custom", analysis=dict(unverified=True))
+            m.setdefault("analysis", {})["status"] = "failed"
+            _write(os.path.dirname(mp), "meta.json", m)
+        except OSError:
+            pass
+        raise
+
+
+def _run_analysis(st, lake_id, request, progress, catalog=None, analyze_year=None, detect=None, end_year=None):
     """request = {"polygon": GeoJSON geometry, "name": optional, "seed": optional [lon, lat]}.
     analyze_year / detect / catalog are injectable for offline tests."""
     from shapely.geometry import shape
