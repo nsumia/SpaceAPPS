@@ -134,3 +134,29 @@ def test_radsat_bits_from_stac():
     assert ba.RADSAT_BITS["lwir"]["water"][:2] == (1, 4) and ba.RADSAT_BITS["lwir11"]["water"] == (2, 5)
     rs = np.array([[1 << 1]], "uint16")
     assert ba._bits(rs, ba.RADSAT_BITS["lwir"]["water"]).all() and not ba._bits(rs, ba.RADSAT_BITS["lwir11"]["water"]).any()
+
+
+def test_landsat5_plus_landsat8_scenes_merge_into_one_composite():
+    """Same synthetic circle seen by an L5 family (cloud on the left half) and an L8 family (cloud on the right half),
+    concatenated along time as window_area does: the composite covers the full lake, LST is the water temperature,
+    and the per-family RADSAT bit layouts (L5 water bits 1,4,9 / L8 bits 2,5) mask only their own scenes."""
+    lake, g5, s5, qa5, st5 = synthetic(n_t=2)
+    _, g8, s8, qa8, st8 = synthetic(n_t=2)
+    qa5[:, :, :100] = 1 << 3
+    qa8[:, :, 100:] = 1 << 3
+    # L5 thermal band reads 1 K warm (cross-sensor offset): median over the two families must stay near 20 C
+    st5 = st5 + int(1.0 / ba.ST_SCALE)
+    rs5 = np.zeros(g5.shape, "uint16"); rs8 = np.zeros(g8.shape, "uint16")
+    rs5[:, 10, 10] = 1 << 1          # L5 water-saturation bit set on one pixel (outside the lake)
+    sw = np.concatenate([ba._bits(rs5, ba.RADSAT_BITS["lwir"]["water"]), ba._bits(rs8, ba.RADSAT_BITS["lwir11"]["water"])])
+    assert sw[:2, 10, 10].all() and not sw[2:, 10, 10].any()
+    cat = lambda a, b: np.concatenate([a, b])
+    comp, t = ba.composites(cat(g5, g8), cat(s5, s8), cat(qa5, qa8), cat(st5, st8), sw, np.zeros(sw.shape, bool))
+    res = ba.finish(comp, t)
+    assert res["valid_frac"] == pytest.approx(1.0, abs=0.01)
+    assert res["area_km2"] == pytest.approx(lake.sum() * 900 / 1e6, rel=0.01)
+    # left half is seen only by L8 (20 C), right half only by L5 (21 C, +1 K offset): each half of the
+    # composite must come from its own family (a merge that dropped one family would give one value everywhere)
+    assert np.nanmean(t[lake & (np.arange(200) < 100)[None, :]]) == pytest.approx(20.0, abs=0.05)
+    assert np.nanmean(t[lake & (np.arange(200) >= 100)[None, :]]) == pytest.approx(21.0, abs=0.05)
+    assert res["lst_c"] in (pytest.approx(20.0, abs=0.05), pytest.approx(21.0, abs=0.05))  # pixel median
