@@ -7,3 +7,4 @@ data/live_cache/
 data/jobs.sqlite
 .env
 data/raw/
+data/custom/

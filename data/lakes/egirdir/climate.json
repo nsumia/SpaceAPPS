@@ -451,7 +451,10 @@
    68.60212648985551
   ],
   "n_boot": 2000,
-  "interpretation_flags": []
+  "interpretation_flags": [],
+  "ci_includes_zero": true,
+  "interpretable": true,
+  "wording": "climate share not distinguishable from 0 (90 % CI includes 0); do not claim a climate effect"
  },
  "decomposition_no_intercept": {
   "ok": true,
@@ -589,7 +592,11 @@
    9.0533471217296,
    74.88311731727025
   ],
-  "n_boot": 2000
+  "n_boot": 2000,
+  "interpretation_flags": [],
+  "ci_includes_zero": true,
+  "interpretable": true,
+  "wording": "climate share not distinguishable from 0 (90 % CI includes 0); do not claim a climate effect"
  },
  "sensitivity_note": "decomposition = regression with intercept (the reference-period drift continues as background, so 'unexplained' = change relative to 1985-1999 behaviour); decomposition_no_intercept = P-E only (reference drift counts as unexplained)",
  "note": "The unexplained part is a sign, not proof, of human impact (irrigation/withdrawal, model error and land-use change all end up in it).",

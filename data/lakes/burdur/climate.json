@@ -450,7 +450,10 @@
   "interpretation_flags": [
    "weak_reference_skill: |corr(dA, P-E)| < 0.3 in 1985-1999",
    "share_outside_0_1: predicted loss is larger than observed or has the opposite sign"
-  ]
+  ],
+  "ci_includes_zero": false,
+  "interpretable": false,
+  "wording": "not computable / not interpretable: weak_reference_skill; share_outside_0_1"
  },
  "decomposition_no_intercept": {
   "ok": true,
@@ -588,7 +591,11 @@
    -35.51453755159702,
    -5.222604242780775
   ],
-  "n_boot": 2000
+  "n_boot": 2000,
+  "interpretation_flags": [],
+  "ci_includes_zero": false,
+  "interpretable": true,
+  "wording": "climate share with 90 % bootstrap CI; model-based, a sign not proof"
  },
  "sensitivity_note": "decomposition = regression with intercept (the reference-period drift continues as background, so 'unexplained' = change relative to 1985-1999 behaviour); decomposition_no_intercept = P-E only (reference drift counts as unexplained)",
  "note": "The unexplained part is a sign, not proof, of human impact (irrigation/withdrawal, model error and land-use change all end up in it).",

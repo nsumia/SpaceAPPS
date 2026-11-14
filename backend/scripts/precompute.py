@@ -39,6 +39,9 @@ def detect_polygon(catalog, bbox, seed, max_cloud, log=print):
     """Lake polygon (lon/lat) from pooled 1985-1990 masks. Returns (polygon_ll, info)."""
     from shapely.geometry import Point, box
     lon0, lat0, lon1, lat1 = bbox
+    free_seed = seed is None        # drawn region: use the largest water component in the box
+    if free_seed:
+        seed = ((lon0 + lon1) / 2, (lat0 + lat1) / 2)
     epsg = geo.utm_epsg(seed[0], seed[1], width_deg=lon1 - lon0)
     res = geo.pick_resolution(geo.bbox_area_km2(bbox))
     crs = f"EPSG:{epsg}"
@@ -59,8 +62,17 @@ def detect_polygon(catalog, bbox, seed, max_cloud, log=print):
     if not used:
         raise RuntimeError("no usable 1985-1990 year for lake polygon detection")
     mask = (valid > 0) & (water / np.maximum(valid, 1) >= 0.5)
-    x, y = geo.to_utm(Point(*seed), epsg).coords[0]
-    col, rowi = ~tf * (x, y)
+    if free_seed:
+        from scipy import ndimage
+        lab, n = ndimage.label(mask)
+        if n == 0:
+            raise RuntimeError("no water found in the selected area")
+        big = 1 + int(np.argmax(np.bincount(lab.ravel())[1:]))
+        rr, cc = np.nonzero(lab == big)
+        rowi, col = int(rr[len(rr) // 2]), int(cc[len(cc) // 2])
+    else:
+        x, y = geo.to_utm(Point(*seed), epsg).coords[0]
+        col, rowi = ~tf * (x, y)
     comp = geo.select_lake_component(mask, (int(rowi), int(col)))
     utm_poly = geo.component_to_polygon_utm(comp, tf, buffer_m=1000.0, simplify_m=res)
     poly = geo.to_lonlat(utm_poly, epsg)
