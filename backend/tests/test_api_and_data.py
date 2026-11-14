@@ -51,3 +51,20 @@ def test_select_basins_picks_overlapping_ones():
     assert select_basins(polys, lake) == [0, 1]
     assert select_basins([box(5, 5, 6, 6)], lake) == []
     assert select_basins([box(-1, -1, 0.95, 2), box(0.95, -1, 3, 2)], lake) == [0]   # 5 % sliver ignored
+
+
+def test_swot_area_level_fit_and_volume_with_extrapolation_flag():
+    import numpy as np
+    from backend.core import swot
+    a = np.linspace(110, 125, 20)
+    fit = swot.area_level_fit(a, 850 + 0.05 * (a - 110))
+    assert fit["m_per_km2"] == __import__("pytest").approx(0.05) and fit["r2"] > 0.999
+    v = swot.volume_change([1986, 2024], [206.0, 118.0], fit)
+    assert v[0]["dV_km3"] == 0 and v[0]["extrapolated"] and not v[1]["extrapolated"]
+    assert v[1]["dV_km3"] == __import__("pytest").approx(0.05 * (118 ** 2 - 206 ** 2) / 2e3)
+
+
+def test_swot_run_without_pld_writes_ok_false(tmp_path):
+    from backend.core import swot
+    out = swot.run("burdur", out_path=str(tmp_path / "swot.json"))
+    assert out["ok"] is False and "PLD" in out["reason"]
