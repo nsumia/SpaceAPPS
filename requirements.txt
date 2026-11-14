@@ -13,3 +13,7 @@ matplotlib
 requests
 pytest
 dask
+pyogrio
+fastapi
+uvicorn
+httpx
