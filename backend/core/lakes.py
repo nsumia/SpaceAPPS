@@ -45,9 +45,9 @@ LAKES.update({
     "mead": dict(name="Lake Mead", country="US", bbox=(-114.85, 36.0, -113.7, 36.6), seed=(-114.014, 36.208), pld_id=None, step=1, **REF,
                  why="Reservoir; drought and water allocation (Colorado River).",
                  note="Reservoir: area follows operations as well as climate; narrow canyon arms are partly mixed pixels at 30 m."),
-    "chad": dict(name="Lake Chad", country="TD/NE/NG/CM", bbox=(13.0, 12.0, 15.3, 14.6), seed=(14.536, 13.061), pld_id=None, step=2, **REF,
+    "chad": dict(name="Lake Chad", country="TD/NE/NG/CM", bbox=(13.0, 12.0, 15.3, 14.6), seed=(14.536, 13.061), pld_id=None, step=1, start=2013, **REF,
                  why="Sahel climate variability; shared by Chad, Niger, Nigeria and Cameroon. Data-only description.",
-                 note="MNDWI limitation: shallow lake with extensive floating/emergent vegetation and seasonal flooding; open water is under- or mis-estimated and the Aug-Sep window is the rising season (the lake peaks in Dec-Feb), so annual values depend on rainfall timing. Treat the trend as indicative only."),
+                 note="Series starts in 2013: the Planetary Computer Landsat 5/8/9 collection has no Aug-Sep scenes over the lake before 2013 (checked with STAC searches for 1985-2010), and Landsat 7 is excluded by design, so there is no 1985-1990 baseline (the first 3 valid years are used instead). MNDWI limitation: shallow lake with extensive floating/emergent vegetation and seasonal flooding; open water is under- or mis-estimated and the Aug-Sep window is the rising season (the lake peaks in Dec-Feb), so annual values depend on rainfall timing. Treat the trend as indicative only."),
     "poopo": dict(name="Poopo", country="BO", bbox=(-67.8, -19.6, -66.5, -17.6), seed=(-67.181, -18.614), pld_id=None, step=1, **REF,
                   why="Shallow lake with complete desiccation events (2015-16).",
                   note="MNDWI limitation: very shallow, turbid, saline water with vegetation and salt crust; mud/wet flats can be mixed with water and zero-area years are real drying or classification limits. Southern hemisphere: water year Apr-Mar for climate."),
@@ -76,6 +76,7 @@ LAKES.update({
 def years_for(cfg, start=1985, end=2025):
     """Analysis years for the lake's cadence: every `step` years from start, plus the last year."""
     step = int(cfg.get("step", 1))
+    start = max(start, int(cfg.get("start", start)))
     return sorted(set(range(start, end + 1, step)) | {end})
 
 

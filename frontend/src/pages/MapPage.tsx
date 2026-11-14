@@ -55,6 +55,7 @@ export default function MapPage() {
           <div><i style={{ background: "#9a9a9a" }} /> {t("leg.ns")}</div>
           <div><i style={{ background: "#56B4E9" }} /> {t("leg.inc")}</div>
           <div className="small muted">{t("leg.size")}</div>
+          <div className="small muted">{t("leg.turkey")}</div>
         </div>
         {!sel && <div className="hint">{lakes.isLoading ? t("map.loading") : t("map.hint")}</div>}
         {lake && years && <Timeline lakeId={lake.id} years={years} year={y} setYear={setYear} />}

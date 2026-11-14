@@ -183,6 +183,131 @@ export interface components {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
         };
+        /** LakeSummary */
+        LakeSummary: {
+            /** Id */
+            id: string;
+            /** Alias */
+            alias?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Country */
+            country?: string | null;
+            /** Centre */
+            centre?: number[] | null;
+            /**
+             * Group
+             * @enum {string}
+             */
+            group: "turkey" | "reference" | "custom";
+            /** Validated */
+            validated: boolean;
+            /** Unverified */
+            unverified: boolean;
+            /** Years */
+            years?: number[] | null;
+            /** Latest Area Km2 */
+            latest_area_km2?: number | null;
+            /** Latest Area Year */
+            latest_area_year?: number | null;
+            /** Ref Mean Km2 */
+            ref_mean_km2?: number | null;
+            /**
+             * Ref Years
+             * @default []
+             */
+            ref_years: number[];
+            /**
+             * Recent Years
+             * @default []
+             */
+            recent_years: number[];
+            /** Recent Mean Km2 */
+            recent_mean_km2?: number | null;
+            /** Total Loss Pct */
+            total_loss_pct?: number | null;
+            /** Total Loss Basis */
+            total_loss_basis: string;
+            /** Trend Pct Per Decade */
+            trend_pct_per_decade?: number | null;
+            /** Trend P */
+            trend_p?: number | null;
+            /** Trend Direction */
+            trend_direction?: string | null;
+            /** Emergence Year */
+            emergence_year?: number | null;
+            /** Emergence Status */
+            emergence_status?: string | null;
+            /**
+             * Emergence Censored At Ref End
+             * @default false
+             */
+            emergence_censored_at_ref_end: boolean;
+            /** Emergence Note */
+            emergence_note?: string | null;
+            /** Warming C Per Decade */
+            warming_c_per_decade?: number | null;
+            /** Warming Basis */
+            warming_basis?: string | null;
+            /** Warming Pooled C Per Decade */
+            warming_pooled_c_per_decade?: number | null;
+            /** Warming Sensor Break Caveat */
+            warming_sensor_break_caveat: string;
+            /** Climate Explained Share */
+            climate_explained_share?: number | null;
+            /** Climate Explained Ci90 */
+            climate_explained_ci90?: number[] | null;
+            /**
+             * Climate Interpretable
+             * @default false
+             */
+            climate_interpretable: boolean;
+            /**
+             * Climate Ci Includes Zero
+             * @default false
+             */
+            climate_ci_includes_zero: boolean;
+            /**
+             * Climate Flags
+             * @default []
+             */
+            climate_flags: string[];
+            /** Climate Wording */
+            climate_wording?: string | null;
+            /** Reliability */
+            reliability: string;
+            /** Reliability Note */
+            reliability_note?: string | null;
+            /** Status */
+            status?: string | null;
+            /** Why Selected */
+            why_selected?: string | null;
+            /** Mndwi Note */
+            mndwi_note?: string | null;
+            /** Resolution M */
+            resolution_m?: number | null;
+            /** Cadence Note */
+            cadence_note?: string | null;
+            /** Cadence Years */
+            cadence_years?: number | null;
+            /** Years Analysed */
+            years_analysed?: number[] | null;
+            /** Window */
+            window?: string[] | null;
+            /** Literature Direction */
+            literature_direction?: string | null;
+            /** Our Direction */
+            our_direction?: string | null;
+            /** Literature Agrees */
+            literature_agrees?: boolean | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** LakesResponse */
+        LakesResponse: {
+            /** Lakes */
+            lakes: components["schemas"]["LakeSummary"][];
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -240,7 +365,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["LakesResponse"];
                 };
             };
         };

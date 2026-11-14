@@ -12,6 +12,7 @@ from fastapi.staticfiles import StaticFiles
 
 from backend.api import live_cache, store
 from backend.api.jobs import JobManager
+from backend.api.models import LakesResponse
 from backend.api.store import Settings
 
 MAX_POLYGON_KM2 = 20_000.0
@@ -107,7 +108,7 @@ def create_app(settings=None, runner=None):
     def health():
         return {"status": "ok"}
 
-    @app.get("/api/lakes", summary="Summary of all computed lakes")
+    @app.get("/api/lakes", summary="Summary of all computed lakes", response_model=LakesResponse)
     def lakes():
         return {"lakes": store.list_lakes(st)}
 
@@ -223,7 +224,7 @@ def create_app(settings=None, runner=None):
         series, missing = store.compare(st, keys, metric)
         if missing:
             raise HTTPException(404, f"unknown lake(s): {', '.join(missing)}")
-        notes = ["Normalised to the mean of 1985-1990 (area: 100 % = that mean; LST: degrees C difference to that mean)."]
+        notes = ["Normalised to the mean of 1985-1990 (area: 100 % = that mean; LST: degrees C difference to that mean). Lakes without valid 1985-1990 years (reference_years in the response) use their first 3 valid years instead."]
         if metric == "lst_anomaly":
             notes.append(store.LST_SENSOR_BREAK)
         return dict(metric=metric, base_period=list(store.REF), series=series, notes=notes)

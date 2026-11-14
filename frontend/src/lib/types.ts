@@ -10,6 +10,9 @@ export interface LakeSummary {
   climate_explained_share: number | null; climate_explained_ci90: [number, number] | null; climate_interpretable: boolean;
   climate_ci_includes_zero: boolean; climate_flags: string[]; climate_wording: string | null;
   reliability: string; reliability_note: string | null; status: string | null;
+  ref_years?: number[]; recent_years?: number[]; recent_mean_km2?: number | null;
+  why_selected?: string | null; mndwi_note?: string | null; resolution_m?: number | null; cadence_note?: string | null; cadence_years?: number | null;
+  years_analysed?: number[] | null; window?: string[] | null; literature_direction?: string | null; our_direction?: string | null; literature_agrees?: boolean | null;
 }
 export interface SeriesRow { year: number; area_km2: number | null; valid_frac?: number | null; lst_c?: number | null; volatile?: boolean }
 export interface Trend { n: number; trend: string; p: number; sen_slope_per_year: number; sen_slope_per_decade: number; intercept: number; intercept_year: number }

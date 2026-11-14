@@ -9,8 +9,16 @@ import numpy as np
 
 from backend.core.lakes import ROOT
 
-# Lakes whose area series was checked against literature (VALIDATION.md section 2, Burdur: Sabuncu 2020 206 / 125 km2).
-VALIDATED = {"burdur"}
+# Validation (VALIDATION.md): Turkish lakes are validated (Burdur quantitatively against Sabuncu 2020, the others by the
+# Stage 2-3 checks listed there). Reference lakes get the badge only when our trend direction matches the general
+# literature direction below. Directions are GENERAL (decline / increase / stable / mixed), see VALIDATION.md for the
+# sources actually checked; "mixed" and "stable" lakes never get the badge.
+LITERATURE = {
+    "urmia": "decline", "aral_south": "decline", "aral_north": "increase", "great_salt_lake": "decline", "mead": "decline",
+    "chad": "mixed", "poopo": "decline", "titicaca": "stable", "balkhash": "mixed", "sevan": "mixed",
+    "tuz": "decline", "qinghai": "increase", "dead_sea": "decline",
+}
+_DIRS = {"decreasing": "decline", "increasing": "increase", "no trend": "stable"}
 LST_SENSOR_BREAK = ("Landsat 5 -> 8 step of about +3 C at 2012/13 (Stage 1): warming_c_per_decade uses Landsat 5 only "
                     "(1985-2012); the pooled slope (warming_pooled_c_per_decade) contains the sensor break and overstates warming.")
 REF = (1985, 1990)
@@ -72,6 +80,12 @@ def valid_rows(series, min_valid):
     return [r for r in series if r.get("area_km2") is not None and (r.get("valid_frac") or 0) >= min_valid]
 
 
+def ref_rows(rows):
+    """Baseline rows: 1985-1990 valid years; if there are none (late-starting or sparsely covered lakes) the first 3 valid years."""
+    ref = [r for r in rows if REF[0] <= r["year"] <= REF[1]]
+    return (ref, [REF[0], REF[1]]) if ref else (rows[:3], [rows[0]["year"], rows[:3][-1]["year"]] if rows else [REF[0], REF[1]])
+
+
 def centre(rec):
     p = os.path.join(rec["dir"], "masks", "lake_polygon.geojson")
     if os.path.exists(p):
@@ -88,11 +102,16 @@ def latest_area(st, key):
     return (round(rows[-1]["area_km2"], 1), rows[-1]["year"]) if rows else (None, None)
 
 
+def alias_of(meta, key):
+    return meta.get("alias") or key
+
+
 def summary(st, key):
     rec = record(st, key)
     s, meta, stats = rec["series"], rec["meta"], rec["series"].get("stats") or {}
     rows = valid_rows(s["series"], s.get("min_valid", 0.8))
-    ref = [r["area_km2"] for r in rows if REF[0] <= r["year"] <= REF[1]]
+    refr, ref_years = ref_rows(rows)
+    ref = [r["area_km2"] for r in refr]
     ref_mean = float(np.mean(ref)) if ref else None
     last = [r["area_km2"] for r in rows[-3:]]
     area = stats.get("area")
@@ -102,6 +121,9 @@ def summary(st, key):
         if area:
             trend = round(100 * area["sen_slope_per_decade"] / ref_mean, 2)
     em = stats.get("area_emergence") or {}
+    lit = LITERATURE.get(alias_of(meta, key))
+    ours = _DIRS.get(area["trend"]) if area else None
+    lit_agrees = None if (lit is None or ours is None or lit in ("mixed",)) else (ours == lit)
     l5 = stats.get("lst_1985_2012")
     pooled = stats.get("lst_all")
     dec = ((rec["climate"] or {}).get("decomposition")) or {}
@@ -109,11 +131,16 @@ def summary(st, key):
     alias = meta.get("alias")
     group = meta.get("group") or ("custom" if custom else ("turkey" if meta.get("country") == "TR" else "reference"))
     return dict(
+        why_selected=meta.get("why_selected"), mndwi_note=meta.get("mndwi_note"), resolution_m=meta.get("resolution_m"),
+        cadence_note=meta.get("cadence_note"), cadence_years=meta.get("cadence_years"), years_analysed=meta.get("years_analysed"),
+        window=meta.get("window"), literature_direction=lit, our_direction=ours, literature_agrees=lit_agrees,
+        ref_years=ref_years, recent_years=[r["year"] for r in rows[-3:]],
+        recent_mean_km2=round(float(np.mean(last)), 1) if last else None,
         id=meta.get("lake_id", key), alias=alias, name=meta.get("name") or s.get("lake"), country=meta.get("country"),
-        centre=centre(rec), group=group, validated=bool(alias in VALIDATED and not custom), unverified=bool(custom),
+        centre=centre(rec), group=group, validated=bool(not custom and (group == "turkey" or lit_agrees is True)), unverified=bool(custom),
         years=meta.get("years"), latest_area_km2=latest_area(st, key)[0], latest_area_year=latest_area(st, key)[1],
         ref_mean_km2=None if ref_mean is None else round(ref_mean, 1),
-        total_loss_pct=loss, total_loss_basis=f"mean {REF[0]}-{REF[1]} vs mean of last 3 valid years",
+        total_loss_pct=loss, total_loss_basis=f"mean {ref_years[0]}-{ref_years[1]} vs mean of last 3 valid years",
         trend_pct_per_decade=trend, trend_p=area and round(area["p"], 6), trend_direction=area and area["trend"],
         emergence_year=em.get("year"), emergence_status=em.get("status"),
         emergence_censored_at_ref_end=bool(em.get("censored_at_ref_end")), emergence_note=em.get("censored_note"),
@@ -197,14 +224,15 @@ def compare(st, ids, metric):
         field_ = "area_km2" if metric == "area_pct" else "lst_c"
         if metric == "lst_anomaly":
             rows = [r for r in rows if r.get("lst_c") is not None]
-        ref = [r[field_] for r in rows if REF[0] <= r["year"] <= REF[1]]
+        refr, ref_years = ref_rows(rows)
+        ref = [r[field_] for r in refr]
         if not ref:
             out[k] = dict(name=rec["meta"].get("name"), years=[], values=[], error="no valid 1985-1990 reference years")
             continue
         m = float(np.mean(ref))
         vals = [100 * r[field_] / m if metric == "area_pct" else r[field_] - m for r in rows]
         out[k] = dict(
-            name=rec["meta"].get("name"), id=rec["meta"].get("lake_id", k), reference_mean=round(m, 2),
+            name=rec["meta"].get("name"), id=rec["meta"].get("lake_id", k), reference_mean=round(m, 2), reference_years=ref_years,
             years=[r["year"] for r in rows], values=[round(v, 2) for v in vals],
             reliability=(s.get("reliability") or {}).get("reliability", "unknown"))
     return out, missing

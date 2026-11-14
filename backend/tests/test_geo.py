@@ -19,8 +19,21 @@ def test_all_defined_lakes_have_utm_and_box_contains_seed():
     from shapely.geometry import box
     for k, d in LAKES.items():
         assert box(*d["bbox"]).contains(Point(*d["seed"])), k
-        assert 32600 < geo.utm_epsg(*d["seed"]) < 32661
+        e = geo.utm_epsg(*d["seed"])
+        assert 32600 < e < 32661 or 32700 < e < 32761, k
     assert geo.utm_epsg(*LAKES["van"]["seed"], width_deg=1.6) == 32638
+    assert geo.utm_epsg(*LAKES["titicaca"]["seed"]) == 32719       # southern hemisphere: 327xx
+    assert geo.utm_epsg(*LAKES["poopo"]["seed"]) == 32719
+
+
+def test_reference_lakes_defined():
+    from backend.core.lakes import years_for
+    ref = [k for k, d in LAKES.items() if d.get("group") == "reference"]
+    assert len(ref) >= 10 and all(LAKES[k].get("why") and LAKES[k].get("note") for k in ref)
+    assert "caspian" not in " ".join(ref)
+    ys = years_for(LAKES["aral_south"])
+    assert ys[0] == 1985 and ys[-1] == 2025 and len(ys) >= 10 and ys == sorted(set(ys))
+    assert years_for(LAKES["burdur"]) == list(range(1985, 2026))
 
 
 def test_wide_lake_warns():
@@ -46,7 +59,7 @@ def test_bbox_area_sane():
 def test_custom_lake_id_stable():
     assert geo.custom_lake_id(30.18, 37.72) == geo.custom_lake_id(30.18, 37.72)
     assert geo.custom_lake_id(30.18, 37.72).startswith("custom-") and lake_id("burdur").startswith("custom-")
-    assert len({lake_id(k) for k in LAKES}) == 4
+    assert len({lake_id(k) for k in LAKES}) == len(LAKES)
 
 
 def two_lakes():

@@ -24,6 +24,8 @@ from backend.core.lakes import LAKES, ROOT, lake_dir, lake_id, years_for
 from backend.core.stats import compute_stats, sen_line
 
 DETECT_YEARS = range(1985, 1991)
+DETECT_EXTRA_YEARS = range(1991, 1996)    # used when fewer than 3 of 1985-90 are usable (sparse early Landsat 5 coverage)
+DETECT_MIN_VALID = 0.2                    # per-year share of the box with valid pixels; pooling uses per-pixel valid counts
 
 
 def git_version():
@@ -48,10 +50,12 @@ def detect_polygon(catalog, bbox, seed, max_cloud, log=print, res=None, window=(
     bx = box(*bbox)
     water, valid, tf = None, None, None
     used = []
-    for y in DETECT_YEARS:
+    for y in list(DETECT_YEARS) + list(DETECT_EXTRA_YEARS):
+        if y in DETECT_EXTRA_YEARS and len(used) >= 3:
+            break
         row = landsat.year_with_retries(catalog, bx, box_geojson(bx), y, 0.0, max_cloud,
                                         crs=crs, pixel_m=res, return_masks=True, window=window)
-        if row.get("error") or row["n_scenes"] == 0 or row["valid_frac"] < 0.5:
+        if row.get("error") or row["n_scenes"] == 0 or row["valid_frac"] < DETECT_MIN_VALID:
             log(f"  detect {y}: skipped (scenes={row['n_scenes']} valid={row['valid_frac']} err={row['error']})")
             continue
         w, v = row["water"], row["valid"]
@@ -197,7 +201,7 @@ def run(alias, start=1985, end=2025, out_dir=None, thresh=0.0, max_cloud=40, min
     meta = dict(lake_id=lake_id(alias), alias=alias, name=cfg["name"], country=cfg["country"],
                 generated=datetime.now(timezone.utc).isoformat(timespec="seconds"), code_version=git_version(),
                 resolution_m=res, thermal_erosion_m=landsat.LST_EROSION_M, utm_epsg=epsg, bbox=list(bbox), seed=list(seed),
-                years=[int(start), int(end)], years_analysed=[int(y) for y in years], cadence_years=int(cfg.get("step", 1)),
+                years=[int(years[0]), int(years[-1])], years_analysed=[int(y) for y in years], cadence_years=int(cfg.get("step", 1)),
                 cadence_note=("every year" if int(cfg.get("step", 1)) == 1 else f"every {int(cfg.get('step', 1))}th year (plus {end}) to fit the time budget; not interpolated"),
                 resolution_reason=("override for very large lake" if cfg.get("res_m") else "adaptive by polygon area"),
                 window=list(window), group=cfg.get("group", "turkey" if cfg["country"] == "TR" else "reference"),

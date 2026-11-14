@@ -40,7 +40,7 @@ def test_lakes_contract(client):
     r = client.get("/api/lakes")
     assert r.status_code == 200
     lakes = {x["alias"]: x for x in r.json()["lakes"]}
-    assert set(lakes) == {"burdur", "van", "aksehir", "egirdir"}
+    assert {"burdur", "van", "aksehir", "egirdir"} <= set(lakes)   # plus the Stage 6 reference lakes
     b = lakes["burdur"]
     for k in ("id", "name", "country", "centre", "total_loss_pct", "trend_pct_per_decade", "trend_p", "emergence_year",
               "emergence_censored_at_ref_end", "warming_c_per_decade", "warming_sensor_break_caveat",
