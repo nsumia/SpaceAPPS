@@ -17,8 +17,8 @@ const sceneTooltip = (t: TFn) => (ps: any) => {
 
 const base = (t: TFn, yName: string): EChartsOption => ({
   backgroundColor: "transparent", textStyle: { color: C.text },
-  grid: { left: 52, right: 14, top: 34, bottom: 52 },
-  legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 10 }, itemWidth: 14 },
+  grid: { left: 56, right: 18, top: 38, bottom: 78 },
+  legend: { bottom: 0, textStyle: { color: C.muted, fontSize: 11 }, itemWidth: 14 },
   tooltip: { trigger: "axis" },
   xAxis: { type: "value", name: t("ax.year"), nameLocation: "middle", nameGap: 24, min: "dataMin", max: "dataMax", scale: true,
     axisLabel: { color: C.muted, formatter: (v: number) => String(v) }, axisLine: { lineStyle: { color: C.grid } }, splitLine: { show: false } },
@@ -26,10 +26,18 @@ const base = (t: TFn, yName: string): EChartsOption => ({
     axisLabel: { color: C.muted }, splitLine: { lineStyle: { color: C.grid } } },
 });
 
-function Frame({ title, source, children, note }: { title: string; source: string; children: React.ReactNode; note?: React.ReactNode }) {
+/** "not computable / not interpretable: weak_reference_skill: ...; share_outside_0_1: ..." -> plain sentences (raw text kept as a small technical line). */
+export function plainReasons(w: string | undefined, t: TFn): string[] {
+  if (!w) return [];
+  return w.replace(/^[^:]*:\s*/, "").split(/;\s*/).map((x) => x.split(":")[0].trim()).map((c) => t(`flag.${c}`)).filter((x) => !x.startsWith("flag."));
+}
+
+function Frame({ title, source, children, note, help }: { title: string; source: string; children: React.ReactNode; note?: React.ReactNode; help?: string }) {
+  const { t } = useI18n();
   return (
     <section className="chart">
       <h4>{title}</h4>
+      {help && <p className="what" data-testid="chart-help"><strong>{t("what")}:</strong> {help}</p>}
       {children}
       <div className="src">{source}</div>
       {note}
@@ -62,7 +70,7 @@ export function lstOption(d: LakeFull, t: TFn): EChartsOption {
   const l5 = d.stats?.lst_1985_2012;
   const b = base(t, t("ax.temp"));
   const series: any[] = [{ name: t("ser.lst"), type: "line", data: rows.map((r) => pt(r, r.lst_c)), color: C.temp, symbolSize: 5,
-    markLine: { symbol: "none", lineStyle: { color: C.muted, type: "dotted" }, data: [{ xAxis: 2012.5, label: { formatter: "L5 / L8", color: C.muted } }] } }];
+    markLine: { symbol: "none", lineStyle: { color: C.muted, type: "dotted" }, data: [{ xAxis: 2012.5, label: { formatter: "Landsat 5 | 8", color: C.muted, position: "insideEndTop" } }] } }];
   if (l5) series.push({ name: t("ser.lst5"), type: "line", showSymbol: false, color: "#f5c04a", lineStyle: { type: "dashed" },
     data: [1985, 2012].map((y) => [y, l5.intercept + l5.sen_slope_per_year * (y - l5.intercept_year)]) });
   return { ...b, series, tooltip: { trigger: "axis", formatter: sceneTooltip(t) } };
@@ -84,10 +92,10 @@ export function AreaChart({ d }: { d: LakeFull }) {
   const { t } = useI18n();
   const em = d.stats?.area_emergence;
   return (
-    <Frame title={t("chart.area")} source={t("chart.source.landsat")}
+    <Frame title={t("chart.area")} help={t("help.area")} source={t("chart.source.landsat")}
       note={<>{em?.censored_at_ref_end ? <div className="note small">{em.censored_note}</div> : null}
         {d.series.some(oneScene) ? <div className="small muted" data-testid="onescene-note">{t("chart.onescene")}</div> : null}</>}>
-      <ReactECharts option={areaOption(d, t)} style={{ height: 230 }} notMerge />
+      <ReactECharts option={areaOption(d, t)} style={{ height: 260 }} notMerge />
     </Frame>
   );
 }
@@ -95,8 +103,8 @@ export function AreaChart({ d }: { d: LakeFull }) {
 export function LstChart({ d }: { d: LakeFull }) {
   const { t } = useI18n();
   return (
-    <Frame title={t("chart.lst")} source={t("chart.source.landsat")} note={<div className="note small">{t("lst.break")}. {d.lst.note}</div>}>
-      <ReactECharts option={lstOption(d, t)} style={{ height: 210 }} notMerge />
+    <Frame title={t("chart.lst")} help={t("help.lst")} source={t("chart.source.landsat")} note={<><div className="note small">{t("lst.break")}.</div><details className="small muted"><summary>{t("tech.note")}</summary>{d.lst.note}</details></>}>
+      <ReactECharts option={lstOption(d, t)} style={{ height: 240 }} notMerge />
     </Frame>
   );
 }
@@ -107,15 +115,16 @@ export function ClimateChart({ d }: { d: LakeFull }) {
   const dec = d.climate?.decomposition;
   const ok = !!dec && dec.ok && dec.interpretable !== false;
   return (
-    <Frame title={t("chart.climate")} source={t("chart.source.climate")}
+    <Frame title={t("chart.climate")} help={t("help.climate")} source={t("chart.source.climate")}
       note={<div className="note small">{t("climate.note")} {d.climate?.evaporation_label}</div>}>
-      {ok && dec ? <ReactECharts option={climateOption(dec, t)} style={{ height: 230 }} notMerge /> : (
+      {ok && dec ? <ReactECharts option={climateOption(dec, t)} style={{ height: 260 }} notMerge /> : (
         <div className="na" role="status">
           <strong>{t("climate.na")}</strong>
-          <div>{t("climate.reason")}: {dec?.wording ?? "no climate data"}</div>
+          {plainReasons(dec?.wording, t).map((r) => <div key={r}>{t("climate.reason")}: {r}</div>)}
+          <div className="small muted">{t("tech.raw")} {dec?.wording ?? "no climate data"}</div>
           {dec?.ok && (
             <label className="small"><input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} /> {t("climate.show")}</label>)}
-          {show && dec?.ok && <ReactECharts option={climateOption(dec, t)} style={{ height: 210 }} notMerge />}
+          {show && dec?.ok && <ReactECharts option={climateOption(dec, t)} style={{ height: 240 }} notMerge />}
         </div>)}
     </Frame>
   );
@@ -125,10 +134,10 @@ export function VolumeChart({ d }: { d: LakeFull }) {
   const { t } = useI18n();
   const v = d.volume;
   const opt: EChartsOption | null = v && v.length ? { ...base(t, t("ax.dv")), series: [
-    { name: "dV", type: "line", color: C.water, data: v.map((r) => ({ value: [r.year, r.dV_km3], itemStyle: { opacity: r.extrapolated ? 0.4 : 1 } })) }] } : null;
+    { name: t("ax.dv"), type: "line", color: C.water, data: v.map((r) => ({ value: [r.year, r.dV_km3], itemStyle: { opacity: r.extrapolated ? 0.4 : 1 } })) }] } : null;
   return (
-    <Frame title={t("chart.volume")} source={t("chart.source.swot")}>
-      {opt ? <ReactECharts option={opt} style={{ height: 200 }} notMerge /> : (
+    <Frame title={t("chart.volume")} help={t("help.volume")} source={t("chart.source.swot")}>
+      {opt ? <ReactECharts option={opt} style={{ height: 230 }} notMerge /> : (
         <div className="na" role="status"><strong>{t("volume.none")}</strong><div className="small">{d.swot?.reason ?? ""}</div></div>)}
     </Frame>
   );

@@ -4,9 +4,12 @@ import { useI18n } from "../i18n";
 import { useIndex, useLakes } from "../hooks";
 import { api } from "../lib/api";
 import MapView, { type Basemap, type DrawMode } from "../components/MapView";
-import Panel, { type Selection } from "../components/Panel";
+import Panel, { clampWidth, type PanelLayout, type Selection } from "../components/Panel";
 import Timeline from "../components/Timeline";
 
+const loadLayout = (): PanelLayout => {
+  try { const j = JSON.parse(localStorage.getItem("panelLayout") ?? ""); return { width: clampWidth(Number(j.width) || 430, window.innerWidth), expanded: !!j.expanded }; } catch { return { width: 430, expanded: false }; }
+};
 const yesterday = () => new Date(Date.now() - 86400_000 * 2).toISOString().slice(0, 10);
 
 export default function MapPage() {
@@ -19,6 +22,8 @@ export default function MapPage() {
   const [date, setDate] = useState(yesterday());
   const [draw, setDraw] = useState<DrawMode>("off");
   const [year, setYear] = useState(2025);
+  const [layout, setLayoutState] = useState<PanelLayout>(loadLayout);
+  const setLayout = (l: PanelLayout) => { setLayoutState(l); try { localStorage.setItem("panelLayout", JSON.stringify(l)); } catch { /* private mode */ } };
 
   const lake = lakes.data?.find((l) => l.id === sel?.id);
   const years = lake?.years ?? null;
@@ -36,13 +41,13 @@ export default function MapPage() {
           onDraw={(g) => { setSel({ id: null, name: t("map.draw"), polygon: g }); setDraw("off"); }}
           onBasemapFallback={() => { setBasemap("offline"); setAutoOffline(true); }} />
         <div className="toolbar" data-testid="toolbar">
-          <label>{t("map.basemap")}
+          <label title={t("map.basemap.help")}>{t("map.basemap")}
             <select value={basemap} onChange={(e) => { setBasemap(e.target.value as Basemap); setAutoOffline(false); }}>
               <option value="vector">{t("bm.vector")}</option><option value="bluemarble">{t("bm.blue")}</option>
               <option value="viirs">{t("bm.viirs")}</option><option value="offline">{t("bm.offline")}</option>
             </select></label>
           {basemap === "viirs" && <label>{t("map.date")} <input type="date" value={date} max={yesterday()} onChange={(e) => e.target.value && setDate(e.target.value)} /></label>}
-          <div className="seg" role="group" aria-label={t("map.draw")}>
+          <div className="seg" role="group" aria-label={t("map.draw")} title={t("map.draw.help")}>
             <span>{t("map.draw")}</span>
             <button className={draw === "rectangle" ? "on" : ""} onClick={() => setDraw(draw === "rectangle" ? "off" : "rectangle")} data-testid="draw-rect">{t("map.rect")}</button>
             <button className={draw === "polygon" ? "on" : ""} onClick={() => setDraw(draw === "polygon" ? "off" : "polygon")} data-testid="draw-poly">{t("map.poly")}</button>
@@ -50,7 +55,10 @@ export default function MapPage() {
           </div>
           <button onClick={() => { setSel({ id: "sample-sevan", name: "Sevan (pre-computed sample)", sample: "sevan" }); setDraw("off"); }} data-testid="sample-btn">{t("sample.btn")}</button>
         </div>
-        <div className="legend">
+        <div className={"stack" + (lake && years ? " above-timeline" : "")} data-testid="stack">
+        {autoOffline && <div className="hint" role="status" data-testid="offline-note">{t("map.offline_auto")}</div>}
+        {!sel && <div className="hint">{lakes.isLoading ? t("map.loading") : t("map.hint")}</div>}
+        <div className={"legend"} data-testid="legend">
           <strong>{t("map.legend")}</strong>
           <div><i style={{ background: "#a50f15" }} /> {t("leg.fast")}</div>
           <div><i style={{ background: "#d6604d" }} /> {t("leg.slow")}</div>
@@ -59,11 +67,10 @@ export default function MapPage() {
           <div className="small muted">{t("leg.size")}</div>
           <div className="small muted">{t("leg.turkey")}</div>
         </div>
-        {autoOffline && <div className="hint" style={{ bottom: 52 }} role="status" data-testid="offline-note">{t("map.offline_auto")}</div>}
-        {!sel && <div className="hint">{lakes.isLoading ? t("map.loading") : t("map.hint")}</div>}
+        </div>
         {lake && years && <Timeline lakeId={lake.id} years={years} year={y} setYear={setYear} />}
       </div>
-      {sel && <Panel sel={sel} onClose={() => setSel(null)} />}
+      {sel && <Panel sel={sel} onClose={() => setSel(null)} layout={layout} onLayout={setLayout} />}
     </div>
   );
 }

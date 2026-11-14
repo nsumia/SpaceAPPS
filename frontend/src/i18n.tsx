@@ -1,3 +1,4 @@
+import { enX, trX } from "./i18n-extra";
 import { createContext, useContext, useState, type ReactNode } from "react";
 
 export type Lang = "en" | "tr";
@@ -83,6 +84,8 @@ const tr: Record<string, string> = {
   "methods.title": "Yöntem ve sınırlamalar",
   "err.generic": "Bir sorun oluştu", "retry": "Tekrar dene",
 };
+Object.assign(en, enX);
+Object.assign(tr, trX);
 const dict = { en, tr };
 
 export function makeT(lang: Lang): TFn {

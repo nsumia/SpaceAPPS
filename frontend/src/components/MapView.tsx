@@ -171,7 +171,9 @@ export default function MapView(props: MapProps) {
         pr.current.onSelect({ id: r.id, name: r.name, polygon: r.polygon });
       } catch { /* no lake at this point */ }
     });
-    return () => { try { drawRef.current?.stop(); } catch { /* ignore */ } map.remove(); mapRef.current = null; };
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => map.resize()) : null;
+    ro?.observe(el.current!);
+    return () => { ro?.disconnect(); try { drawRef.current?.stop(); } catch { /* ignore */ } map.remove(); mapRef.current = null; };
   }, []);
 
   const first = useRef(true);

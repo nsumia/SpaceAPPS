@@ -26,10 +26,18 @@ describe("charts", () => {
     const o: any = areaOption(burdurFull, makeT("en"));
     const obs = o.series.find((s: any) => s.markLine);
     expect(obs.markLine.data[0].xAxis).toBe(1997);
-    expect(obs.markLine.data[0].label.formatter).toBe("emerged by 1997");
-    expect(o.series.some((s: any) => s.name === "Sen trend")).toBe(true);
+    expect(obs.markLine.data[0].label.formatter).toBe("clearly changed by 1997");
+    expect(o.series.some((s: any) => s.name === "overall trend (Sen slope)")).toBe(true);
     expect(o.xAxis.name).toBe("Year");
-    expect(o.yAxis.name).toBe("Area (km2)");
+    expect(o.yAxis.name).toBe("Area (km²)");
+  });
+});
+
+describe("chart help", () => {
+  it("every panel chart has a 'What this shows' caption", () => {
+    render(<><ClimateChart d={burdurFull} /><VolumeChart d={burdurFull} /></>);
+    expect(screen.getAllByTestId("chart-help").length).toBe(2);
+    expect(screen.getAllByText("What this shows:").length).toBe(2);
   });
 });
 
