@@ -1,0 +1,97 @@
+{
+ "lake_id": "custom-1fa272fa",
+ "alias": "burdur",
+ "name": "Burdur",
+ "country": "TR",
+ "generated": "2026-11-14T13:16:17+00:00",
+ "code_version": "b7fcd44",
+ "resolution_m": 30,
+ "thermal_erosion_m": 150,
+ "utm_epsg": 32636,
+ "bbox": [
+  29.95,
+  37.6,
+  30.45,
+  37.9
+ ],
+ "seed": [
+  30.18,
+  37.72
+ ],
+ "years": [
+  1985,
+  2025
+ ],
+ "scene_counts": {
+  "total": 285,
+  "per_year": {
+   "1985": 7,
+   "1986": 4,
+   "1987": 8,
+   "1988": 8,
+   "1989": 6,
+   "1990": 8,
+   "1991": 8,
+   "1992": 6,
+   "1993": 8,
+   "1994": 8,
+   "1995": 7,
+   "1996": 8,
+   "1997": 7,
+   "1998": 6,
+   "1999": 7,
+   "2000": 8,
+   "2001": 7,
+   "2002": 2,
+   "2003": 6,
+   "2004": 6,
+   "2005": 3,
+   "2006": 5,
+   "2007": 4,
+   "2008": 5,
+   "2009": 7,
+   "2010": 4,
+   "2011": 4,
+   "2012": 0,
+   "2013": 8,
+   "2014": 7,
+   "2015": 7,
+   "2016": 7,
+   "2017": 8,
+   "2018": 7,
+   "2019": 8,
+   "2020": 8,
+   "2021": 6,
+   "2022": 9,
+   "2023": 14,
+   "2024": 13,
+   "2025": 16
+  }
+ },
+ "lake_polygon": {
+  "method": "largest connected MNDWI>0 component (pixel water in >=50% of valid years) containing the seed, +1 km buffer",
+  "years_used": [
+   1985,
+   1986,
+   1987,
+   1988,
+   1989,
+   1990
+  ],
+  "detect_resolution_m": 60,
+  "detect_crs": "EPSG:32636",
+  "component_km2": 202.5,
+  "box_water_km2": 214.5,
+  "polygon_km2": 291.4
+ },
+ "basin": {
+  "source": "HydroBASINS v1c",
+  "region": "eu",
+  "level": 7,
+  "n_basins": 1,
+  "fallback": false,
+  "area_km2": 5772.6
+ },
+ "min_lst_px": 121028,
+ "masks_encoding": "PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape"
+}

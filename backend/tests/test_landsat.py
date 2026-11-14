@@ -3,7 +3,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import burdur_area as ba
+from backend.core import landsat as ba
+from backend.core import stats as bs
 
 
 def synthetic(n_t=3, size=200, r=60, cloud_frac_scene0=False):
@@ -71,7 +72,8 @@ def test_platform_config_excludes_l7_l4():
 
 def test_default_bbox_excludes_yarisli():
     from shapely.geometry import Point, box
-    assert not box(*ba.DEFAULT_BBOX).contains(Point(29.96, 37.56))
+    from backend.core.lakes import LAKES
+    assert not box(*LAKES["burdur"]["bbox"]).contains(Point(29.96, 37.56))
 
 
 def test_year_with_retries_records_nan_and_error(monkeypatch):
@@ -91,11 +93,44 @@ def test_trend_decreasing_and_break_split():
     area = 200 - 2.0 * (years - 1985) + rng.normal(0, 1, len(years))
     lst = np.where(years <= 2012, 22.0, 24.0) + rng.normal(0, 0.1, len(years))
     df = pd.DataFrame(dict(year=years, area_km2=area, lst_c=lst, valid_frac=1.0))
-    st = ba.compute_stats(df)
+    st = bs.compute_stats(df)
     assert st["area"]["trend"] == "decreasing" and st["area"]["p"] < 0.01
     assert st["area"]["sen_slope_per_decade"] == pytest.approx(-20, abs=2)
     assert st["lst_1985_2012"]["last_year"] == 2012 and st["lst_2013_2025"]["first_year"] == 2013
 
 
 def test_trend_none_when_too_few():
-    assert ba.trend([1, 2, 3], [1, 2, 3]) is None
+    assert bs.trend([1, 2, 3], [1, 2, 3]) is None
+
+
+def test_metric_erosion_independent_of_resolution():
+    # disc of radius 3 km: LST core should hold only pixels >150 m inside, at 30 m and at 60 m alike
+    for px in (30, 60):
+        n = int(8000 / px)
+        yy, xx = np.mgrid[:n, :n]
+        r_px = 3000 / px
+        lake = (yy - n / 2) ** 2 + (xx - n / 2) ** 2 <= r_px ** 2
+        dn_refl = lambda v: round((v - ba.OFFSET) / ba.SCALE)
+        g = np.where(lake, dn_refl(0.10), dn_refl(0.15))[None].astype("uint16")
+        s = np.where(lake, dn_refl(0.02), dn_refl(0.30))[None].astype("uint16")
+        st = np.full(g.shape, round((293.15 - ba.ST_OFFSET) / ba.ST_SCALE), "uint16")
+        res = ba.analyze_arrays(g, s, np.zeros(g.shape, "uint16"), st, pixel_m=px)
+        core_area = res["lst_px"] * px ** 2
+        assert core_area == pytest.approx(np.pi * 2850 ** 2, rel=0.03)
+
+
+def test_radsat_saturated_pixels_masked_from_water_and_lst():
+    lake, g, s, qa, st = synthetic()
+    sat = np.zeros(g.shape, bool)
+    sat[:, :, :100] = True                      # left half saturated in every scene
+    res = ba.analyze_arrays(g, s, qa, st, sat_water=sat)
+    assert res["valid_frac"] == pytest.approx(0.5, abs=0.01)
+    sat_t = np.zeros(g.shape, bool); sat_t[:, lake] = True
+    res = ba.analyze_arrays(g, s, qa, st, sat_thermal=sat_t)
+    assert np.isnan(res["lst_c"]) and res["area_km2"] > 0     # area kept, LST dropped
+
+
+def test_radsat_bits_from_stac():
+    assert ba.RADSAT_BITS["lwir"]["water"][:2] == (1, 4) and ba.RADSAT_BITS["lwir11"]["water"] == (2, 5)
+    rs = np.array([[1 << 1]], "uint16")
+    assert ba._bits(rs, ba.RADSAT_BITS["lwir"]["water"]).all() and not ba._bits(rs, ba.RADSAT_BITS["lwir11"]["water"]).any()
