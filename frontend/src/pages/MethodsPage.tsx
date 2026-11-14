@@ -1,4 +1,5 @@
 import { useI18n } from "../i18n";
+import { GLOSSARY } from "../i18n-extra";
 
 const SOURCES: [string, string, string][] = [
   ["Landsat Collection 2 Level-2 (5, 7, 8, 9) via Microsoft Planetary Computer", "Crawford et al. 2023, Remote Sensing of Environment", "10.1016/j.rse.2023.113776"],
@@ -13,10 +14,17 @@ const SOURCES: [string, string, string][] = [
 ];
 
 export default function MethodsPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   return (
     <div className="page prose">
       <h1>{t("methods.title")}</h1>
+      <h2>{t("how.title")}</h2>
+      <p>{t("how.body")}</p>
+      <h2 id="glossary">{t("gl.title")}</h2>
+      <p className="muted">{t("gl.intro")}</p>
+      <dl className="glossary" data-testid="glossary">
+        {GLOSSARY.map(([term, en, tr]) => (<div key={term}><dt>{term}</dt><dd>{lang === "tr" ? tr : en}</dd></div>))}
+      </dl>
       <h2>Data sources</h2>
       <table>
         <thead><tr><th>Data / method</th><th>Reference</th><th>DOI</th></tr></thead>

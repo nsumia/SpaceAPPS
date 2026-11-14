@@ -45,3 +45,47 @@ describe("compare helpers", () => {
     expect(circleRadius(1e9)).toBe(24);
   });
 });
+
+import { scatterOption, scatterPoints, shareColour, markerSize, shortName } from "../pages/ComparePage";
+import type { LakeSummary } from "./types";
+
+describe("compare scatter", () => {
+  const mk = (o: Partial<LakeSummary>): LakeSummary => ({ ...burdur, group: "reference", ...o } as LakeSummary);
+  const rows = [
+    mk({ id: "a", name: "Urmia", warming_c_per_decade: 0.5, trend_pct_per_decade: -14, climate_interpretable: false, climate_explained_share: null, latest_area_km2: 2700 }),
+    mk({ id: "b", name: "Dead Sea", warming_c_per_decade: 0.6, trend_pct_per_decade: -3, climate_interpretable: true, climate_explained_share: 0.4, latest_area_km2: 593 }),
+    mk({ id: "c", name: "Van", group: "turkey", warming_c_per_decade: 0.6, trend_pct_per_decade: -0.3, climate_interpretable: false, climate_explained_share: 0.9, latest_area_km2: 3500 }),
+    mk({ id: "d", name: "Akşehir", group: "turkey", warming_c_per_decade: 1, trend_pct_per_decade: -28, climate_interpretable: false, climate_explained_share: null, latest_area_km2: 0 }),
+    mk({ id: "e", name: "Aral Sea (South / Large Aral)", warming_c_per_decade: null, trend_pct_per_decade: -24, latest_area_km2: 3700 }),
+  ];
+  it("gives every plotted lake a visible symbol (size > 0, opaque fill, visible border), incl. 'not computable' ones", () => {
+    const o: any = scatterOption(rows, makeT("en"));
+    const pts = o.series.flatMap((s: any) => s.data);
+    expect(pts.length).toBe(4);
+    for (const p of pts) {
+      expect(p.symbolSize).toBeGreaterThanOrEqual(10);
+      expect(p.symbolSize).toBeLessThanOrEqual(30);
+      expect(p.itemStyle.color).toMatch(/^(rgb\(|#)/);
+      expect(p.itemStyle.color).not.toBe("transparent");
+      expect(p.itemStyle.borderColor).toMatch(/^#/);
+      expect(p.itemStyle.borderWidth).toBeGreaterThan(0);
+      expect(p.itemStyle.opacity).toBe(1);
+      expect(p.value.every((v: unknown) => typeof v === "number")).toBe(true);
+    }
+    const urmia = pts.find((p: any) => p.full === "Urmia");
+    expect(urmia.share).toBeNull();                       // not computable -> hollow grey, not invisible
+    expect(urmia.itemStyle.borderColor).toBe("#b8c0cc");
+    expect(o.series.every((s: any) => s.labelLayout?.hideOverlap)).toBe(true);
+  });
+  it("lists lakes without warming values as excluded instead of dropping them silently", () => {
+    const { shown, excluded } = scatterPoints(rows);
+    expect(shown.length).toBe(4);
+    expect(excluded.map((l) => l.name)).toEqual(["Aral Sea (South / Large Aral)"]);
+  });
+  it("colour and size helpers behave", () => {
+    expect(shareColour(0)).not.toBe(shareColour(1));
+    expect(shareColour(null)).toBe("#0f141b");
+    expect(markerSize(0)).toBe(10); expect(markerSize(1e6)).toBe(24); expect(markerSize(3500)).toBeLessThan(24);
+    expect(shortName("Aral Sea (South / Large Aral)")).toBe("Aral Sea (South)");
+  });
+});

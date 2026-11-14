@@ -7,6 +7,7 @@ import { summarySentence } from "../lib/summary";
 import { AreaChart, ClimateChart, LstChart, VolumeChart } from "./Charts";
 import { LiveCards } from "./LiveCards";
 import { Link } from "react-router-dom";
+import { Info } from "./Info";
 import type { Job, LakeFull } from "../lib/types";
 
 export interface Selection { id: string | null; name?: string; polygon?: GeoJSON.Geometry | null; sample?: string }
@@ -16,8 +17,9 @@ export function Badges({ d }: { d: LakeFull }) {
   const s = d.summary, rel = s.reliability;
   return (
     <div className="badges">
-      <span className={"badge " + (s.validated ? "good" : "warn")}>{s.validated ? "✔ " : "? "}{t(s.validated ? "badge.validated" : "badge.unverified")}{s.validated && s.validation_basis ? ` (${s.validation_basis})` : ""}</span>
-      <span className={"badge " + (rel === "low" ? "bad" : rel === "ok" ? "good" : "")}>{rel === "low" ? "⚠ " : ""}{t(`badge.rel.${rel === "ok" || rel === "low" ? rel : "unknown"}`)}</span>
+      <span className={"badge " + (s.validated ? "good" : "warn")} title={t(s.validated ? "tip.validated" : "tip.unverified")}>{s.validated ? "✔ " : "? "}{t(s.validated ? "badge.validated" : "badge.unverified")}{s.validated && s.validation_basis ? ` (${s.validation_basis})` : ""}</span>
+      <span className={"badge " + (rel === "low" ? "bad" : rel === "ok" ? "good" : "")} title={t("tip.rel")}>{rel === "low" ? "⚠ " : ""}{t(`badge.rel.${rel === "ok" || rel === "low" ? rel : "unknown"}`)}</span>
+      <Info text={t("tip.rel")} />
     </div>
   );
 }
@@ -56,7 +58,11 @@ export function AnalysisProgress({ job, started }: { job: Job; started: number }
   );
 }
 
-export default function Panel({ sel, onClose }: { sel: Selection; onClose: () => void }) {
+export interface PanelLayout { width: number; expanded: boolean }
+const MIN_W = 340;
+export const clampWidth = (w: number, vw: number) => Math.round(Math.min(Math.max(w, MIN_W), Math.max(MIN_W, vw * 0.85)));
+
+export default function Panel({ sel, onClose, layout, onLayout }: { sel: Selection; onClose: () => void; layout?: PanelLayout; onLayout?: (l: PanelLayout) => void }) {
   const { t } = useI18n();
   const qc = useQueryClient();
   const lakes = useLakes();
@@ -90,9 +96,27 @@ export default function Panel({ sel, onClose }: { sel: Selection; onClose: () =>
   const inCompare = !!d && (ids.includes(d.summary.id) || (!!d.summary.alias && ids.includes(d.summary.alias)));
   const isSample = !!sel.sample || !!d?.analysis?.sample;
   const canAnalyze = !running && (!d || (d.analysis && d.analysis.status === "failed") || !!sel.sample) && (sel.id || sel.polygon || sel.sample);
+  const lay = layout ?? { width: 430, expanded: false };
+  const drag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!onLayout) return;
+    e.preventDefault();
+    const move = (ev: PointerEvent) => onLayout({ width: clampWidth(window.innerWidth - ev.clientX, window.innerWidth), expanded: false });
+    const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
+    window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+  };
+  const key = (e: React.KeyboardEvent) => {
+    if (!onLayout || (e.key !== "ArrowLeft" && e.key !== "ArrowRight")) return;
+    e.preventDefault();
+    onLayout({ width: clampWidth((lay.expanded ? window.innerWidth * 0.7 : lay.width) + (e.key === "ArrowLeft" ? 40 : -40), window.innerWidth), expanded: false });
+  };
   return (
-    <aside className="panel" data-testid="panel">
-      <button className="close" onClick={onClose} aria-label={t("panel.close")}>×</button>
+    <aside className={"panel" + (lay.expanded ? " expanded" : "")} data-testid="panel" style={{ "--panel-w": lay.expanded ? "min(72vw, 1100px)" : `${lay.width}px` } as React.CSSProperties}>
+      <div className="panel-resize" role="separator" aria-orientation="vertical" tabIndex={0} aria-label={t("panel.resize")} title={t("panel.resize")} data-testid="panel-resize" onPointerDown={drag} onKeyDown={key} />
+      <div className="panel-top">
+        {onLayout && <button className="expand" data-testid="panel-expand" aria-pressed={lay.expanded} onClick={() => onLayout({ ...lay, expanded: !lay.expanded })}
+          title={t(lay.expanded ? "panel.collapse" : "panel.expand")} aria-label={t(lay.expanded ? "panel.collapse" : "panel.expand")}>{lay.expanded ? "⇥" : "⇤"}</button>}
+        <button className="close" onClick={onClose} aria-label={t("panel.close")}>×</button>
+      </div>
       <h2>{d?.summary.name ?? sel.name ?? "…"}</h2>
       {d && <Badges d={d} />}
       {d && <RefInfo s={d.summary} />}
@@ -115,10 +139,12 @@ export default function Panel({ sel, onClose }: { sel: Selection; onClose: () =>
         <>
           <section><h4>{t("sum.title")}</h4><p data-testid="summary">{summarySentence(d.summary, t)}</p></section>
           {known && !isSample && <section><h4>{t("live.title")}</h4><LiveCards live={live.data} loading={live.isLoading} error={live.error as Error | null} /></section>}
+          <div className="charts">
             <AreaChart d={d} />
             <LstChart d={d} />
             {d.climate && <ClimateChart d={d} />}
             {!d.unverified && <VolumeChart d={d} />}
+          </div>
         </>)}
       {lake.isLoading && !!lakeId && <div className="spinner-row"><span className="spinner" /></div>}
     </aside>

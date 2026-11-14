@@ -61,3 +61,38 @@ test("analyze shows the backend 422 message for oversized areas", async ({ page 
   await page.getByTestId("analyze").click();
   await expect(page.getByRole("alert")).toContainText("20,000 km2");
 });
+
+test("expand button widens the side panel, charts follow, state is remembered, collapse restores", async ({ page }) => {
+  await openMap(page);
+  await page.evaluate(() => (window as any).__map.jumpTo({ center: [30.17, 37.75], zoom: 6 }));
+  await page.waitForTimeout(500);
+  const p = await px(page, 30.17, 37.75);
+  await page.mouse.click(p.x, p.y);
+  const panel = page.getByTestId("panel");
+  await expect(panel).toBeVisible({ timeout: 3000 });
+  await expect(panel.locator("canvas").first()).toBeVisible({ timeout: 15_000 });
+  const w0 = (await panel.boundingBox())!.width;
+  const c0 = (await panel.locator("canvas").first().boundingBox())!.width;
+  await page.getByTestId("panel-expand").click();
+  await expect.poll(async () => (await panel.boundingBox())!.width).toBeGreaterThan(w0 + 200);
+  // echarts re-fitted: the canvas got wider (2-column layout) and still lies inside the panel
+  await expect.poll(async () => (await panel.locator("canvas").first().boundingBox())!.width, { timeout: 5000 }).toBeGreaterThan(c0 + 20);
+  const pb = (await panel.boundingBox())!, cb = (await panel.locator("canvas").first().boundingBox())!;
+  expect(cb.x + cb.width).toBeLessThanOrEqual(pb.x + pb.width + 1);
+  expect(await page.evaluate(() => localStorage.getItem("panelLayout"))).toContain('"expanded":true');
+  await expect(panel.getByTestId("chart-help").first()).toContainText("What this shows");
+  await page.getByTestId("panel-expand").click();
+  await expect.poll(async () => Math.abs((await panel.boundingBox())!.width - w0)).toBeLessThan(3);
+  // drag handle resizes (desktop)
+  const h = (await page.getByTestId("panel-resize").boundingBox())!;
+  await page.mouse.move(h.x + 3, h.y + 200); await page.mouse.down(); await page.mouse.move(h.x - 150, h.y + 200, { steps: 6 }); await page.mouse.up();
+  await expect.poll(async () => (await panel.boundingBox())!.width).toBeGreaterThan(w0 + 100);
+});
+
+test("compare scatter explains itself and lists lakes without data", async ({ page }) => {
+  await page.goto("/compare");
+  await expect(page.getByTestId("scatter-help")).toContainText("How to read");
+  await expect(page.getByTestId("scatter-legend")).toContainText("hollow grey = climate share not computable");
+  await expect(page.getByTestId("scatter-excluded")).toContainText("no Landsat 5 warming value");
+  await expect(page.locator("table.rank th .info").first()).toBeVisible();
+});

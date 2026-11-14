@@ -11,8 +11,8 @@ function Card({ title, card, children, date }: { title: string; card?: LiveCard;
     <div className="card" data-testid="live-card">
       <div className="card-h">
         <span>{title}</span>
-        {card?.cached && <span className="tag" data-testid="cache-tag">{t("live.cache")}</span>}
-        {card?.stale && <span className="tag warn">{t("live.stale")}</span>}
+        {card?.cached && <span className="tag" data-testid="cache-tag" title={t("tip.cache")}>{t("live.cache")}</span>}
+        {card?.stale && <span className="tag warn" title={t("tip.stale")}>{t("live.stale")}</span>}
       </div>
       {ok ? <div className="card-v">{children}</div> : <div className="card-v muted">{t("live.nodata")}{card?.error ? <div className="small">{card.error}</div> : null}</div>}
       <div className="src small">
@@ -53,16 +53,16 @@ export function LiveCards({ live, loading, error }: { live?: Live; loading: bool
   return (
     <div className="cards">
       <Card title={t("live.area")} card={l} date={latest}>
-        <b>{num(l?.area_km2)}</b> km2
+        <b>{num(l?.area_km2)}</b> km²
         <div className="small">{t("live.vsly")}: {num(l?.change_vs_last_year_pct)}%</div>
       </Card>
       <Card title={t("live.lst")} card={l} date={latest}>
-        <b>{num(l?.lst_c)}</b> C
-        <div className="small">{t("live.vsly")}: {num(l?.lst_change_vs_last_year_c)} C</div>
+        <b>{num(l?.lst_c)}</b> °C
+        <div className="small">{t("live.vsly")}: {num(l?.lst_change_vs_last_year_c)} °C</div>
       </Card>
       <Card title={t("live.swot")} card={s} date={typeof s?.last_obs === "string" ? s.last_obs : undefined}>
         <b>{num(s?.wse_m, 2)}</b> m
-        <div className="small">1 y: {num(s?.wse_change_1y_m, 2)} m</div>
+        <div className="small">{t("live.swot1y")}: {num(s?.wse_change_1y_m, 2)} m</div>
       </Card>
       <Card title={t("live.precip")} card={p} date={typeof p?.data_until === "string" ? p.data_until : undefined}>
         <b>{num(p?.precip_mm, 0)}</b> mm
