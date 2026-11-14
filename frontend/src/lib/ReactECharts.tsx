@@ -9,6 +9,9 @@ import type { EChartsReactProps } from "echarts-for-react/lib/types";
 
 echarts.use([LineChart, ScatterChart, GridComponent, LegendComponent, MarkLineComponent, TooltipComponent, VisualMapComponent, CanvasRenderer]);
 
+// the package is CommonJS: depending on the bundler the default import is the component or { default: component }
+const Core: React.ComponentType<any> = (EChartsReactCore as any).default ?? EChartsReactCore;
+
 export default function ReactECharts(props: EChartsReactProps) {
-  return <EChartsReactCore echarts={echarts} {...props} />;
+  return <Core echarts={echarts} {...props} />;
 }

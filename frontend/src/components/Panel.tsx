@@ -4,11 +4,7 @@ import { useI18n } from "../i18n";
 import { useCompareIds, useLake, useLakes, useLive } from "../hooks";
 import { api, ApiError } from "../lib/api";
 import { summarySentence } from "../lib/summary";
-import { lazy, Suspense } from "react";
-const AreaChart = lazy(() => import("./Charts").then((m) => ({ default: m.AreaChart })));
-const ClimateChart = lazy(() => import("./Charts").then((m) => ({ default: m.ClimateChart })));
-const LstChart = lazy(() => import("./Charts").then((m) => ({ default: m.LstChart })));
-const VolumeChart = lazy(() => import("./Charts").then((m) => ({ default: m.VolumeChart })));
+import { AreaChart, ClimateChart, LstChart, VolumeChart } from "./Charts";
 import { LiveCards } from "./LiveCards";
 import { Link } from "react-router-dom";
 import type { Job, LakeFull } from "../lib/types";
@@ -119,12 +115,10 @@ export default function Panel({ sel, onClose }: { sel: Selection; onClose: () =>
         <>
           <section><h4>{t("sum.title")}</h4><p data-testid="summary">{summarySentence(d.summary, t)}</p></section>
           {known && !isSample && <section><h4>{t("live.title")}</h4><LiveCards live={live.data} loading={live.isLoading} error={live.error as Error | null} /></section>}
-          <Suspense fallback={<div className="spinner-row" role="status"><span className="spinner" /></div>}>
             <AreaChart d={d} />
             <LstChart d={d} />
             {d.climate && <ClimateChart d={d} />}
             {!d.unverified && <VolumeChart d={d} />}
-          </Suspense>
         </>)}
       {lake.isLoading && !!lakeId && <div className="spinner-row"><span className="spinner" /></div>}
     </aside>

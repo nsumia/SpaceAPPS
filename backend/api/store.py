@@ -34,7 +34,7 @@ class Settings:
     demo_dir: str = os.path.join(ROOT, "data", "demo_cache")     # committed snapshot: seed when live_cache has no entry
     jobs_db: str = os.path.join(ROOT, "data", "jobs.sqlite")
     index_path: str = os.path.join(ROOT, "data", "index", "lakes.geojson")
-    live_ttl_s: int = 3 * 3600
+    live_ttl_s: int = int(os.environ.get("LLD_LIVE_TTL_S", 3 * 3600))      # e2e sets 1 to force the stale path
     sample_delay_s: float = 0.12                  # pause per replayed year of a pre-computed sample job
     start_worker: bool = True
     dist_dir: str = ""

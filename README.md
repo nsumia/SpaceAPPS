@@ -26,3 +26,12 @@ Tests: `tools/run_tests.sh` (pytest + typecheck + Vitest + Playwright e2e when C
 
 ![map and Burdur panel](docs/screenshots/map-burdur-panel.png)
 ![compare](docs/screenshots/compare.png)
+
+## Demo / offline (Stage 7)
+- `docker compose up` -> http://localhost:8000 (single port; `./data` mounted). Works without internet.
+- Before a demo, with internet: `.venv/bin/python -m backend.scripts.prefetch --demo` (live cards for all lakes + VIIRS
+  pictures into `data/live_cache/`, copied to the committed `data/demo_cache/`, which seeds an empty live cache).
+- Offline behaviour: live cards come from the cache and are marked `stale`; the map falls back to the local
+  Natural Earth country borders (`data/index/countries.geojson`, option "Offline" in the basemap list); the
+  "Demo: replay a pre-computed sample" button replays Sevan as a job in a few seconds, labelled as a pre-computed sample.
+- Simulate offline: `LLD_OFFLINE=1 .venv/bin/uvicorn backend.api.main:app` blocks every non-loopback socket.

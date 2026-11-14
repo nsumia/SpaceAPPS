@@ -67,6 +67,9 @@ def create_app(settings=None, runner=None):
     if os.environ.get("LLD_OFFLINE") == "1":          # demo/test: behave like a machine without internet
         from backend.core import offline
         offline.block_network()
+    import logging
+    if not logging.getLogger().handlers:
+        logging.basicConfig(level=logging.INFO)      # job errors (log.exception) must reach the server log
     st = settings or Settings()
     idx = {"v": None, "loaded": False}
 

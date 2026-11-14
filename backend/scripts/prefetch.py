@@ -10,6 +10,7 @@ import shutil
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeout
 
 import requests
 
@@ -71,6 +72,7 @@ def main(argv=None):
     ap.add_argument("--force", action="store_true", help="refetch even when the cache is fresh")
     ap.add_argument("--workers", type=int, default=3)
     ap.add_argument("--lake", action="append", help="limit to these aliases/ids")
+    ap.add_argument("--lake-timeout", type=int, default=300, help="seconds to wait per lake before giving up on it")
     ap.add_argument("--demo", action="store_true", help="copy the result into data/demo_cache/")
     ap.add_argument("--width", type=int, default=600, help="width of the VIIRS picture in px")
     a = ap.parse_args(argv)
@@ -79,14 +81,23 @@ def main(argv=None):
         st.live_ttl_s = 0
     lakes = [lk for lk in store.list_lakes(st) if not lk.get("unverified") and (not a.lake or lk["id"] in a.lake or lk.get("alias") in a.lake)]
     t0, bad = time.time(), 0
-    with ThreadPoolExecutor(a.workers) as ex:
-        for name, lid, cards, snap, dt in ex.map(lambda lk: prefetch_one(st, lk, a.width, a.force), lakes):
-            bad += sum("FAILED" in v for v in cards.values()) + snap.startswith("FAILED")
-            print(f"{name:28s} {dt:6.1f}s  " + "  ".join(f"{k}={v}" for k, v in cards.items()) + f"  viirs={snap}", flush=True)
-    print(f"prefetched {len(lakes)} lakes in {time.time() - t0:.0f}s; failed items: {bad}")
+    ex = ThreadPoolExecutor(a.workers)
+    futs = [(lk, ex.submit(prefetch_one, st, lk, a.width, a.force)) for lk in lakes]
+    timeouts = 0
+    for lk, fut in futs:
+        try:
+            name, lid, cards, snap, dt = fut.result(timeout=a.lake_timeout)
+        except FutureTimeout:      # huge lakes (Balkhash) can take > 10 min per call: give up, report, keep going
+            timeouts += 1
+            print(f"{lk['name']:28s} TIMEOUT after {a.lake_timeout}s (not cached; rerun with a larger --lake-timeout)", flush=True)
+            continue
+        bad += sum("FAILED" in v for v in cards.values()) + snap.startswith("FAILED")
+        print(f"{name:28s} {dt:6.1f}s  " + "  ".join(f"{k}={v}" for k, v in cards.items()) + f"  viirs={snap}", flush=True)
+    print(f"prefetched {len(lakes)} lakes in {time.time() - t0:.0f}s; failed items: {bad}; timeouts: {timeouts}")
     if a.demo:
         print(f"demo_cache: {to_demo(st)} lake files -> {st.demo_dir}")
-    return 0
+    sys.stdout.flush()
+    os._exit(0)          # abandoned worker threads must not keep the process alive
 
 
 if __name__ == "__main__":

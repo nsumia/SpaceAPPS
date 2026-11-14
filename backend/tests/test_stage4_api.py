@@ -26,7 +26,7 @@ def fake_runner(jid, lake_id, request, progress):
 
 @pytest.fixture
 def st(tmp_path):
-    return Settings(custom_dir=str(tmp_path / "custom"), cache_dir=str(tmp_path / "cache"),
+    return Settings(custom_dir=str(tmp_path / "custom"), cache_dir=str(tmp_path / "cache"), demo_dir=str(tmp_path / "demo"),
                     jobs_db=str(tmp_path / "jobs.sqlite"), start_worker=False)
 
 

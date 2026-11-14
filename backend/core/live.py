@@ -2,6 +2,7 @@
 Fixes vs legacy: imports backend.core.landsat (was burdur_area), window_area now returns latest_scene,
 POWER via climate.py (mm/day x days, EVLAND added), SWOT via swot.py with fill filtering, lake boxes from lakes.py.
 Each source fails independently; the error goes into the JSON."""
+import re
 from datetime import date, datetime, timedelta, timezone
 
 import pandas as pd
@@ -15,7 +16,9 @@ def _ok(source, **data):
 
 
 def _fail(source, err):
-    return dict(source=source, ok=False, error=str(err)[:300])
+    """Error text without URL query strings (Planetary Computer errors contain signed SAS tokens: never cache/serve them)."""
+    msg = re.sub(r"\?[^\s'\"]*", "?<query removed>", str(err))
+    return dict(source=source, ok=False, error=msg[:300])
 
 
 def landsat_now(lake, days=45):

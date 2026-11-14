@@ -142,3 +142,9 @@ def test_offline_basemap_countries(tmp_path):
     assert r.status_code == 200
     names = {f["properties"]["name"] for f in r.json()["features"]}
     assert {"Turkey", "Armenia", "Chad", "United States of America"} <= names and len(r.content) < 1_200_000
+
+
+def test_fail_text_has_no_signed_url_query():
+    from backend.core import live
+    e = live._fail("Landsat", RuntimeError("Failed to load https://x.blob.core.windows.net/a.TIF?st=1&sig=SECRET%3D:1 due to error"))
+    assert "SECRET" not in e["error"] and "sig=" not in e["error"] and "a.TIF" in e["error"]
