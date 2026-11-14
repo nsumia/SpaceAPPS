@@ -182,3 +182,21 @@ Reading: only Akşehir and Eğirdir have a usable reference-period relation (cor
 
 ## SWOT volume (swot.json)
 `ok=false` for all four lakes: no PLD id (Hydrocron has no location lookup; the PLD file needs an Earthdata login, not used here; CMR collection search for the PLD returned no public entry). The area-level fit and dV = integral A dh code with an extrapolation flag exists and is unit-tested on synthetic data; it is NOT verified against real SWOT data.
+
+# Stage 4 (API) - Stage 3 review fixes (2026-11-14)
+
+## Akşehir area flips (reliability flag)
+Quick look at the committed masks (`data/lakes/aksehir/masks/<year>.png`, water = 255 px at 30 m): 2014 = 83 px (0.07 km2), 2018 = 60 px, 2021 = 33 px versus 2015 = 118,642 px (106.8 km2) and 2020 = 79,889 px (71.9 km2); valid (non-nodata) pixel counts are identical (valid_frac 1.0), so clouds are not the cause. The lake is shallow and ephemeral after about 2005, so either it really dries up or fills between Aug-Sep composites, or the MNDWI > 0 threshold flips on thin/turbid water. **Not independently checked (no second source, no optical inspection of scenes), so no correction was made.**
+Instead `series.json` now has a per-year `volatile` flag and a lake-level `reliability` (`backend/core/quality.py`): a year is volatile when it differs from the median of its +-2 neighbouring valid years by more than 15 % of the 1985-1990 mean; a lake is `low` when >= 20 % of valid years are volatile. Result: Akşehir `low` (10 of 39 valid years: 2001, 2003, 2007-09, 2013-15, 2018, 2020); Burdur, Eğirdir, Van `ok`. For a `low` lake the single-year areas, trend, emergence year and climate share are not reliable; the API passes `reliability` and `reliability_note` to the UI.
+
+## Emergence censoring
+`emergence()` now returns `censored_at_ref_end` (+ `censored_note`): true when the emergence year is the first post-reference year, i.e. the Sen line was already outside the reference band when the reference period ended, so the real emergence year is earlier or equal. True for Burdur (1997) and Akşehir (1997); false for Eğirdir (2004) and Van (2017). Read 1997 as "by 1997".
+
+## Climate share wording
+`climate.json` decomposition now has `interpretable`, `ci_includes_zero`, `interpretation_flags` and `wording`. Not interpretable ("not computable" in the UI): Burdur and Van (no reference skill, share outside 0-1; Van also < 3 % loss) and Akşehir (new flag `unreliable_area_series`; its 0.62 [0.34, 0.91] must not be read as a result). Eğirdir is interpretable but `ci_includes_zero = true` (0.05 [-0.44, 0.49]): the climate share is not distinguishable from 0 and no climate effect should be claimed. Pooled LST warming is exposed next to the Landsat-5-only rate with the sensor-break caveat (`warming_sensor_break_caveat` in `/api/lakes`).
+
+## Lake index (identify)
+`data/index/lakes.geojson` (1.7 MB, 1,314 lakes): the 4 precomputed analysis polygons + Natural Earth 10m lakes >= 5 km2 (public domain, 2.3 MB zip) simplified to 0.004 deg. HydroLAKES polygons (>= 50 km2 would be ideal) were NOT used: the polygon zip is ~820 MB and was impractical in this run; `build_lake_index.py --hydrolakes <shp>` reads it if present (untested on the real file). Natural Earth is incomplete for small lakes, so most small lakes (including shallow ones like Akşehir-type lakes) are not identifiable except the precomputed ones.
+
+## On-demand analysis (unverified)
+Custom results are written to `data/custom/<id>/` (gitignored), first every 5th year 1985 -> latest complete year, then the gap years, and are always labelled `unverified: true`. No climate decomposition is computed for them (`climate_interpretable: false`). The Landsat path of the runner is NOT exercised by the offline tests (mocked `analyze_year` / `detect`); only the code shared with the precompute is covered by Stage 1-3 runs.
