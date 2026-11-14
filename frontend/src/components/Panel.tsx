@@ -73,7 +73,7 @@ export default function Panel({ sel, onClose }: { sel: Selection; onClose: () =>
   };
 
   const d = lake.data;
-  const inCompare = !!d && ids.includes(d.summary.id);
+  const inCompare = !!d && (ids.includes(d.summary.id) || (!!d.summary.alias && ids.includes(d.summary.alias)));
   const canAnalyze = !running && (!d || (d.analysis && d.analysis.status === "failed")) && (sel.id || sel.polygon);
   return (
     <aside className="panel" data-testid="panel">
@@ -83,7 +83,7 @@ export default function Panel({ sel, onClose }: { sel: Selection; onClose: () =>
       {d?.reliability?.note && d.summary.reliability === "low" && <div className="note bad">{d.reliability.note}</div>}
       {d && (
         <div className="actions">
-          <button onClick={() => (inCompare ? remove(d.summary.id) : add(d.summary.id))} disabled={!inCompare && ids.length >= 6}>
+          <button onClick={() => (inCompare ? remove(d.summary.id, d.summary.alias ?? "") : add(d.summary.id))} disabled={!inCompare && ids.length >= 6}>
             {inCompare ? t("panel.remove") : t("panel.add")}
           </button>
           {ids.length > 0 && <Link to="/compare" className="btn">{t("panel.compare")} ({ids.length})</Link>}

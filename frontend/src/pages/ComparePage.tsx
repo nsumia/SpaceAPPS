@@ -53,7 +53,7 @@ export default function ComparePage() {
     series: Object.entries(cmp.data?.series ?? {}).map(([k, s], i) => ({
       name: `${s.name}${s.reliability === "low" ? " (low reliability)" : ""}`, type: "line" as const, data: s.years.map((y, j) => [y, s.values[j]]), symbolSize: 4,
       color: LAKE_COLOURS[i % 6], lineStyle: { width: 2, type: (["solid", "dashed", "dotted"] as const)[i % 3] }, emphasis: { focus: "series" as const },
-      markLine: i === 0 ? { symbol: "none", silent: true, lineStyle: { color: C.muted, type: "dotted" as const }, data: [{ yAxis: 100 }], label: { formatter: "100%", color: C.muted } } : undefined, id: k })),
+      markLine: i === 0 ? { symbol: "none", silent: true, lineStyle: { color: C.muted, type: "dotted" as const }, data: [{ yAxis: 100 }], label: { formatter: "100%", color: C.muted, position: "insideStartTop" as const } } : undefined, id: k })),
   };
   const sorted = sortLakes(all, key, dir);
   const head = (k: SortKey, label: string) => (
@@ -64,7 +64,7 @@ export default function ComparePage() {
       <h1>{t("cmp.title")}</h1>
       <div className="chips" data-testid="chosen">
         {chosen.length === 0 && <span className="muted">{t("cmp.empty")}</span>}
-        {chosen.map((l, i) => <span key={l.id} className="chip" style={{ borderColor: LAKE_COLOURS[i % 6] }}>{l.name}<button onClick={() => remove(l.id)} aria-label={`${t("cmp.remove")} ${l.name}`}>×</button></span>)}
+        {chosen.map((l, i) => <span key={l.id} className="chip" style={{ borderColor: LAKE_COLOURS[i % 6] }}>{l.name}<button onClick={() => remove(l.id, l.alias ?? "")} aria-label={`${t("cmp.remove")} ${l.name}`}>×</button></span>)}
         <Link to="/" className="btn">{t("nav.map")}</Link>
       </div>
       <section className="chart wide">
@@ -79,10 +79,10 @@ export default function ComparePage() {
           <thead><tr><th />{head("name", t("col.name"))}{head("trend_pct_per_decade", t("col.trend"))}{head("trend_p", t("col.p"))}{head("emergence_year", t("col.emergence"))}
             {head("warming_c_per_decade", t("col.warming"))}{head("climate_explained_share", t("col.climate"))}</tr></thead>
           <tbody>{sorted.map((l) => {
-            const inn = ids.includes(l.id);
+            const inn = ids.includes(l.id) || (!!l.alias && ids.includes(l.alias));
             return (
               <tr key={l.id} className={l.group === "turkey" ? "tr-lake" : ""}>
-                <td><button disabled={!inn && ids.length >= 6} title={ids.length >= 6 && !inn ? t("cmp.max") : ""} onClick={() => (inn ? remove(l.id) : add(l.id))}>{inn ? t("cmp.remove") : t("cmp.add")}</button></td>
+                <td><button disabled={!inn && ids.length >= 6} title={ids.length >= 6 && !inn ? t("cmp.max") : ""} onClick={() => (inn ? remove(l.id, l.alias ?? "") : add(l.id))}>{inn ? t("cmp.remove") : t("cmp.add")}</button></td>
                 <td>{l.group === "turkey" ? "★ " : ""}{l.name}{l.reliability === "low" ? " ⚠" : ""}</td>
                 <td>{fmt(l.trend_pct_per_decade)}</td><td>{l.trend_p == null ? "n/a" : l.trend_p < 0.001 ? "<0.001" : l.trend_p.toFixed(3)}</td>
                 <td>{l.emergence_year == null ? "n/a" : (l.emergence_censored_at_ref_end ? "by " : "") + l.emergence_year}</td>

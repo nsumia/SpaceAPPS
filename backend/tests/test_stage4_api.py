@@ -286,6 +286,7 @@ def test_job_error_is_generic_and_runner_marks_failed(client, st, tmp_path):
 
 
 def test_index_endpoint_and_spa_serving(st, tmp_path):
+    st.dist_dir = str(tmp_path / "nodist")
     c = TestClient(create_app(st, runner=fake_runner))
     r = c.get("/api/index")
     assert r.status_code == 200 and r.json()["features"][0]["properties"]["polygon_area_km2"] > 0

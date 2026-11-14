@@ -1,0 +1,22 @@
+// Manual: node e2e/screenshots.mjs  (needs uvicorn on :8000 with the built frontend; CHROMIUM_PATH optional)
+import { chromium } from "@playwright/test";
+const b = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || undefined,
+  args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--no-sandbox"] });
+const page = await b.newPage({ viewport: { width: 1280, height: 800 } });
+const out = process.env.OUT ?? "../docs/screenshots";
+if (process.env.OFFLINE) await page.route(/openfreemap|gibs\.earthdata/, (r) => r.abort());
+await page.goto("http://127.0.0.1:8000/");
+await page.waitForFunction(() => window.__map?.querySourceFeatures("lakes").length >= 4, null, { timeout: 30000 });
+await page.screenshot({ path: `${out}/map-overview.png` });
+await page.evaluate(() => window.__map.jumpTo({ center: [30.17, 37.75], zoom: 8 }));
+await page.waitForTimeout(800);
+const p = await page.evaluate(() => { const m = window.__map; const q = m.project([30.17, 37.75]); const r = m.getCanvas().getBoundingClientRect(); return { x: r.left + q.x, y: r.top + q.y }; });
+await page.mouse.click(p.x, p.y);
+await page.getByTestId("panel").waitFor();
+await page.waitForTimeout(Number(process.env.LIVE_WAIT ?? 4000));
+await page.screenshot({ path: `${out}/map-burdur-panel.png` });
+await page.evaluate(() => localStorage.setItem("compare", JSON.stringify(["burdur", "van", "aksehir", "egirdir"])));
+await page.goto("http://127.0.0.1:8000/compare");
+await page.waitForTimeout(2500);
+await page.screenshot({ path: `${out}/compare.png`, fullPage: true });
+await b.close();

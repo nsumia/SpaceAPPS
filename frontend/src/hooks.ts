@@ -10,7 +10,7 @@ export const useLive = (id: string | null) =>
   useQuery({ queryKey: ["live", id], queryFn: () => api.live(id!), enabled: !!id, staleTime: 180_000, retry: 0 });
 
 /** Compare selection (max 6) persisted in localStorage and shared via a window event. */
-export function useCompareIds(): [string[], (id: string) => void, (id: string) => void] {
+export function useCompareIds(): [string[], (id: string) => void, (...ids: string[]) => void] {
   const read = (): string[] => { try { return JSON.parse(localStorage.getItem("compare") ?? "[]"); } catch { return []; } };
   const [ids, setIds] = useState<string[]>(read);
   useEffect(() => {
@@ -19,5 +19,5 @@ export function useCompareIds(): [string[], (id: string) => void, (id: string) =
     return () => window.removeEventListener("compare-changed", h);
   }, []);
   const write = (v: string[]) => { localStorage.setItem("compare", JSON.stringify(v)); window.dispatchEvent(new Event("compare-changed")); };
-  return [ids, (id) => { if (!ids.includes(id) && ids.length < 6) write([...ids, id]); }, (id) => write(ids.filter((x) => x !== id))];
+  return [ids, (id) => { if (!ids.includes(id) && ids.length < 6) write([...ids, id]); }, (...rm) => write(ids.filter((x) => !rm.includes(x)))];
 }

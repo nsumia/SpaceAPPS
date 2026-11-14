@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import * as maplibregl from "maplibre-gl";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import type { GeoJSONSource, ImageSource, StyleSpecification } from "maplibre-gl";
 import { TerraDraw, TerraDrawPolygonMode, TerraDrawRectangleMode } from "terra-draw";
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
@@ -7,6 +8,8 @@ import { api } from "../lib/api";
 import { trendColour } from "../lib/compare";
 import type { LakeSummary, MaskJson } from "../lib/types";
 import type { Selection } from "./Panel";
+
+maplibregl.setWorkerUrl(workerUrl);
 
 export type Basemap = "vector" | "bluemarble" | "viirs" | "none";
 export type DrawMode = "off" | "rectangle" | "polygon";
@@ -75,7 +78,8 @@ export default function MapView(props: MapProps) {
 
   const syncAll = () => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map) return;
+    if (!map.isStyleLoaded()) { map.once("idle", syncAll); return; }
     const p = pr.current;
     if (!map.getSource("lakes")) {
       map.addSource("index", { type: "geojson", data: empty });
@@ -161,7 +165,12 @@ export default function MapView(props: MapProps) {
     return () => { try { drawRef.current?.stop(); } catch { /* ignore */ } map.remove(); mapRef.current = null; };
   }, []);
 
-  useEffect(() => { styleOk.current = false; mapRef.current?.setStyle(basemapStyle(props.basemap, props.date)); }, [props.basemap, props.date]);
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    styleOk.current = false;
+    mapRef.current?.setStyle(basemapStyle(props.basemap, props.date));
+  }, [props.basemap, props.date]);
   useEffect(() => { syncAll(); }, [props.lakes, props.index, props.selectedId, props.highlight]);
   useEffect(() => { syncMasks(); }, [props.masks]);
   useEffect(() => {
