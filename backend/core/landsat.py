@@ -121,6 +121,13 @@ def open_catalog():
 
 
 def search_items(catalog, geom_json, start, end, max_cloud=40):
+    # signed URLs are used lazily for minutes: drop cached SAS tokens that expire within 20 min so they cannot die mid-load
+    try:
+        from planetary_computer import sas
+        for k in [k for k, v in sas.TOKEN_CACHE.items() if v.ttl() < 1200]:
+            del sas.TOKEN_CACHE[k]
+    except Exception:  # noqa: BLE001
+        pass
     items = list(catalog.search(
         collections=["landsat-c2-l2"], intersects=geom_json, datetime=f"{start}/{end}",
         query={"platform": {"in": PLATFORMS}, "eo:cloud_cover": {"lt": max_cloud}}).items())

@@ -200,3 +200,67 @@ Instead `series.json` now has a per-year `volatile` flag and a lake-level `relia
 
 ## On-demand analysis (unverified)
 Custom results are written to `data/custom/<id>/` (gitignored), first every 5th year 1985 -> latest complete year, then the gap years, and are always labelled `unverified: true`. No climate decomposition is computed for them (`climate_interpretable: false`). The Landsat path of the runner is NOT exercised by the offline tests (mocked `analyze_year` / `detect`); only the code shared with the precompute is covered by Stage 1-3 runs.
+
+## Stage 6: global reference lakes (Ring 2)
+Run 2026-11-14 with `backend.scripts.precompute` + `backend.scripts.analyze` (code: this branch). Per-lake table made by `tools/ref_table.py` from the committed data. Trend = Hamed-Rao modified Mann-Kendall + Sen slope on the valid years (valid_frac >= 0.8), in % of the 1985-1990 mean (or the first 3 valid years where no 1985-90 year exists) per decade. "Ours" = Mann-Kendall direction at p < 0.05, else "stable" (no significant trend).
+
+| Lake | Country | Res (m) | Cadence | Valid yrs | Area first -> last (km2) | Trend %/decade | p | Ours | Literature | Agree |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Aral Sea (North / Small Aral) | KZ | 60 | every 2nd year, 1985-2025 (chosen to fit the time budget; unobserved years are not interpolated) | 17 | 3094 (1987) -> 3150 (2025) | 1.39 | 0.45 | stable | increase | NO |
+| Aral Sea (South / Large Aral) | KZ/UZ | 240 | every 3rd year, 1985-2025 (chosen to fit the time budget; unobserved years are not interpolated) | 12 | 38291 (1988) -> 3726 (2025) | -24.07 | 8e-06 | decline | decline | yes |
+| Balkhash | KZ | 120 | every 3rd year, 1985-2025 (chosen to fit the time budget; unobserved years are not interpolated) | 8 | 15901 (1994) -> 16746 (2025) | n/a | n/a | n/a | mixed | n/a |
+| Dead Sea | IL/JO | 60 | every year, 1985-2025 | 38 | 687 (1985) -> 593 (2025) | -3.36 | 9e-06 | decline | decline | yes |
+| Great Salt Lake | US | 120 | every 2nd year, 1985-2025 (chosen to fit the time budget; unobserved years are not interpolated) | 20 | 6187 (1985) -> 3901 (2025) | -9.93 | <1e-6 | decline | decline | yes |
+| Lake Chad | TD/NE/NG/CM | 60 | every year, 2013-2025 (series starts late: no earlier Landsat 5 scenes in the archive) | 13 | 392 (2013) -> 399 (2025) | 0.55 | 0.54 | stable | mixed | n/a |
+| Lake Mead | US | 60 | every year, 1985-2025 | 40 | 591 (1985) -> 285 (2025) | -14.21 | <1e-6 | decline | decline | yes |
+| Poopo | BO | 60 | every year, 1985-2025 | 35 | 2675 (1985) -> 1674 (2025) | -15.25 | 0.0016 | decline | decline | yes |
+| Qinghai | CN | 60 | every 2nd year, 1985-2025 (chosen to fit the time budget; unobserved years are not interpolated) | 18 | 4323 (1987) -> 4528 (2025) | 1.18 | 0.32 | stable | increase | NO |
+| Sevan | AM | 60 | every year, 1985-2025 | 37 | 1245 (1985) -> 1262 (2025) | 0.45 | 0.021 | increase | mixed | n/a |
+| Titicaca | PE/BO | 120 | every 2nd year, 1985-2025 (chosen to fit the time budget; unobserved years are not interpolated) | 20 | 8260 (1985) -> 7630 (2025) | -2.85 | 3.8e-05 | decline | stable | NO |
+| Tuz Golu | TR | 60 | every year, 1985-2025 | 39 | 1768 (1985) -> 1503 (2025) | -4.29 | 0.0027 | decline | decline | yes |
+| Urmia | IR | 120 | every 2nd year, 1985-2025 (chosen to fit the time budget; unobserved years are not interpolated) | 20 | 4800 (1985) -> 2707 (2025) | -14.33 | 3e-06 | decline | decline | yes |
+| Akşehir | TR | 30 | every year | 39 | 300 (1985) -> 0 (2025) | -28.29 | <1e-6 | decline | - | n/a |
+| Burdur | TR | 30 | every year | 40 | 206 (1985) -> 116 (2025) | -10.54 | 3e-06 | decline | - | n/a |
+| Eğirdir | TR | 60 | every year | 40 | 471 (1985) -> 412 (2025) | -1.22 | 0.0045 | decline | - | n/a |
+| Van | TR | 60 | every year | 36 | 3556 (1986) -> 3532 (2025) | -0.32 | 0.0073 | decline | - | n/a |
+
+Notes on the table
+- Cadence: lakes with a coarser cadence were run every 2nd or 3rd year (plus 2025) because the full annual run of 13 lakes did not fit the time budget; unobserved years are not interpolated. Resolution is adaptive by polygon area (30 m under 500 km2, 60 m under 5,000 km2, else 120 m) with an override to 240 m for the South Aral (about 40,000 km2). Time-window: 1 Aug - 30 Sep, except Tuz Golu (15 Mar - 15 May, see below).
+- "Valid yrs" are years with >= 80 % valid pixels in the analysis polygon; early Landsat 5 coverage is sparse outside Europe/North America (Poopo, Dead Sea, Balkhash, Aral have missing years).
+- The badge "validated" is given to the Turkish lakes and to reference lakes whose direction matches the literature direction (column Agree = yes). Lakes with literature "mixed" or direction "n/a" get no badge and no agreement test. On-demand lakes stay "unverified".
+
+### Agreement and conflicts, with possible reasons (not tested unless stated)
+- Agree: Urmia, Aral South, Great Salt Lake, Lake Mead, Poopo, Tuz Golu, Dead Sea (all declines; Tuz Golu uses a spring window).
+- Aral North: literature says increase after the 2005 Kokaral dam; we find no significant trend (p = 0.45) from 1987 to 2025. Possible reasons: the 1985-90 baseline is already about 3,100 km2 (before the sea fell apart), so recovery means returning to the baseline rather than exceeding it; dike failure and rebuild; every 2nd year cadence; the area is measured inside the 1985-90 polygon, so any growth beyond it is not counted. Marked as conflict; no badge.
+- Qinghai: literature says increase since about 2002-2004; we find +1.2 %/decade, p = 0.32 (not significant) over 1987-2025 with 18 valid years. Possible reasons: the first half of the record contains the pre-2004 shrinkage so a single monotonic trend test is weak, 2-year cadence, 60 m, change is only about +5 % in area. Direction is positive but not significant; marked as conflict (no badge).
+- Titicaca (control): we find a significant decline of about 2.9 %/decade (8,260 km2 in 1985 to 7,630 km2 in 2025), but the literature direction used was "stable". Possible reasons: the 1985-86 start is a high stand of the lake, level drops in the recent drought years, reeds/shallow bays at 120 m, Aug-Sep window; this is a genuine conflict with the control expectation and the lake is flagged so, no badge. Titicaca should not be used as a "stable" control without this caveat.
+- Lake Chad: series only 2013-2025 (13 valid years): the Planetary Computer Landsat 5/8/9 collection has no Aug-Sep scenes over the lake before 2013 (STAC searches for 1985, 1987, ..., 2010 returned 0 items), and Landsat 7 is excluded by design. Open-water area about 390-400 km2 inside the 1985-1990 detection polygon, no trend (p = 0.54). Literature "mixed", so no agreement test. Vegetation/flooding (MNDWI limitation) means the number is a lower bound.
+- Sevan: significant but small increase (+0.45 %/decade); literature "mixed" (historic drawdown, recovery since the early 2000s), no agreement test.
+- Balkhash: only 8 valid years (1994-2025, every 3rd year, 120 m), fewer than the 10 needed for a trend test, so no trend and no agreement test is reported. Coverage before 1994 is too sparse (Landsat 5 downlink).
+- Dead Sea: a decline of 687 km2 (1985) to 593 km2 (2025) inside the polygon; southern evaporation ponds are excluded only if not connected to the main body (see note on the lake page).
+
+### Method limitations by lake (also shown on each lake page)
+Chad (vegetation, rising-season window), Poopo (shallow, turbid, salt crust), Tuz Golu (salt crust and seasonality; spring window), Great Salt Lake / Urmia / Dead Sea (salt and evaporation ponds may count as water; only the connected component is kept), Titicaca (reeds in shallow bays), Balkhash and Aral (very large: coarse resolution, partial scene coverage, boundary between North and South Aral at 46.1 N is approximate). Transboundary lakes (Aral, Chad, Dead Sea, Titicaca) are described with data only; no statement is made about responsibility.
+
+### Engineering notes
+- Planetary Computer SAS tokens can expire during very long loads ("Chunk and warp failed"): `search_items` now drops cached tokens that expire within 20 min. The first Balkhash run and one Dead Sea year (2022) were affected; both were rerun.
+- Climate decomposition needs >= 8 consecutive reference pairs in 1985-1999, so it is not computable for lakes with 2nd/3rd-year cadence or late starts (climate.json has decomposition ok=false with the reason). HydroBASINS was only available for the eu region; for lakes outside it a 25 km buffer basin is used and flagged (`basin.fallback`).
+
+### Literature directions used (general direction only, no numeric comparison)
+Searches run 2026-11-14 (WebSearch; page content treated as data). "Checked" = a search result snippet/abstract supported the direction; I did not read every full paper. "Unverified" = no source found in the searches.
+
+| Lake | General direction | Source actually seen | Status |
+|---|---|---|---|
+| Urmia | decline | Landsat-based studies: area 4,346.7 km2 (2001) -> 2,285.8 km2 (2015) -> 3,705.9 km2 (2019) (magiran.com/paper/2111816); lake shrank by about 202,000 ha 1987-2020 per Naboureh et al. 2021 as quoted in a review (oesr.thanhdo.edu.vn, 2026 PDF) | checked (snippets); partial recovery after 2015 noted |
+| Aral Sea (South) | decline | Pekel et al. 2016, Nature 540:418-422 (doi 10.1038/nature20584): Aral Sea is the largest single permanent-water loss, >70 % of global net loss in Middle East and Central Asia | checked (summary pages) |
+| Aral Sea (North) | increase / partial recovery | Kokaral dam finished Aug 2005; news/government reports of surface-area growth of about 36 % over 20 years and of a dike failure and rebuild from 2022 (centralasiaclimateportal.org, astanatimes.com, en.wikipedia.org/wiki/Dike_Kokaral) | checked at news level only |
+| Great Salt Lake | decline | Record low 5 Jul 2022 (USGS-based news, phys.org 2022-07); lake dropped about 22 ft since 1986 (CNN/KVIA 2022-07-06); GRL 2025 study: tributary streamflow decline about two-thirds of volume loss (sciencedaily 2025-01-21) | checked |
+| Lake Mead | decline | Level down about 140-160 ft since 2000 (SNWA drought page; Smithsonian 2022 "lowest since 1930s") | checked (level, not area) |
+| Lake Chad | mixed | Open-water area 1,240-2,230 km2 over 2003-2016 with a slight increase (PMC6069056); long-term loss vs 1960s (conference abstracts); numbers depend on whether flooded vegetation is counted | checked, direction "mixed" so no agreement test |
+| Poopó | decline (episodic desiccation) | Satge et al. 2017, Remote Sensing: 26-year Landsat record 1990-2015, lake dried out in 2015, droughts 1994/95/2015 | checked |
+| Titicaca | stable (strong interannual and multidecadal variability, no long-term trend asserted) | Frontiers Climate 2023 (fclim.2023.1325224) on level variability; no source found stating "no trend" | UNVERIFIED as "stable"; treated as control |
+| Balkhash | mixed | NASA Earth Observatory: 70-80 % of inflow from the Ili, inflow reduced since the Kapchagay reservoir (1970); no area time series found | UNVERIFIED (direction) |
+| Sevan | mixed (historic drawdown, level recovery since the early 2000s) | Armenian news/government pages report rising level (ecolur.org, armenpress.am, arka.am); no peer-reviewed analysis seen | checked at news level only |
+| Tuz Golu | decline | Landsat 5/8 study 2000-2020 (TURJAF 2023, agrifoodscience.com/index.php/TURJAF/article/view/4730) reports decrease of the water surface; Springer s10113-020-01656-z links 32-year shrinkage to NAO/AO | checked (abstracts) |
+| Qinghai | increase | Ling et al. 2024, Remote Sensing 16:129: area expanded 1986-2022 (about 2.89 km2/yr), significant increase from about 2002; Frontiers Earth Sci 2022 (feart.2022.1007384) | checked |
+| Dead Sea | decline | Level falling about 1.2 m per year, 1.15 m/yr average 1993-2009 (Globes; Yale e360); surface area follows | checked (level; area follows with bathymetry) |

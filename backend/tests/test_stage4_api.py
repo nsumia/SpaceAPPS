@@ -46,8 +46,11 @@ def test_lakes_contract(client):
               "emergence_censored_at_ref_end", "warming_c_per_decade", "warming_sensor_break_caveat",
               "climate_explained_share", "climate_interpretable", "group", "validated", "reliability"):
         assert k in b, k
-    assert b["group"] == "turkey" and b["validated"] is True and lakes["van"]["validated"] is False
+    assert b["group"] == "turkey" and b["validated"] is True and lakes["van"]["validated"] is True       # Stage 6: all Turkish lakes carry the badge
     assert 35 < b["total_loss_pct"] < 50 and b["trend_pct_per_decade"] < 0 and 36 < b["centre"][1] < 39
+    ref = [x for x in lakes.values() if x["group"] == "reference"]
+    assert len(ref) >= 10 and all(x["why_selected"] and x["mndwi_note"] and x["cadence_note"] for x in ref)
+    assert all(x["validated"] == (x["literature_agrees"] is True) for x in ref)      # badge only when direction agrees
     assert b["emergence_censored_at_ref_end"] is True            # 1997 = first post-reference year
     assert lakes["egirdir"]["emergence_censored_at_ref_end"] is False
     # not computable flags (Stage 3 review item 3)

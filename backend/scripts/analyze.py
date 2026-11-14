@@ -70,7 +70,7 @@ def main(aliases):
     for a in aliases:
         st = refresh_stats(a)
         ae, le, l5 = st["area_emergence"], st["lst_emergence"], st["lst_emergence_1985_2012"]
-        print(a, "area", st["area"]["sen_slope_per_decade"], "emergence", ae and (ae["year"], ae["years_needed"]),
+        print(a, "area", st["area"] and st["area"]["sen_slope_per_decade"], "emergence", ae and (ae["year"], ae["years_needed"]),
               "| lst", le and le["year"], "| lst L5", l5 and (l5["year"], l5["years_needed"]))
         climate.run(a)
         print(a, "swot ok =", swot.run(a)["ok"])

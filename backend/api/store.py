@@ -102,6 +102,16 @@ def latest_area(st, key):
     return (round(rows[-1]["area_km2"], 1), rows[-1]["year"]) if rows else (None, None)
 
 
+def _cadence(meta):
+    n = meta.get("cadence_years")
+    if not n:
+        return meta.get("cadence_note")
+    ys = meta.get("years_analysed") or [0, 0]
+    ords = {1: "every year", 2: "every 2nd year", 3: "every 3rd year"}
+    return f"{ords.get(n, f'every {n}th year')}, {ys[0]}-{ys[-1]} (chosen to fit the time budget; unobserved years are not interpolated)" if n > 1 else \
+        f"every year, {ys[0]}-{ys[-1]}" + (" (series starts late: no earlier Landsat 5 scenes in the archive)" if ys[0] > 1985 else "")
+
+
 def alias_of(meta, key):
     return meta.get("alias") or key
 
@@ -132,7 +142,7 @@ def summary(st, key):
     group = meta.get("group") or ("custom" if custom else ("turkey" if meta.get("country") == "TR" else "reference"))
     return dict(
         why_selected=meta.get("why_selected"), mndwi_note=meta.get("mndwi_note"), resolution_m=meta.get("resolution_m"),
-        cadence_note=meta.get("cadence_note"), cadence_years=meta.get("cadence_years"), years_analysed=meta.get("years_analysed"),
+        cadence_note=_cadence(meta), cadence_years=meta.get("cadence_years"), years_analysed=meta.get("years_analysed"),
         window=meta.get("window"), literature_direction=lit, our_direction=ours, literature_agrees=lit_agrees,
         ref_years=ref_years, recent_years=[r["year"] for r in rows[-3:]],
         recent_mean_km2=round(float(np.mean(last)), 1) if last else None,

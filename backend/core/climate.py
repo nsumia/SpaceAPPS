@@ -235,7 +235,7 @@ def run(alias, force_refetch=False, fetcher=None, cache_dir=None, log=print):
     with open(os.path.join(d, "climate.json"), "w") as f:
         json.dump(out, f, indent=1)
     log(f"{alias}: {n} points, basin {basin_km2:.0f} km2, wy {pe.index.min()}-{pe.index.max()}, "
-        + (f"share={dec['explained_share']:.2f} ci={dec['explained_share_ci90']} no-intercept share={dec0.get('explained_share')} corr={dec['ref_corr_dA_PE']:.2f}" if dec["ok"] else f"decomposition failed: {dec['reason']}"))
+        + (f"share={dec['explained_share']} ci={dec['explained_share_ci90']} no-intercept share={dec0.get('explained_share')} corr={dec['ref_corr_dA_PE']:.2f}" if dec["ok"] else f"decomposition failed: {dec['reason']}"))
     return out
 
 
