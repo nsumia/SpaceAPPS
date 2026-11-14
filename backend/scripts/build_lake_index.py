@@ -49,7 +49,7 @@ def precomputed():
         meta = json.load(open(mp))
         g = shape(json.load(open(pp))["geometry"]).simplify(0.001)
         out.append(dict(id=meta["lake_id"], alias=alias, name=meta["name"], country=meta.get("country"),
-                        area_km2=round(area_km2(g), 1), precomputed=True, source="precomputed", geom=g))
+                        polygon_area_km2=round(area_km2(g), 1), precomputed=True, source="precomputed", geom=g))
     return out
 
 
@@ -67,7 +67,7 @@ def read_shapefile(path, name_fields, area_field=None, min_km2=0.0, source=""):
         if a < min_km2:
             continue
         name = next((str(cols[f][i]) for f in name_fields if f in cols and cols[f][i] not in (None, "") and str(cols[f][i]) != "nan"), None)
-        out.append(dict(name=name, area_km2=round(a, 1), source=source, geom=g.simplify(SIMPLIFY_DEG)))
+        out.append(dict(name=name, polygon_area_km2=round(a, 1), source=source, geom=g.simplify(SIMPLIFY_DEG)))
     return out
 
 
@@ -103,8 +103,8 @@ def build(ne_zip=None, hydrolakes=None, min_km2_hl=50.0, out=OUT, work_dir=None)
         seen.add(f["id"])
         g = round_coords(f["geom"])
         features.append(dict(type="Feature", geometry=mapping(g),
-                             properties={k: f[k] for k in ("id", "alias", "name", "country", "area_km2", "precomputed", "source")}))
-    features.sort(key=lambda x: -x["properties"]["area_km2"])
+                             properties={k: f[k] for k in ("id", "alias", "name", "country", "polygon_area_km2", "precomputed", "source")}))
+    features.sort(key=lambda x: -x["properties"]["polygon_area_km2"])
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w") as fh:
         json.dump(dict(type="FeatureCollection", features=features, note="lake index for /api/identify; see build_lake_index.py"),

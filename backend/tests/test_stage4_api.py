@@ -255,3 +255,48 @@ def test_emergence_censored_at_ref_end_flag():
     gentle = 300.0 - 0.4 * (y - 1985) + np.where(y % 2, 2.0, -2.0)
     g = emergence(gentle, y)
     assert g["emerged"] and g["year"] > 1997 and g["censored_at_ref_end"] is False
+
+
+def test_identify_separates_polygon_and_lake_area(client):
+    j = client.get("/api/identify?lon=30.17&lat=37.75").json()
+    assert "area_km2" not in j and j["polygon_area_km2"] > j["lake_area_km2"] > 0 and j["lake_area_year"] >= 2020
+    b = {x["alias"]: x for x in client.get("/api/lakes").json()["lakes"]}["burdur"]
+    assert b["latest_area_km2"] == j["lake_area_km2"]
+
+
+def test_job_error_is_generic_and_runner_marks_failed(client, st, tmp_path):
+    def boom(jid, lake, req, progress):
+        raise RuntimeError("secret /home/x/path detail")
+    app = create_app(st, runner=boom)
+    c = TestClient(app)
+    jid = c.post("/api/analyze", json={"polygon": SMALL}).json()["job_id"]
+    app.state.jobs.run_pending()
+    j = c.get(f"/api/jobs/{jid}").json()
+    assert j["status"] == "failed" and "secret" not in str(j) and "log" in j["error"]
+    assert "secret" in app.state.jobs.get(jid)["error"]            # detail kept server-side
+    # real runner: failure after the output dir exists -> meta analysis.status == failed
+    def bad(*a, **k):
+        raise RuntimeError("no data")
+    poly = box(30, 37, 30.1, 37.1)
+    with pytest.raises(RuntimeError):
+        jr.run_analysis(st, "custom-bad", dict(polygon=mapping(poly)), lambda **k: None, catalog=object(), detect=bad)
+    import json as _j
+    m = _j.load(open(f"{st.custom_dir}/custom-bad/meta.json"))
+    assert m["analysis"]["status"] == "failed"
+
+
+def test_index_endpoint_and_spa_serving(st, tmp_path):
+    st.dist_dir = str(tmp_path / "nodist")
+    c = TestClient(create_app(st, runner=fake_runner))
+    r = c.get("/api/index")
+    assert r.status_code == 200 and r.json()["features"][0]["properties"]["polygon_area_km2"] > 0
+    assert c.get("/compare").status_code == 404                       # no build: API only
+    dist = tmp_path / "dist"
+    (dist / "assets").mkdir(parents=True)
+    (dist / "index.html").write_text("<html>app</html>")
+    (dist / "assets" / "a.js").write_text("1")
+    st.dist_dir = str(dist)
+    c = TestClient(create_app(st, runner=fake_runner))
+    for p in ("/", "/compare", "/methods"):
+        assert c.get(p).text == "<html>app</html>", p
+    assert c.get("/assets/a.js").status_code == 200 and c.get("/api/health").json() == {"status": "ok"}

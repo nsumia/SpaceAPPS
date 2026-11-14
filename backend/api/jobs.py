@@ -1,6 +1,7 @@
 """SQLite job queue (data/jobs.sqlite). One dispatcher thread, max `max_concurrent` (2) analyses at a time.
 States: queued -> running -> done | failed. Requests for a lake that already has a queued/running job attach to it."""
 import json
+import logging
 import sqlite3
 import threading
 import time
@@ -10,6 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 SCHEMA = """CREATE TABLE IF NOT EXISTS jobs (
   id TEXT PRIMARY KEY, lake_id TEXT NOT NULL, status TEXT NOT NULL, progress REAL DEFAULT 0, current_year INTEGER,
   phase TEXT, error TEXT, request TEXT, created REAL, updated REAL)"""
+log = logging.getLogger("jobs")
 ACTIVE = ("queued", "running")
 
 
@@ -75,6 +77,7 @@ class JobManager:
                         lambda **kw: self.update(job["id"], **kw))
             self.update(job["id"], status="done", progress=100.0, phase="complete")
         except Exception as e:  # noqa: BLE001
+            log.exception("job %s (%s) failed", job["id"], job["lake_id"])
             self.update(job["id"], status="failed", error=str(e)[:500])
         finally:
             with self._lock:

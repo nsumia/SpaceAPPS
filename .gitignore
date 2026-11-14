@@ -8,3 +8,6 @@ data/jobs.sqlite
 .env
 data/raw/
 data/custom/
+test-results/
+playwright-report/
+frontend/openapi.json
