@@ -1,1 +1,1 @@
-{"precip":{"good":{"source":"NASA POWER (PRECTOTCORR)","ok":true,"fetched_utc":"2026-11-14T16:44:43+00:00","water_year_start":"2026-10-01","data_until":"2026-11-11","precip_mm":20.7,"normal_mm":12.7,"pct_of_normal":163},"good_ts":1794674591.2466483}}
+{"precip":{"good":{"source":"NASA POWER (PRECTOTCORR)","ok":true,"fetched_utc":"2026-11-14T17:51:48+00:00","water_year_start":"2026-10-01","data_until":"2026-11-11","precip_mm":20.7,"normal_mm":12.7,"pct_of_normal":163},"good_ts":1794678643.3467116}}

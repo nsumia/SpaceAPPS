@@ -148,3 +148,22 @@ def test_fail_text_has_no_signed_url_query():
     from backend.core import live
     e = live._fail("Landsat", RuntimeError("Failed to load https://x.blob.core.windows.net/a.TIF?st=1&sig=SECRET%3D:1 due to error"))
     assert "SECRET" not in e["error"] and "sig=" not in e["error"] and "a.TIF" in e["error"]
+
+
+# Lakes that cannot have a cached demo entry (documented exception list; keep empty unless unavoidable).
+DEMO_CACHE_EXCEPTIONS: set[str] = set()
+
+
+def test_every_lake_has_demo_cache_json_and_snapshot():
+    root = os.path.join(store.ROOT, "data")
+    missing = []
+    for d in sorted(os.listdir(os.path.join(root, "lakes"))):
+        mp = os.path.join(root, "lakes", d, "meta.json")
+        if not os.path.exists(mp) or d in DEMO_CACHE_EXCEPTIONS:
+            continue
+        lid = json.load(open(mp)).get("lake_id", d)
+        if not os.path.exists(os.path.join(root, "demo_cache", f"{lid}.json")):
+            missing.append(f"{d}: no demo_cache/{lid}.json")
+        if not os.path.exists(os.path.join(root, "demo_cache", "gibs", f"{lid}.jpg")):
+            missing.append(f"{d}: no demo_cache/gibs/{lid}.jpg")
+    assert not missing, missing

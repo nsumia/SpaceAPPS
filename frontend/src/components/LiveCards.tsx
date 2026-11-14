@@ -28,7 +28,12 @@ function Snapshot({ card }: { card?: LiveCard }) {
   const live = typeof card?.image_url === "string" ? card.image_url : null;
   const snap = typeof card?.snapshot_url === "string" ? card.snapshot_url : null;
   const [src, setSrc] = useState(live ?? snap);
-  if (!src) return null;
+  if (!src) return (
+    <div className="card" data-testid="gibs-card-empty">
+      <div className="card-h"><span>{t("live.snapshot")}</span></div>
+      <div className="card-v muted">{t("live.nocache")}</div>
+    </div>
+  );
   return (
     <div className="card" data-testid="gibs-card">
       <div className="card-h"><span>{t("live.snapshot")}</span>{src === snap && <span className="tag" data-testid="cache-tag">{t("live.cache")}</span>}</div>

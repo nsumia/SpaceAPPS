@@ -33,6 +33,15 @@ test("offline: local basemap, all lakes, cached live cards, compare, sample job"
   await expect(page.getByTestId("live-card").filter({ hasText: "Water area" }).locator(".card-v b")).toHaveText(/\d/);
   await expect(page.locator("canvas").first()).toBeVisible();
   await page.screenshot({ path: process.env.SHOT_OFFLINE ?? "test-results/offline-map.png" });
+  // 2b. second lake (Van): cached snapshot image really loads offline
+  await page.evaluate(() => (window as any).__map.jumpTo({ center: [42.95, 38.65], zoom: 6 }));
+  await page.waitForTimeout(500);
+  const pv = await px(page, 42.95, 38.65);
+  await page.mouse.click(pv.x, pv.y);
+  await expect(page.getByRole("heading", { name: "Van" })).toBeVisible({ timeout: 5000 });
+  const img = page.getByTestId("gibs-card").locator("img");
+  await expect(img).toBeVisible({ timeout: 20_000 });
+  await expect.poll(() => img.evaluate((e: HTMLImageElement) => e.complete && e.naturalWidth > 100), { timeout: 10_000 }).toBe(true);
   // 3. compare screen with two lakes
   await page.evaluate(() => localStorage.setItem("compare", JSON.stringify(["burdur", "van", "urmia"])));
   await page.goto("/compare");

@@ -80,7 +80,7 @@ def main(argv=None):
     if a.force:
         st.live_ttl_s = 0
     lakes = [lk for lk in store.list_lakes(st) if not lk.get("unverified") and (not a.lake or lk["id"] in a.lake or lk.get("alias") in a.lake)]
-    t0, bad = time.time(), 0
+    t0, bad, warn = time.time(), 0, 0
     ex = ThreadPoolExecutor(a.workers)
     futs = [(lk, ex.submit(prefetch_one, st, lk, a.width, a.force)) for lk in lakes]
     timeouts = 0
@@ -91,13 +91,15 @@ def main(argv=None):
             timeouts += 1
             print(f"{lk['name']:28s} TIMEOUT after {a.lake_timeout}s (not cached; rerun with a larger --lake-timeout)", flush=True)
             continue
-        bad += sum("FAILED" in v for v in cards.values()) + snap.startswith("FAILED")
+        # SWOT has no keyless access (Earthdata login): a known gap, reported as a warning, not a failure
+        bad += sum("FAILED" in v for n, v in cards.items() if n != "swot") + snap.startswith("FAILED")
+        warn += sum("FAILED" in v for n, v in cards.items() if n == "swot")
         print(f"{name:28s} {dt:6.1f}s  " + "  ".join(f"{k}={v}" for k, v in cards.items()) + f"  viirs={snap}", flush=True)
-    print(f"prefetched {len(lakes)} lakes in {time.time() - t0:.0f}s; failed items: {bad}; timeouts: {timeouts}")
+    print(f"prefetched {len(lakes)} lakes in {time.time() - t0:.0f}s; failed items: {bad}; timeouts: {timeouts}; swot warnings (known gap): {warn}")
     if a.demo:
         print(f"demo_cache: {to_demo(st)} lake files -> {st.demo_dir}")
     sys.stdout.flush()
-    os._exit(0)          # abandoned worker threads must not keep the process alive
+    os._exit(1 if (bad or timeouts) else 0)          # abandoned worker threads must not keep the process alive
 
 
 if __name__ == "__main__":
