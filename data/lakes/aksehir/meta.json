@@ -1,0 +1,97 @@
+{
+ "lake_id": "custom-2b08b181",
+ "alias": "aksehir",
+ "name": "Ak\u015fehir",
+ "country": "TR",
+ "generated": "2026-11-14T13:50:08+00:00",
+ "code_version": "35446b5",
+ "resolution_m": 30,
+ "thermal_erosion_m": 150,
+ "utm_epsg": 32636,
+ "bbox": [
+  31.05,
+  38.25,
+  31.7,
+  38.8
+ ],
+ "seed": [
+  31.4,
+  38.5
+ ],
+ "years": [
+  1985,
+  2025
+ ],
+ "scene_counts": {
+  "total": 164,
+  "per_year": {
+   "1985": 3,
+   "1986": 5,
+   "1987": 4,
+   "1988": 4,
+   "1989": 6,
+   "1990": 4,
+   "1991": 4,
+   "1992": 6,
+   "1993": 4,
+   "1994": 5,
+   "1995": 7,
+   "1996": 4,
+   "1997": 3,
+   "1998": 4,
+   "1999": 5,
+   "2000": 4,
+   "2001": 3,
+   "2002": 2,
+   "2003": 4,
+   "2004": 3,
+   "2005": 3,
+   "2006": 3,
+   "2007": 3,
+   "2008": 4,
+   "2009": 4,
+   "2010": 5,
+   "2011": 2,
+   "2012": 0,
+   "2013": 4,
+   "2014": 4,
+   "2015": 3,
+   "2016": 4,
+   "2017": 4,
+   "2018": 3,
+   "2019": 3,
+   "2020": 3,
+   "2021": 3,
+   "2022": 4,
+   "2023": 7,
+   "2024": 6,
+   "2025": 8
+  }
+ },
+ "lake_polygon": {
+  "method": "largest connected MNDWI>0 component (pixel water in >=50% of valid years) containing the seed, +1 km buffer",
+  "years_used": [
+   1985,
+   1986,
+   1987,
+   1988,
+   1989,
+   1990
+  ],
+  "detect_resolution_m": 60,
+  "detect_crs": "EPSG:32636",
+  "component_km2": 285.3,
+  "box_water_km2": 312.7,
+  "polygon_km2": 372.2
+ },
+ "basin": {
+  "source": "HydroBASINS v1c",
+  "region": "eu",
+  "level": 7,
+  "n_basins": 1,
+  "fallback": false,
+  "area_km2": 8102.0
+ },
+ "min_lst_px": 17,
+ "masks_encoding": "PNG uint8: 0 no data, 90 land, 255 water; grid.json has crs/affine/shape"
+}

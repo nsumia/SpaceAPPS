@@ -517,6 +517,52 @@
    "year_gaps": 0,
    "first_year": 2013,
    "last_year": 2025
+  },
+  "area_emergence": {
+   "sigma": 1.6062567707977777,
+   "ref_mean": 189.64829999999998,
+   "ref_years": [
+    1985,
+    1996
+   ],
+   "k": 2.0,
+   "threshold": 3.2125135415955555,
+   "direction": "decreasing",
+   "emerged": true,
+   "year": 1997,
+   "status": "emerged",
+   "years_needed": 0.0
+  },
+  "lst_emergence": {
+   "sigma": 0.984559708962751,
+   "ref_mean": 22.525833333333335,
+   "ref_years": [
+    1985,
+    1996
+   ],
+   "k": 2.0,
+   "threshold": 1.969119417925502,
+   "direction": "increasing",
+   "emerged": true,
+   "year": 2006,
+   "status": "emerged",
+   "years_needed": 0.0
+  },
+  "lst_emergence_note": "LST switches Landsat 5 -> 8 at 2012/13 (step of ~3 C); the pooled emergence year is dominated by this sensor break, see lst_emergence_1985_2012 (Landsat 5 only)",
+  "lst_emergence_1985_2012": {
+   "sigma": 0.984559708962751,
+   "ref_mean": 22.525833333333335,
+   "ref_years": [
+    1985,
+    1996
+   ],
+   "k": 2.0,
+   "threshold": 1.969119417925502,
+   "direction": "increasing",
+   "emerged": true,
+   "year": 2011,
+   "status": "emerged",
+   "years_needed": 0.0
   }
  }
 }
