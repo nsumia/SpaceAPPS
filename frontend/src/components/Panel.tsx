@@ -4,12 +4,16 @@ import { useI18n } from "../i18n";
 import { useCompareIds, useLake, useLakes, useLive } from "../hooks";
 import { api, ApiError } from "../lib/api";
 import { summarySentence } from "../lib/summary";
-import { AreaChart, ClimateChart, LstChart, VolumeChart } from "./Charts";
+import { lazy, Suspense } from "react";
+const AreaChart = lazy(() => import("./Charts").then((m) => ({ default: m.AreaChart })));
+const ClimateChart = lazy(() => import("./Charts").then((m) => ({ default: m.ClimateChart })));
+const LstChart = lazy(() => import("./Charts").then((m) => ({ default: m.LstChart })));
+const VolumeChart = lazy(() => import("./Charts").then((m) => ({ default: m.VolumeChart })));
 import { LiveCards } from "./LiveCards";
 import { Link } from "react-router-dom";
 import type { Job, LakeFull } from "../lib/types";
 
-export interface Selection { id: string | null; name?: string; polygon?: GeoJSON.Geometry | null }
+export interface Selection { id: string | null; name?: string; polygon?: GeoJSON.Geometry | null; sample?: string }
 
 export function Badges({ d }: { d: LakeFull }) {
   const { t } = useI18n();
@@ -78,7 +82,7 @@ export default function Panel({ sel, onClose }: { sel: Selection; onClose: () =>
   const start = async () => {
     setErr(null);
     try {
-      const body = sel.polygon && !sel.id ? { polygon: sel.polygon } : { lake_id: sel.id! };
+      const body = sel.sample ? { sample: sel.sample } : sel.polygon && !sel.id ? { polygon: sel.polygon } : { lake_id: sel.id! };
       const r = await api.analyze(body);
       started.current = Date.now();
       setLakeId(r.lake_id ?? lakeId);
@@ -88,7 +92,8 @@ export default function Panel({ sel, onClose }: { sel: Selection; onClose: () =>
 
   const d = lake.data;
   const inCompare = !!d && (ids.includes(d.summary.id) || (!!d.summary.alias && ids.includes(d.summary.alias)));
-  const canAnalyze = !running && (!d || (d.analysis && d.analysis.status === "failed")) && (sel.id || sel.polygon);
+  const isSample = !!sel.sample || !!d?.analysis?.sample;
+  const canAnalyze = !running && (!d || (d.analysis && d.analysis.status === "failed") || !!sel.sample) && (sel.id || sel.polygon || sel.sample);
   return (
     <aside className="panel" data-testid="panel">
       <button className="close" onClick={onClose} aria-label={t("panel.close")}>×</button>
@@ -103,20 +108,23 @@ export default function Panel({ sel, onClose }: { sel: Selection; onClose: () =>
           </button>
           {ids.length > 0 && <Link to="/compare" className="btn">{t("panel.compare")} ({ids.length})</Link>}
         </div>)}
-      {canAnalyze && <button className="primary" onClick={start} data-testid="analyze">{sel.polygon && !sel.id ? t("an.analyze_area") : t("an.analyze")}</button>}
+      {isSample && <div className="note warn" data-testid="sample-label"><strong>{t("sample.label")}</strong></div>}
+      {canAnalyze && <button className="primary" onClick={start} data-testid="analyze">{sel.sample ? (d ? t("sample.replay") : t("an.analyze")) : sel.polygon && !sel.id ? t("an.analyze_area") : t("an.analyze")}</button>}
       {err && <div className="note bad" role="alert"><strong>{t("an.error")}:</strong> {err}</div>}
       {job.data && running && <AnalysisProgress job={job.data} started={started.current} />}
       {job.data?.status === "failed" && <div className="note bad" role="alert">{t("an.failed")}: {job.data.error}</div>}
       {running && d && <div className="note">{t("an.prelim")}</div>}
-      {d?.unverified && <div className="note warn">{t("an.unverified")}</div>}
+      {d?.unverified && !isSample && <div className="note warn">{t("an.unverified")}</div>}
       {d && d.series.length > 0 && (
         <>
           <section><h4>{t("sum.title")}</h4><p data-testid="summary">{summarySentence(d.summary, t)}</p></section>
-          {known && <section><h4>{t("live.title")}</h4><LiveCards live={live.data} loading={live.isLoading} error={live.error as Error | null} /></section>}
-          <AreaChart d={d} />
-          <LstChart d={d} />
-          {d.climate && <ClimateChart d={d} />}
-          {!d.unverified && <VolumeChart d={d} />}
+          {known && !isSample && <section><h4>{t("live.title")}</h4><LiveCards live={live.data} loading={live.isLoading} error={live.error as Error | null} /></section>}
+          <Suspense fallback={<div className="spinner-row" role="status"><span className="spinner" /></div>}>
+            <AreaChart d={d} />
+            <LstChart d={d} />
+            {d.climate && <ClimateChart d={d} />}
+            {!d.unverified && <VolumeChart d={d} />}
+          </Suspense>
         </>)}
       {lake.isLoading && !!lakeId && <div className="spinner-row"><span className="spinner" /></div>}
     </aside>

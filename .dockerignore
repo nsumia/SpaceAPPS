@@ -1,0 +1,13 @@
+.git
+.venv
+**/node_modules
+frontend/dist
+frontend/test-results
+frontend/playwright-report
+data/raw
+data/custom
+data/jobs.sqlite
+data/live_cache
+legacy
+**/__pycache__
+reports

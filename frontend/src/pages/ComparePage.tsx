@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import ReactECharts from "echarts-for-react";
+import ReactECharts from "../lib/ReactECharts";
 import type { EChartsOption } from "echarts";
 import { Link } from "react-router-dom";
 import { useI18n } from "../i18n";

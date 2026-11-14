@@ -1,9 +1,19 @@
 import { useState } from "react";
-import ReactECharts from "echarts-for-react";
+import ReactECharts from "../lib/ReactECharts";
 import type { EChartsOption } from "echarts";
 import { C } from "../lib/palette";
 import { useI18n, type TFn } from "../i18n";
 import type { LakeFull } from "../lib/types";
+
+/** Years that rest on a single Landsat scene are drawn hollow and say "1 scene" in the tooltip. */
+export const oneScene = (r: { n_scenes?: number | null }) => r.n_scenes != null && r.n_scenes <= 1;
+const pt = (r: { year: number; n_scenes?: number | null }, v: number | null | undefined) =>
+  oneScene(r) ? { value: [r.year, v], n: 1, symbol: "emptyCircle", symbolSize: 8, itemStyle: { borderWidth: 2 } } : { value: [r.year, v] };
+const sceneTooltip = (t: TFn) => (ps: any) => {
+  const arr = (Array.isArray(ps) ? ps : [ps]).filter((p) => p.value && p.value[1] != null && p.seriesName && p.seriesType === "line" && !p.componentType?.startsWith?.("markLine"));
+  if (!arr.length) return "";
+  return `${arr[0].value[0]}<br/>` + arr.map((p: any) => `${p.marker} ${p.seriesName}: ${Number(p.value[1]).toFixed(1)}${p.data?.n === 1 ? ` (${t("tip.1scene")})` : ""}`).join("<br/>");
+};
 
 const base = (t: TFn, yName: string): EChartsOption => ({
   backgroundColor: "transparent", textStyle: { color: C.text },
@@ -39,23 +49,23 @@ export function areaOption(d: LakeFull, t: TFn): EChartsOption {
     series.push({ name: t("ser.band"), type: "line", data: [[x0, hi - lo], [x1, hi - lo]], showSymbol: false, silent: true, lineStyle: { opacity: 0 }, stack: "band",
       areaStyle: { color: C.climate, opacity: 0.22 }, tooltip: { show: false } });
   }
-  series.push({ name: t("ser.observed"), type: "line", data: rows.map((r) => [r.year, r.area_km2]), color: C.water, symbolSize: 5, lineStyle: { width: 2 },
+  series.push({ name: t("ser.observed"), type: "line", data: rows.map((r) => pt(r, r.area_km2)), color: C.water, symbolSize: 5, lineStyle: { width: 2 },
     markLine: em?.year != null ? { symbol: "none", lineStyle: { color: C.emergence, type: "dashed" }, data: [{ xAxis: em.year,
       label: { formatter: t(em.censored_at_ref_end ? "em.by" : "em.at", { year: em.year }), color: C.emergence, position: "insideEndTop" } }] } : undefined });
   if (a) series.push({ name: t("ser.sen"), type: "line", showSymbol: false, color: C.loss, lineStyle: { type: "dashed", width: 2 },
     data: [x0, x1].map((y) => [y, a.intercept + a.sen_slope_per_year * (y - a.intercept_year)]) });
-  return { ...b, series, legend: { ...(b.legend as object), data: [t("ser.observed"), t("ser.sen"), t("ser.band")] } };
+  return { ...b, series, tooltip: { trigger: "axis", formatter: sceneTooltip(t) }, legend: { ...(b.legend as object), data: [t("ser.observed"), t("ser.sen"), t("ser.band")] } };
 }
 
 export function lstOption(d: LakeFull, t: TFn): EChartsOption {
   const rows = d.series.filter((r) => r.lst_c != null);
   const l5 = d.stats?.lst_1985_2012;
   const b = base(t, t("ax.temp"));
-  const series: any[] = [{ name: t("ser.lst"), type: "line", data: rows.map((r) => [r.year, r.lst_c]), color: C.temp, symbolSize: 5,
+  const series: any[] = [{ name: t("ser.lst"), type: "line", data: rows.map((r) => pt(r, r.lst_c)), color: C.temp, symbolSize: 5,
     markLine: { symbol: "none", lineStyle: { color: C.muted, type: "dotted" }, data: [{ xAxis: 2012.5, label: { formatter: "L5 / L8", color: C.muted } }] } }];
   if (l5) series.push({ name: t("ser.lst5"), type: "line", showSymbol: false, color: "#f5c04a", lineStyle: { type: "dashed" },
     data: [1985, 2012].map((y) => [y, l5.intercept + l5.sen_slope_per_year * (y - l5.intercept_year)]) });
-  return { ...b, series };
+  return { ...b, series, tooltip: { trigger: "axis", formatter: sceneTooltip(t) } };
 }
 
 export function climateOption(dec: NonNullable<NonNullable<LakeFull["climate"]>["decomposition"]>, t: TFn): EChartsOption {
@@ -75,7 +85,8 @@ export function AreaChart({ d }: { d: LakeFull }) {
   const em = d.stats?.area_emergence;
   return (
     <Frame title={t("chart.area")} source={t("chart.source.landsat")}
-      note={em?.censored_at_ref_end ? <div className="note small">{em.censored_note}</div> : undefined}>
+      note={<>{em?.censored_at_ref_end ? <div className="note small">{em.censored_note}</div> : null}
+        {d.series.some(oneScene) ? <div className="small muted" data-testid="onescene-note">{t("chart.onescene")}</div> : null}</>}>
       <ReactECharts option={areaOption(d, t)} style={{ height: 230 }} notMerge />
     </Frame>
   );

@@ -1,0 +1,11 @@
+# docker compose up  -> http://localhost:8000  (works without internet: pre-computed lakes, compare, cached live cards,
+# local country-borders basemap, sample job). ./data is mounted so prefetched live data and custom analyses persist.
+# Before a demo (with internet): docker compose run --rm app python -m backend.scripts.prefetch --demo
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
