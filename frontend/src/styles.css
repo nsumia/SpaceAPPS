@@ -191,4 +191,4 @@ tbody tr:hover td { background: var(--surface); }
   .stack { bottom: 30px; }
   .cards { grid-template-columns: 1fr; }
 }
-@media (max-width: 520px) { .brand { gap: 8px; } .brand-logo { width: 28px; height: 28px; } .brand-name { font-size: 12px; line-height: 1.15; white-space: normal; max-width: 86px; } .top nav a { font-size: 13px; } }
+@media (max-width: 520px) { .brand { gap: 8px; } .brand-logo { width: 28px; height: 28px; } .brand-name { font-size: 12px; line-height: 1.15; white-space: normal; max-width: 86px; } .top nav { gap: 8px; } .top nav a { font-size: 13px; } }

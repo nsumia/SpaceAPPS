@@ -109,15 +109,15 @@ test("default basemap is NASA Blue Marble (GIBS tiles requested first); no unver
 
 test("top bar: brand, nav with aria-current, TR/EN switch, no overflow at 390 px", async ({ page }) => {
   await page.route(/openfreemap|gibs\.earthdata/, (r) => r.abort());
-  await page.goto("/methods");
+  await page.goto("/about");
   const nav = page.getByRole("navigation", { name: "Main" });
-  await expect(nav.getByRole("link", { name: "Methods" })).toHaveAttribute("aria-current", "page");
-  await expect(page.getByRole("heading", { name: "Methods", exact: true, level: 1 })).toBeVisible();
+  await expect(nav.getByRole("link", { name: "About" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { name: "About", exact: true, level: 1 })).toBeVisible();
   await expect(page.getByRole("heading", { name: /limitations/i })).toHaveCount(0);
   expect(await page.locator(".brand-name").evaluate((e) => getComputedStyle(e).textTransform)).toBe("none");
   await expect(page.locator(".brand-name")).toHaveText("Metalimnion");
   await expect(page).toHaveTitle("Metalimnion");
-  expect(await nav.getByRole("link", { name: "Methods" }).evaluate((e) => getComputedStyle(e).borderBottomWidth)).toBe("0px");
+  expect(await nav.getByRole("link", { name: "About" }).evaluate((e) => getComputedStyle(e).borderBottomWidth)).toBe("0px");
   await expect(nav.getByRole("link", { name: "Map" })).not.toHaveAttribute("aria-current", "page");
   expect((await page.locator("header.top").boundingBox())!.height).toBeLessThanOrEqual(60);
   await expect(page.locator(".brand-name")).toHaveText("Metalimnion");
@@ -129,7 +129,7 @@ test("top bar: brand, nav with aria-current, TR/EN switch, no overflow at 390 px
   expect((await page.request.get("/favicon-32.png")).status()).toBe(200);
   await page.getByRole("button", { name: /Switch language/ }).click();
   await expect(page.locator(".brand-name")).toHaveText("Metalimnion");
-  await expect(page.getByRole("navigation", { name: "Ana menü" }).getByRole("link", { name: "Yöntem" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("navigation", { name: "Ana menü" }).getByRole("link", { name: "Hakkında" })).toHaveAttribute("aria-current", "page");
   await page.setViewportSize({ width: 390, height: 800 });
   const w = await page.evaluate(() => { const h = document.querySelector("header.top")!; return [h.scrollWidth, h.clientWidth]; });
   expect(w[0]).toBeLessThanOrEqual(w[1]);

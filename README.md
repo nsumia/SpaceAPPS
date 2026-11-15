@@ -47,7 +47,7 @@ cd frontend && npm run dev          # Vite proxies /api to :8000
 Single port (demo):
 ```bash
 cd frontend && npm run build && cd ..           # -> frontend/dist
-.venv/bin/uvicorn backend.api.main:app --port 8000   # API + UI on http://127.0.0.1:8000 (/compare, /methods)
+.venv/bin/uvicorn backend.api.main:app --port 8000   # API + UI on http://127.0.0.1:8000 (/compare, /about)
 ```
 Docker: `docker compose up` serves the same single port 8000 with `./data` mounted.
 **Docker was NOT verified**: the build machine has no Docker. Try it once online before relying on it.
@@ -105,7 +105,7 @@ Summaries in the UI are filled from templates, so every number comes from the da
 - `frontend/src/`: `App.tsx`, `main.tsx`, `i18n.tsx` (all EN/TR strings and the glossary), `styles.css` (theme and font),
   `lib/api.ts` (types, client, hooks), `lib/util.tsx` (colours, sorting, summary sentence, help bubble),
   `components/` (`MapView`, `Panel` incl. live cards, `Charts` incl. the ECharts wrapper), `pages/` (`MapPage` incl. the
-  timeline, `ComparePage`, `MethodsPage`).
+  timeline, `ComparePage`, `MethodsPage` (the About page)).
 - Design: flat, editorial; Franklin Gothic where it is installed, otherwise the bundled open-source Libre Franklin
   (Franklin Gothic itself is licensed and is not shipped).
 

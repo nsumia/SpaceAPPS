@@ -11,7 +11,7 @@ const en: Record<string, string> = {
   "nav.skip": "Skip to content",
   "nav.map": "Map",
   "nav.compare": "Compare",
-  "nav.methods": "Methods",
+  "nav.methods": "About",
   "map.basemap": "Basemap",
   "bm.vector": "Vector (dark)",
   "bm.vectorlight": "Vector (light)",
@@ -123,7 +123,7 @@ const en: Record<string, string> = {
   "ref.a.inconclusive": "inconclusive: our trend is not significant",
   "ref.a.unverified_expectation": "unverified expectation (no source confirmed this direction); our trend differs",
   "ref.a.not_tested": "no single or confirmed direction in the literature, so no agreement test",
-  "methods.title": "Methods",
+  "methods.title": "About",
   "err.generic": "Something went wrong",
   "retry": "Retry",
   "chart.forecast": "What next? Area forecast to {year}",
@@ -216,7 +216,7 @@ const tr: Record<string, string> = {
   "nav.skip": "İçeriğe geç",
   "nav.map": "Harita",
   "nav.compare": "Karşılaştır",
-  "nav.methods": "Yöntem",
+  "nav.methods": "Hakkında",
   "map.basemap": "Altlık",
   "bm.vector": "Vektör (koyu)",
   "bm.vectorlight": "Vektör (açık)",
@@ -328,7 +328,7 @@ const tr: Record<string, string> = {
   "ref.a.inconclusive": "sonuçsuz: bizim eğilim anlamlı değil",
   "ref.a.unverified_expectation": "doğrulanmamış beklenti (yönü teyit eden kaynak yok); bizim eğilim farklı",
   "ref.a.not_tested": "literatürde tek ya da teyitli yön yok, uyum testi yapılmadı",
-  "methods.title": "Yöntem",
+  "methods.title": "Hakkında",
   "err.generic": "Bir sorun oluştu",
   "retry": "Tekrar dene",
   "chart.forecast": "Sırada ne var? {year} yılına kadar alan tahmini",
@@ -433,7 +433,7 @@ export function I18nProvider({ children, initial }: { children: ReactNode; initi
   return <Ctx.Provider value={{ lang, setLang, t: makeT(lang) }}>{children}</Ctx.Provider>;
 }
 
-/** Glossary on the Methods page: [term, English, Turkish]. */
+/** Glossary on the About page: [term, English, Turkish]. */
 export const GLOSSARY: [string, string, string][] = [
   ["Landsat","A pair of NASA/USGS satellite series photographing the whole Earth every 16 days since 1984. We use their pictures from August-September.","1984'ten beri tüm Dünya'yı 16 günde bir görüntüleyen NASA/USGS uydu serisi. Ağustos-Eylül görüntülerini kullanıyoruz."],
   ["MNDWI","A water index: a simple calculation on two colour bands that makes water bright and land dark, so a computer can draw the lake outline. It can be fooled by very shallow water, plants and salt crusts.","Su indeksi: iki renk bandı üzerinde basit bir hesap; suyu parlak, karayı koyu gösterir, böylece bilgisayar göl sınırını çizer. Çok sığ su, bitki ve tuz kabuğu tarafından yanıltılabilir."],
@@ -449,5 +449,5 @@ export const GLOSSARY: [string, string, string][] = [
   ["Climate share","How much of the lake's loss a rain-minus-evaporation model explains. The rest is unexplained: a sign of other causes (irrigation, withdrawals, model error), not proof of human impact.","Bir yağış-eksi-buharlaşma modelinin göl kaybının ne kadarını açıkladığı. Kalanı açıklanamayan kısımdır: başka nedenlerin (sulama, çekim, model hatası) işareti, insan etkisinin kanıtı değil."],
   ["Not computable","The data are too weak to give an honest number, so we show none instead of a misleading one.","Veriler dürüst bir sayı vermek için fazla zayıf; yanıltıcı bir sayı yerine hiçbir şey göstermiyoruz."],
   ["Reliability","How steady the yearly measurements are. Low = single years jump a lot (shallow, ephemeral water), so trends are shaky.","Yıllık ölçümlerin ne kadar tutarlı olduğu. Düşük = tek tek yıllar çok zıplıyor (sığ, geçici su), eğilimler sallantılı."],
-  ["SWOT","A NASA/CNES satellite (2022) measuring water level; not used in the app yet (see Methods).","Su seviyesini ölçen NASA/CNES uydusu (2022); uygulamada henüz kullanılmıyor (Yöntemler sayfasına bakın)."],
+  ["SWOT","A NASA/CNES satellite (2022) measuring water level; not used in the app yet (see About).","Su seviyesini ölçen NASA/CNES uydusu (2022); uygulamada henüz kullanılmıyor (Hakkında sayfasına bakın)."],
 ];
