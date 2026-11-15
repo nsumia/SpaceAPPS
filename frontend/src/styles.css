@@ -36,12 +36,12 @@ a { color: var(--blue-lt); }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; white-space: nowrap; }
 .brand-logo { width: 36px; height: 36px; flex: none; }
 .brand-text { display: flex; flex-direction: column; justify-content: center; gap: 3px; }
-.brand-name { font: 800 17px/1 var(--font); letter-spacing: .02em; text-transform: uppercase; }
+.brand-name { font: 800 17px/1 var(--font); letter-spacing: .01em; }
 .brand-sub { font-size: 11px; line-height: 1; color: var(--muted); }
 .top nav { display: flex; gap: 22px; flex: 1; }
-.top nav a { display: flex; align-items: center; color: var(--text-2); text-decoration: none; font-weight: 600; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.top nav a { display: flex; align-items: center; color: var(--text-2); text-decoration: none; font-weight: 500; }
 .top nav a:hover { color: var(--text); }
-.top nav a[aria-current="page"] { color: var(--text); border-bottom-color: var(--red); }
+.top nav a[aria-current="page"] { color: #fff; font-weight: 700; }
 button.lang { align-self: center; border: 0; background: none; padding: 4px; gap: 10px; font-weight: 600; letter-spacing: .05em; }
 button.lang span { color: var(--muted); }
 button.lang span.on { color: var(--text); border-bottom: 2px solid var(--red); }
@@ -69,10 +69,18 @@ input[type=range] { accent-color: var(--red); }
 .toolbar, .legend, .hint, .timeline, .maplibregl-ctrl-group { background: var(--bg) !important; border: 1px solid var(--line-strong); border-radius: 0 !important; box-shadow: none !important; }
 .toolbar { position: absolute; top: 12px; left: 12px; z-index: 2; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; padding: 6px 10px; max-width: calc(100% - 70px); }
 .toolbar label { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; }
-.stack { position: absolute; left: 12px; bottom: 14px; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; max-width: min(320px, calc(100% - 20px)); }
+.stack { position: absolute; left: 12px; bottom: 14px; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; max-width: min(320px, calc(100% - 64px)); }
 .stack.above-timeline { bottom: 84px; }
 .legend { padding: 8px 12px; font-size: 12px; }
 .legend strong { display: block; margin-bottom: 4px; }
+.legend { width: 252px; max-width: 100%; }
+.legend .spectrum { height: 12px; border: 1px solid rgba(255, 255, 255, .55); margin: 6px 14px 2px; }
+.legend .spectrum-ticks { position: relative; height: 15px; margin: 0 14px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.legend .spectrum-ticks span { position: absolute; top: 0; transform: translateX(-50%); }
+.legend .spectrum-ends { display: flex; justify-content: space-between; font-weight: 600; font-size: 12px; }
+.legend .spectrum-ends span:first-child { color: #ff8a73; } .legend .spectrum-ends span:last-child { color: #7fc0ec; }
+.legend .spectrum-unit { color: var(--muted); margin: 2px 0 6px; }
+.legend i.ns { background: #b0b0b0; }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 7px; outline: 1px solid rgba(255, 255, 255, .5); }
 .hint { padding: 6px 12px; font-size: 13px; color: var(--text-2); }
 .timeline { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 3; display: flex; gap: 12px; align-items: center; padding: 8px 14px; width: min(640px, calc(100% - 30px)); }
@@ -176,7 +184,9 @@ tbody tr:hover td { background: var(--surface); }
   .mappage { flex-direction: column; }
   .panel { position: absolute; inset: auto 0 0 0; z-index: 4; width: auto; min-width: 0; max-width: none; height: 58%; border-left: 0; border-top: 1px solid var(--line-strong); transition: height .2s; }
   .panel.expanded { height: 92%; }
-  .panel-resize, .timeline, .legend, .hint { display: none; }
+  .panel-resize, .timeline, .hint { display: none; }
+  .legend .small.muted { display: none; }
+  .stack { bottom: 30px; }
   .cards { grid-template-columns: 1fr; }
 }
 @media (max-width: 520px) { .brand { gap: 8px; } .brand-logo { width: 28px; height: 28px; } .brand-name { font-size: 12px; line-height: 1.15; white-space: normal; max-width: 86px; } .top nav a { font-size: 13px; } }
