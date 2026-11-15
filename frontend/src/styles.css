@@ -42,7 +42,7 @@ a { color: var(--accent); }
 .top nav { display: flex; align-items: stretch; gap: 2px; flex: 1; min-width: 0; }
 .top nav a { display: flex; align-items: center; padding: 0 16px; color: var(--text-2); text-decoration: none; font-weight: 500; font-size: 14.5px; border-bottom: 3px solid transparent; margin-bottom: -1px; transition: background .15s, color .15s, border-color .15s; }
 .top nav a:hover { color: var(--text); background: rgba(255, 255, 255, .06); }
-.top nav a[aria-current="page"] { color: #fff; font-weight: 600; background: var(--blue); border-bottom-color: var(--red); }
+.top nav a[aria-current="page"] { color: #fff; font-weight: 600; background: var(--blue); border-bottom-color: var(--red-lt); }
 .top a, .top button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .top :focus-visible { outline-offset: -3px; }
 .top .brand:focus-visible { outline-offset: 3px; }

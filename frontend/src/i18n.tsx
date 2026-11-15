@@ -6,10 +6,10 @@ export type TFn = (key: string, vars?: Record<string, string | number>) => strin
 
 const en: Record<string, string> = {
   "app.title": "Lake Loss Detective", "app.sub": "NASA Space Apps 2026 · Augmented 6th", "nav.main": "Main", "nav.lang": "Switch language to Turkish", "nav.skip": "Skip to content", "nav.map": "Map", "nav.compare": "Compare", "nav.methods": "Methods",
-  "map.basemap": "Basemap", "bm.vector": "Vector (dark)", "bm.blue": "NASA Blue Marble", "bm.viirs": "NASA VIIRS daily", "bm.offline": "Offline (country borders)", "map.offline_auto": "Online map unreachable: showing the local offline basemap.", "sample.label": "PRE-COMPUTED SAMPLE, replayed in seconds (not computed just now)", "sample.replay": "Replay sample", "chart.onescene": "Hollow points: that year rests on a single Landsat scene (less reliable).", "tip.1scene": "1 scene", "live.snapshot": "VIIRS true colour (stored picture)",
+  "map.basemap": "Basemap", "bm.vector": "Vector (dark)", "bm.blue": "NASA Blue Marble", "bm.viirs": "NASA VIIRS daily", "bm.offline": "Offline (country borders)", "map.offline_auto": "Online map unreachable: showing the local offline basemap.", "chart.onescene": "Hollow points: that year rests on a single Landsat scene (less reliable).", "tip.1scene": "1 scene", "live.snapshot": "VIIRS true colour (stored picture)",
   "map.date": "Date", 
   "map.legend": "Trend", "leg.fast": "fast loss", "leg.slow": "loss", "leg.ns": "not significant", "leg.inc": "increase", "leg.size": "marker size = lake area",
-  "map.loading": "Loading lakes...", "map.hint": "Click a lake or draw an area to analyse.",
+  "map.loading": "Loading lakes...", "map.hint": "Click a lake to analyse.",
   "panel.close": "Close", "panel.add": "Add to compare", "panel.remove": "Remove from compare", "panel.compare": "Open compare",
   "badge.validated": "validated", "badge.rel.ok": "reliability: ok", "badge.rel.low": "reliability: LOW", "badge.rel.unknown": "reliability: unknown",
   "live.title": "Live now", "live.area": "Water area", "live.lst": "Surface temperature", "live.swot": "SWOT water level", "live.precip": "Water-year precipitation",
@@ -30,7 +30,7 @@ const en: Record<string, string> = {
   "sum.significant": "significant, {p}", "sum.notsignificant": "not significant, {p}",
   "sum.emerged": "The change separated from natural variability in {year}.", "sum.emerged_by": "The change had already separated from natural variability by {year} (the true year is earlier or equal).",
   "sum.climate": "Climate variables explain about {share}% of the loss (90% CI {lo}-{hi}%).", "sum.climate_na": "The climate share is not computable for this lake.", "sum.nodata": "{name}: not enough data for a summary.",
-  "an.analyze": "Analyze this lake", "an.analyze_area": "Analyze the largest water body in the drawn area", "an.progress": "Analysis running", "an.year": "year", "an.eta": "ETA", "an.phase": "phase",
+  "an.analyze": "Analyze this lake", "an.progress": "Analysis running", "an.year": "year", "an.eta": "ETA", "an.phase": "phase",
   "an.prelim": "Preliminary result (every 5th year first); charts fill in as years arrive.", "an.failed": "Analysis failed", "an.done": "Analysis finished",
   "an.unverified": "On-demand analysis: unverified, not validated against literature.", "an.error": "Cannot analyze",
   "timeline.year": "Year", "timeline.play": "Play", "timeline.pause": "Pause", "timeline.legend": "1985 extent cream, selected year bright cyan",
@@ -46,10 +46,10 @@ const en: Record<string, string> = {
 };
 const tr: Record<string, string> = {
   "app.title": "Göl Kaybı Dedektifi", "app.sub": "NASA Space Apps 2026 · Augmented 6th", "nav.main": "Ana menü", "nav.lang": "Dili İngilizceye çevir", "nav.skip": "İçeriğe geç", "nav.map": "Harita", "nav.compare": "Karşılaştır", "nav.methods": "Yöntem",
-  "map.basemap": "Altlık", "bm.vector": "Vektör (koyu)", "bm.blue": "NASA Blue Marble", "bm.viirs": "NASA VIIRS günlük", "bm.offline": "Çevrimdışı (ülke sınırları)", "map.offline_auto": "Çevrimiçi harita erişilemiyor: yerel çevrimdışı altlık gösteriliyor.", "sample.label": "ÖNCEDEN HESAPLANMIŞ ÖRNEK, saniyeler içinde yeniden oynatıldı (şimdi hesaplanmadı)", "sample.replay": "Örneği yeniden oynat", "chart.onescene": "İçi boş noktalar: o yıl tek bir Landsat sahnesine dayanır (daha az güvenilir).", "tip.1scene": "1 sahne", "live.snapshot": "VIIRS gerçek renk (kayıtlı görüntü)",
+  "map.basemap": "Altlık", "bm.vector": "Vektör (koyu)", "bm.blue": "NASA Blue Marble", "bm.viirs": "NASA VIIRS günlük", "bm.offline": "Çevrimdışı (ülke sınırları)", "map.offline_auto": "Çevrimiçi harita erişilemiyor: yerel çevrimdışı altlık gösteriliyor.", "chart.onescene": "İçi boş noktalar: o yıl tek bir Landsat sahnesine dayanır (daha az güvenilir).", "tip.1scene": "1 sahne", "live.snapshot": "VIIRS gerçek renk (kayıtlı görüntü)",
   "map.date": "Tarih", 
   "map.legend": "Eğilim", "leg.fast": "hızlı kayıp", "leg.slow": "kayıp", "leg.ns": "anlamsız", "leg.inc": "artış", "leg.size": "işaret boyutu = göl alanı",
-  "map.loading": "Göller yükleniyor...", "map.hint": "Bir göle tıklayın ya da analiz için alan çizin.",
+  "map.loading": "Göller yükleniyor...", "map.hint": "Bir göle tıklayarak analiz edin.",
   "panel.close": "Kapat", "panel.add": "Karşılaştırmaya ekle", "panel.remove": "Karşılaştırmadan çıkar", "panel.compare": "Karşılaştırmayı aç",
   "badge.validated": "doğrulanmış", "badge.rel.ok": "güvenilirlik: iyi", "badge.rel.low": "güvenilirlik: DÜŞÜK", "badge.rel.unknown": "güvenilirlik: bilinmiyor",
   "live.title": "Şu an (canlı)", "live.area": "Su alanı", "live.lst": "Yüzey sıcaklığı", "live.swot": "SWOT su seviyesi", "live.precip": "Su yılı yağışı",
@@ -70,7 +70,7 @@ const tr: Record<string, string> = {
   "sum.significant": "anlamlı, {p}", "sum.notsignificant": "anlamsız, {p}",
   "sum.emerged": "Değişim {year} yılında doğal dalgalanmadan ayrıştı.", "sum.emerged_by": "Değişim {year} yılına kadar doğal dalgalanmadan ayrışmıştı (gerçek yıl daha erken ya da aynı).",
   "sum.climate": "İklim değişkenleri kaybın yaklaşık %{share}'ini açıklıyor (%90 GA %{lo}-{hi}).", "sum.climate_na": "Bu göl için iklim payı hesaplanamıyor.", "sum.nodata": "{name}: özet için yeterli veri yok.",
-  "an.analyze": "Bu gölü analiz et", "an.analyze_area": "Çizilen alandaki en büyük su kütlesini analiz et", "an.progress": "Analiz sürüyor", "an.year": "yıl", "an.eta": "Tahmini süre", "an.phase": "aşama",
+  "an.analyze": "Bu gölü analiz et", "an.progress": "Analiz sürüyor", "an.year": "yıl", "an.eta": "Tahmini süre", "an.phase": "aşama",
   "an.prelim": "Ön sonuç (önce her 5. yıl); yıllar geldikçe grafikler dolar.", "an.failed": "Analiz başarısız", "an.done": "Analiz tamamlandı",
   "an.unverified": "İsteğe bağlı analiz: doğrulanmamış, literatürle karşılaştırılmadı.", "an.error": "Analiz edilemiyor",
   "timeline.year": "Yıl", "timeline.play": "Oynat", "timeline.pause": "Duraklat", "timeline.legend": "1985 sınırı krem, seçili yıl parlak camgöbeği",

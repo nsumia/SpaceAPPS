@@ -10,7 +10,7 @@ import { Link } from "react-router-dom";
 import { Info } from "./Info";
 import type { Job, LakeFull } from "../lib/types";
 
-export interface Selection { id: string | null; name?: string; polygon?: GeoJSON.Geometry | null; sample?: string }
+export interface Selection { id: string | null; name?: string; polygon?: GeoJSON.Geometry | null }
 
 export function Badges({ d }: { d: LakeFull }) {
   const { t } = useI18n();
@@ -84,8 +84,7 @@ export default function Panel({ sel, onClose, layout, onLayout }: { sel: Selecti
   const start = async () => {
     setErr(null);
     try {
-      const body = sel.sample ? { sample: sel.sample } : sel.polygon && !sel.id ? { polygon: sel.polygon } : { lake_id: sel.id! };
-      const r = await api.analyze(body);
+      const r = await api.analyze({ lake_id: sel.id! });
       started.current = Date.now();
       setLakeId(r.lake_id ?? lakeId);
       if (r.job_id) setJobId(r.job_id); else qc.invalidateQueries({ queryKey: ["lakes"] });
@@ -94,8 +93,8 @@ export default function Panel({ sel, onClose, layout, onLayout }: { sel: Selecti
 
   const d = lake.data;
   const inCompare = !!d && (ids.includes(d.summary.id) || (!!d.summary.alias && ids.includes(d.summary.alias)));
-  const isSample = !!sel.sample || !!d?.analysis?.sample;
-  const canAnalyze = !running && (!d || (d.analysis && d.analysis.status === "failed") || !!sel.sample) && (sel.id || sel.polygon || sel.sample);
+  const isSample = !!d?.analysis?.sample; // a cached sample result still hides unverified/live blocks
+  const canAnalyze = !running && (!d || (d.analysis && d.analysis.status === "failed")) && !!sel.id;
   const lay = layout ?? { width: 430, expanded: false };
   const drag = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!onLayout) return;
@@ -128,8 +127,7 @@ export default function Panel({ sel, onClose, layout, onLayout }: { sel: Selecti
           </button>
           {ids.length > 0 && <Link to="/compare" className="btn">{t("panel.compare")} ({ids.length})</Link>}
         </div>)}
-      {isSample && <div className="note warn" data-testid="sample-label"><strong>{t("sample.label")}</strong></div>}
-      {canAnalyze && <button className="primary" onClick={start} data-testid="analyze">{sel.sample ? (d ? t("sample.replay") : t("an.analyze")) : sel.polygon && !sel.id ? t("an.analyze_area") : t("an.analyze")}</button>}
+      {canAnalyze && <button className="primary" onClick={start} data-testid="analyze">{t("an.analyze")}</button>}
       {err && <div className="note bad" role="alert"><strong>{t("an.error")}:</strong> {err}</div>}
       {job.data && running && <AnalysisProgress job={job.data} started={started.current} />}
       {job.data?.status === "failed" && <div className="note bad" role="alert">{t("an.failed")}: {job.data.error}</div>}
