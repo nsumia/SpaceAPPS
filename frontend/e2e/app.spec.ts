@@ -96,3 +96,16 @@ test("compare scatter explains itself and lists lakes without data", async ({ pa
   await expect(page.getByTestId("scatter-excluded")).toContainText("no Landsat 5 warming value");
   await expect(page.locator("table.rank th .info").first()).toBeVisible();
 });
+
+test("default basemap is NASA Blue Marble (GIBS tiles requested first); no unverified badge or 'Not computable' block", async ({ page }) => {
+  const gibs: string[] = [];
+  page.on("request", (r) => { if (/gibs\.earthdata/.test(r.url())) gibs.push(r.url()); });
+  await openMap(page);
+  expect(gibs.some((u) => u.includes("BlueMarble_ShadedRelief_Bathymetry"))).toBe(true);
+  await page.evaluate(() => (window as any).__map.jumpTo({ center: [30.17, 37.75], zoom: 6 }));
+  await page.waitForTimeout(500);
+  const p = await px(page, 30.17, 37.75);
+  await page.mouse.click(p.x, p.y);
+  await expect(page.getByTestId("panel")).toBeVisible({ timeout: 3000 });
+  await expect(page.getByTestId("panel")).not.toContainText(/not checked against published data|Not computable|show the \(non-interpretable\)/);
+});

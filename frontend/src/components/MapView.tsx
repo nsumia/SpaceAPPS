@@ -6,6 +6,7 @@ import { TerraDraw, TerraDrawPolygonMode, TerraDrawRectangleMode } from "terra-d
 import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
 import { api } from "../lib/api";
 import { trendColour } from "../lib/compare";
+import { MASK } from "../lib/palette";
 import type { LakeSummary, MaskJson } from "../lib/types";
 import type { Selection } from "./Panel";
 
@@ -14,7 +15,7 @@ maplibregl.setWorkerUrl(workerUrl);
 export type Basemap = "vector" | "bluemarble" | "viirs" | "offline";
 export type DrawMode = "off" | "rectangle" | "polygon";
 const GIBS = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
-const BG = "#08121d";
+const BG = "#171915";
 
 export function basemapStyle(bm: Basemap, date: string): StyleSpecification | string {
   const raster = (id: string, tiles: string, maxzoom: number, attribution: string): StyleSpecification => ({
@@ -30,8 +31,8 @@ export function basemapStyle(bm: Basemap, date: string): StyleSpecification | st
   // offline: local Natural Earth 50m country borders served by the API (no external host)
   return { version: 8, sources: { countries: { type: "geojson", data: "/api/basemap/countries" } }, layers: [
     { id: "bg", type: "background", paint: { "background-color": BG } },
-    { id: "countries-fill", type: "fill", source: "countries", paint: { "fill-color": "#12263a" } },
-    { id: "countries-line", type: "line", source: "countries", paint: { "line-color": "#3f6784", "line-width": 0.9 } }] };
+    { id: "countries-fill", type: "fill", source: "countries", paint: { "fill-color": "#26302b" } },
+    { id: "countries-line", type: "line", source: "countries", paint: { "line-color": "#6b9199", "line-width": 0.9 } }] };
 }
 
 export function circleRadius(area: number | null): number {
@@ -77,7 +78,7 @@ export default function MapView(props: MapProps) {
     type: "FeatureCollection",
     features: pr.current.lakes.filter((l) => l.centre).map((l) => ({
       type: "Feature", geometry: { type: "Point", coordinates: l.centre as [number, number] },
-      properties: { id: l.id, name: l.name, colour: trendColour(l), ring: l.group === "turkey" ? "#f2c36b" : "#06101a", r: circleRadius(l.latest_area_km2), area: l.latest_area_km2 ?? 0 } })),
+      properties: { id: l.id, name: l.name, colour: trendColour(l), ring: l.group === "turkey" ? "#e3ac3c" : "#f2ead9", r: circleRadius(l.latest_area_km2), area: l.latest_area_km2 ?? 0 } })),
   });
 
   const syncAll = () => {
@@ -90,14 +91,15 @@ export default function MapView(props: MapProps) {
       map.addSource("lakes", { type: "geojson", data: empty });
       map.addSource("hl", { type: "geojson", data: empty });
       // Fit the OpenFreeMap dark style to the navy theme (guarded: ids may differ between style versions).
-      for (const [id, prop, col] of [["background", "background-color", BG], ["water", "fill-color", "#0b2238"], ["landcover_wood", "fill-color", "#0d1d2c"], ["landuse_park", "fill-color", "#0d1d2c"]] as const)
+      for (const [id, prop, col] of [["background", "background-color", BG], ["water", "fill-color", "#0c2a31"], ["landcover_wood", "fill-color", "#1b211c"], ["landuse_park", "fill-color", "#1b211c"]] as const)
         if (map.getLayer(id)) { try { map.setPaintProperty(id, prop, col); } catch { /* keep the stock colour */ } }
-      map.addLayer({ id: "index-fill", type: "fill", source: "index", minzoom: 5.5, paint: { "fill-color": "#38c8d6", "fill-opacity": 0.16 } });
-      map.addLayer({ id: "index-line", type: "line", source: "index", minzoom: 5.5, paint: { "line-color": "#6fdde6", "line-width": 0.8, "line-opacity": 0.7 } });
+      map.addLayer({ id: "index-fill", type: "fill", source: "index", minzoom: 5.5, paint: { "fill-color": "#4cc9e0", "fill-opacity": 0.22 } });
+      map.addLayer({ id: "index-line", type: "line", source: "index", minzoom: 5.5, paint: { "line-color": "#a9e3f2", "line-width": 1, "line-opacity": 0.85 } });
       map.addLayer({ id: "hl-fill", type: "fill", source: "hl", paint: { "fill-color": "#ffffff", "fill-opacity": 0.1 } });
       map.addLayer({ id: "hl-line", type: "line", source: "hl", paint: { "line-color": "#ffffff", "line-width": 2, "line-dasharray": [2, 1] } });
+      map.addLayer({ id: "lakes-halo", type: "circle", source: "lakes", paint: { "circle-color": "#14110a", "circle-opacity": 0.5, "circle-radius": ["+", ["get", "r"], 4], "circle-blur": 0.6 } });
       map.addLayer({ id: "lakes-circle", type: "circle", source: "lakes", paint: {
-        "circle-color": ["get", "colour"], "circle-radius": ["get", "r"], "circle-opacity": 0.85, "circle-stroke-color": ["get", "ring"], "circle-stroke-width": 2 } });
+        "circle-color": ["get", "colour"], "circle-radius": ["get", "r"], "circle-opacity": 0.92, "circle-stroke-color": ["get", "ring"], "circle-stroke-width": 2 } });
       map.addLayer({ id: "lakes-sel", type: "circle", source: "lakes", filter: ["==", ["get", "id"], ""], paint: {
         "circle-color": "rgba(0,0,0,0)", "circle-radius": ["+", ["get", "r"], 4], "circle-stroke-color": "#ffffff", "circle-stroke-width": 2.5 } });
     }
@@ -110,19 +112,21 @@ export default function MapView(props: MapProps) {
 
   const syncMasks = async () => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map) return;
+    if (!map.isStyleLoaded()) { map.once("idle", syncMasks); return; } // raster tiles still loading (Blue Marble): retry when idle
     const m = pr.current.masks, tok = ++maskTok.current;
     for (const id of ["mask-cur", "mask-base"]) { if (!m && map.getLayer(id)) map.removeLayer(id); if (!m && map.getSource(id)) map.removeSource(id); }
     if (!m) return;
-    const [base, cur] = await Promise.all([tintMask(m.base.png_data_uri, [169, 207, 238], 150), tintMask(m.cur.png_data_uri, [11, 61, 145], 215)]);
-    if (tok !== maskTok.current || !map.isStyleLoaded()) return;
+    const [base, cur] = await Promise.all([tintMask(m.base.png_data_uri, MASK.base, 170), tintMask(m.cur.png_data_uri, MASK.cur, 235)]);
+    if (tok !== maskTok.current) return;
+    if (!map.isStyleLoaded()) { map.once("idle", syncMasks); return; }
     const put = (id: string, url: string, coordinates: MaskJson["coordinates"], before?: string) => {
       const src = map.getSource(id) as ImageSource | undefined;
       if (src) src.updateImage({ url, coordinates: coordinates as any });
       else { map.addSource(id, { type: "image", url, coordinates: coordinates as any }); map.addLayer({ id, type: "raster", source: id, paint: { "raster-fade-duration": 0, "raster-resampling": "nearest" } }, before); }
     };
-    put("mask-base", base, m.base.coordinates, "lakes-circle");
-    put("mask-cur", cur, m.cur.coordinates, "lakes-circle");
+    put("mask-base", base, m.base.coordinates, "lakes-halo");
+    put("mask-cur", cur, m.cur.coordinates, "lakes-halo");
   };
 
   const startDraw = () => {
