@@ -3,7 +3,7 @@ import * as maplibregl from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import type { GeoJSONSource, ImageSource, StyleSpecification } from "maplibre-gl";
 import { api, type LakeSummary, type MaskJson } from "../lib/api";
-import { MASK, trendColour } from "../lib/util";
+import { MASK, spectrumExpression, trendValue } from "../lib/util";
 import type { Selection } from "./Panel";
 
 maplibregl.setWorkerUrl(workerUrl);
@@ -72,7 +72,7 @@ export default function MapView(props: MapProps) {
     type: "FeatureCollection",
     features: pr.current.lakes.filter((l) => l.centre).map((l) => ({
       type: "Feature", geometry: { type: "Point", coordinates: l.centre as [number, number] },
-      properties: { id: l.id, name: l.name, colour: trendColour(l), ring: l.group === "turkey" ? "#f472ae" : "#ffffff", r: circleRadius(l.latest_area_km2), area: l.latest_area_km2 ?? 0 } })),
+      properties: { id: l.id, name: l.name, ...(trendValue(l) != null ? { trend: trendValue(l) } : {}), ring: l.group === "turkey" ? "#f472ae" : "#ffffff", r: circleRadius(l.latest_area_km2), area: l.latest_area_km2 ?? 0 } })),
   });
 
   const syncAll = () => {
@@ -93,7 +93,7 @@ export default function MapView(props: MapProps) {
       map.addLayer({ id: "hl-line", type: "line", source: "hl", paint: { "line-color": "#ffffff", "line-width": 2, "line-dasharray": [2, 1] } });
       map.addLayer({ id: "lakes-halo", type: "circle", source: "lakes", paint: { "circle-color": "#0e0e0e", "circle-opacity": 0.5, "circle-radius": ["+", ["get", "r"], 4], "circle-blur": 0.6 } });
       map.addLayer({ id: "lakes-circle", type: "circle", source: "lakes", paint: {
-        "circle-color": ["get", "colour"], "circle-radius": ["get", "r"], "circle-opacity": 0.92, "circle-stroke-color": ["get", "ring"], "circle-stroke-width": 2 } });
+        "circle-color": spectrumExpression() as never, "circle-radius": ["get", "r"], "circle-opacity": 0.92, "circle-stroke-color": ["get", "ring"], "circle-stroke-width": 2 } });
       map.addLayer({ id: "lakes-sel", type: "circle", source: "lakes", filter: ["==", ["get", "id"], ""], paint: {
         "circle-color": "rgba(0,0,0,0)", "circle-radius": ["+", ["get", "r"], 4], "circle-stroke-color": "#ffffff", "circle-stroke-width": 2.5 } });
     }

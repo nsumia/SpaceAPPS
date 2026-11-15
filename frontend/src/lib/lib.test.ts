@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { makeT } from "../i18n";
 import { burdur } from "../fixtures";
-import { sortLakes, summarySentence, trendColour, TREND } from "./util";
+import { sortLakes, summarySentence, trendValue, SPECTRUM, SPECTRUM_MAX, spectrumExpression, spectrumCss } from "./util";
 import { circleRadius } from "../components/MapView";
 
 describe("summary sentence", () => {
@@ -34,10 +34,20 @@ describe("compare helpers", () => {
     expect(sortLakes(rows, "emergence_year", 1).map((r) => r.name)).toEqual(["C", "B", "A"]);
     expect(sortLakes(rows, "emergence_year", -1).map((r) => r.name)).toEqual(["B", "C", "A"]);
   });
-  it("colours trends: dark red fast loss, grey not significant, blue increase", () => {
-    expect(trendColour({ trend_p: 0.001, trend_pct_per_decade: -10 })).toBe(TREND.fast);
-    expect(trendColour({ trend_p: 0.5, trend_pct_per_decade: -10 })).toBe(TREND.ns);
-    expect(trendColour({ trend_p: 0.01, trend_pct_per_decade: 4 })).toBe(TREND.inc);
+  it("trend value: clamped Sen slope, null (grey) when missing or not significant", () => {
+    expect(trendValue({ trend_p: 0.001, trend_pct_per_decade: -10 })).toBe(-10);
+    expect(trendValue({ trend_p: 0.001, trend_pct_per_decade: -28 })).toBe(-SPECTRUM_MAX);
+    expect(trendValue({ trend_p: 0.01, trend_pct_per_decade: 40 })).toBe(SPECTRUM_MAX);
+    expect(trendValue({ trend_p: 0.5, trend_pct_per_decade: -10 })).toBeNull();
+    expect(trendValue({ trend_p: null, trend_pct_per_decade: null })).toBeNull();
+  });
+  it("spectrum: ascending stops, interpolate expression with grey fallback, legend gradient from the same stops", () => {
+    const v = SPECTRUM.map(([x]) => x);
+    expect(v).toEqual([...v].sort((a, b) => a - b));
+    expect(v[0]).toBe(-SPECTRUM_MAX); expect(v[v.length - 1]).toBe(SPECTRUM_MAX);
+    const ex = spectrumExpression() as any[];
+    expect(ex[0]).toBe("case"); expect(ex[2][0]).toBe("interpolate"); expect(ex[3]).toBe("#b0b0b0");
+    expect(spectrumCss()).toMatch(/^linear-gradient\(90deg, #67001f 0\.00%.*#08306b 100\.00%\)$/);
   });
   it("sizes markers by area within bounds", () => {
     expect(circleRadius(4000)).toBeGreaterThan(circleRadius(100));

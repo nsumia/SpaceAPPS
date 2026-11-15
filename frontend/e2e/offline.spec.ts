@@ -31,6 +31,8 @@ test("offline: local basemap, all lakes, cached live cards, compare", async ({ p
   await expect(page.getByTestId("live-card").filter({ hasText: "Water area" }).getByTestId("cache-tag")).toBeVisible();
   await expect(page.getByTestId("live-card").filter({ hasText: "Water area" }).getByText("stale")).toBeVisible();
   await expect(page.getByTestId("live-card").filter({ hasText: "Water area" }).locator(".card-v b")).toHaveText(/\d/);
+  await expect(page.getByTestId("live-card").filter({ hasText: /SWOT|water level/i })).toHaveCount(0);
+  await expect(page.getByTestId("panel").getByText(/SWOT water level|no pld_id|PLD lookup/i)).toHaveCount(0);
   await expect(page.locator("canvas").first()).toBeVisible();
   await page.screenshot({ path: process.env.SHOT_OFFLINE ?? "test-results/offline-map.png" });
   // 2b. second lake (Van): cached snapshot image really loads offline

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useI18n } from "../i18n";
-import { TREND } from "../lib/util";
+import { SPECTRUM_MAX, spectrumCss } from "../lib/util";
 import { api, useIndex, useLakes } from "../lib/api";
 import MapView, { type Basemap } from "../components/MapView";
 import Panel, { clampWidth, type PanelLayout, type Selection } from "../components/Panel";
@@ -80,10 +80,13 @@ export default function MapPage() {
         {!sel && <div className="hint">{lakes.isLoading ? t("map.loading") : t("map.hint")}</div>}
         <div className={"legend"} data-testid="legend">
           <strong>{t("map.legend")}</strong>
-          <div><i style={{ background: TREND.fast }} /> {t("leg.fast")}</div>
-          <div><i style={{ background: TREND.slow }} /> {t("leg.slow")}</div>
-          <div><i style={{ background: TREND.ns }} /> {t("leg.ns")}</div>
-          <div><i style={{ background: TREND.inc }} /> {t("leg.inc")}</div>
+          <div className="spectrum" style={{ background: spectrumCss() }} role="img" aria-label={t("leg.aria", { max: SPECTRUM_MAX })} data-testid="spectrum" />
+          <div className="spectrum-ticks small" aria-hidden="true">
+            {[-20, -10, 0, 10, 20].map((v) => <span key={v} style={{ left: `${((v + SPECTRUM_MAX) / (2 * SPECTRUM_MAX)) * 100}%` }}>{v > 0 ? "+" : v < 0 ? "\u2212" : ""}{Math.abs(v)}</span>)}
+          </div>
+          <div className="spectrum-ends"><span>{t("leg.shrinking")}</span><span>{t("leg.growing")}</span></div>
+          <div className="spectrum-unit small">{t("leg.unit")}</div>
+          <div><i className="ns" /> {t("leg.ns")}</div>
           <div className="small muted">{t("leg.size")}</div>
           <div className="small muted">{t("leg.turkey")}</div>
         </div>

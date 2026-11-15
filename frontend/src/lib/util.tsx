@@ -15,7 +15,21 @@ export const C = {
   emergence: "#CC79A7", turkey: "#f472ae", text: "#ffffff", muted: "#b0b0b0", grid: "#333333", bg: "#0e0e0e", panel: "#161616", ink: "#0e0e0e",
 };
 /** Trend classes shared by the map markers, the legend and the compare table: fast = saturated vermillion, slow = pale peach (lightness differs). */
-export const TREND = { fast: "#D55E00", slow: "#f7c9a0", ns: "#b0b0b0", inc: "#56B4E9" };
+export const TREND_NS = "#b0b0b0";
+/** Clamp of the spectrum, %/decade: the strongest loss in the data is -28, 6 of 17 lakes lose more than 10; gains are all < 1.5, so a symmetric +-20 keeps small gains light blue. */
+export const SPECTRUM_MAX = 20;
+/** Continuous dot colour ramp by trend (%/decade). Loss: ColorBrewer YlOrRd (light yellow -> dark red); gain: ColorBrewer Blues (light -> dark navy).
+ * Stops are ascending; the jump at 0 (yellow | light blue) is intended: zero change is the hinge. Used for the MapLibre interpolate expression AND the legend gradient. */
+export const SPECTRUM: [number, string][] = [
+  [-20, "#67001f"], [-14, "#b10026"], [-8, "#e31a1c"], [-3, "#fd8d3c"], [-0.001, "#fed976"],
+  [0, "#c6dbef"], [4, "#6baed6"], [10, "#2171b5"], [20, "#08306b"],
+];
+/** MapLibre data-driven colour: property "trend" (number, absent = grey). */
+export const spectrumExpression = (): unknown[] => ["case", ["has", "trend"],
+  ["interpolate", ["linear"], ["get", "trend"], ...SPECTRUM.flat()], TREND_NS];
+/** CSS gradient for the legend bar (left = -SPECTRUM_MAX, right = +SPECTRUM_MAX). */
+export const spectrumCss = (): string =>
+  `linear-gradient(90deg, ${SPECTRUM.map(([v, c]) => `${c} ${(((v + SPECTRUM_MAX) / (2 * SPECTRUM_MAX)) * 100).toFixed(2)}%`).join(", ")})`;
 export const LST5 = "#f5c04a"; // Landsat 5 temperature trend line
 export const LAKE_COLOURS = ["#56B4E9", "#E69F00", "#009E73", "#F0E442", "#CC79A7", "#D55E00"];
 /** Map overlay colours: 1985 extent (lost area) pale cream, selected-year water bright cyan; both read on dark and on Blue Marble. */
@@ -34,9 +48,11 @@ export function sortLakes(rows: LakeSummary[], key: SortKey, dir: 1 | -1): LakeS
   });
 }
 
-export function trendColour(s: Pick<LakeSummary, "trend_p" | "trend_pct_per_decade">): string {
-  if (s.trend_p == null || s.trend_pct_per_decade == null || s.trend_p >= 0.05) return TREND.ns;
-  return s.trend_pct_per_decade < 0 ? (s.trend_pct_per_decade < -5 ? TREND.fast : TREND.slow) : TREND.inc;
+/** Per-lake value that drives the dot colour: Sen's slope of the lake area as % of the reference area per decade
+ * (LakeSummary.trend_pct_per_decade). null = no data or not significant (p >= 0.05) -> neutral grey. Clamped to +-SPECTRUM_MAX. */
+export function trendValue(s: Pick<LakeSummary, "trend_p" | "trend_pct_per_decade">): number | null {
+  if (s.trend_p == null || s.trend_pct_per_decade == null || s.trend_p >= 0.05) return null;
+  return Math.max(-SPECTRUM_MAX, Math.min(SPECTRUM_MAX, s.trend_pct_per_decade));
 }
 
 const pct = (x: number) => Math.round(Math.abs(x));

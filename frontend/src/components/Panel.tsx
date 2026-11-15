@@ -105,7 +105,7 @@ export function LiveCards({ live, loading, error }: { live?: Live; loading: bool
   if (loading) return <div className="spinner-row" role="status"><span className="spinner" /> {t("live.loading")}</div>;
   if (error || !live) return <div className="note">{t("live.unavailable")}{error ? `: ${error.message}` : ""}</div>;
   const c = live.cards;
-  const l = c.landsat, s = c.swot, p = c.precip;
+  const l = c.landsat, p = c.precip;
   const latest = typeof l?.latest_scene === "string" ? l.latest_scene : undefined;
   return (
     <div className="cards">
@@ -116,10 +116,6 @@ export function LiveCards({ live, loading, error }: { live?: Live; loading: bool
       <Card title={t("live.lst")} card={l} date={latest}>
         <b>{num(l?.lst_c)}</b> °C
         <div className="small">{t("live.vsly")}: {num(l?.lst_change_vs_last_year_c)} °C</div>
-      </Card>
-      <Card title={t("live.swot")} card={s} date={typeof s?.last_obs === "string" ? s.last_obs : undefined}>
-        <b>{num(s?.wse_m, 2)}</b> m
-        <div className="small">{t("live.swot1y")}: {num(s?.wse_change_1y_m, 2)} m</div>
       </Card>
       <Card title={t("live.precip")} card={p} date={typeof p?.data_until === "string" ? p.data_until : undefined}>
         <b>{num(p?.precip_mm, 0)}</b> mm

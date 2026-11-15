@@ -5,8 +5,7 @@ async function openMap(page: Page) {
   await page.route(/openfreemap|gibs\.earthdata/, (r) => r.abort());
   await page.route("**/api/lakes/*/live", (r) => r.fulfill({ json: { lake_id: "burdur", name: "Burdur", stale: false, generated_utc: "x", cards: {
     landsat: { source: "Landsat C2 L2", ok: true, cached: true, stale: false, age_s: 5, area_km2: 120.5, latest_scene: "2026-11-01", lst_c: 12, change_vs_last_year_pct: -1 },
-    swot: { source: "SWOT", ok: false, error: "no pld", cached: false, stale: false, age_s: 0 },
-    precip: { source: "NASA POWER", ok: true, cached: true, stale: false, age_s: 5, precip_mm: 200, pct_of_normal: 90, data_until: "2026-11-12" } } } }));
+        precip: { source: "NASA POWER", ok: true, cached: true, stale: false, age_s: 5, precip_mm: 200, pct_of_normal: 90, data_until: "2026-11-12" } } } }));
   await page.goto("/");
   await page.waitForFunction(() => {
     const m = (window as any).__map;
@@ -16,6 +15,19 @@ async function openMap(page: Page) {
 
 const px = (page: Page, lon: number, lat: number) =>
   page.evaluate(([x, y]) => { const m = (window as any).__map; const p = m.project([x, y]); const r = m.getCanvas().getBoundingClientRect(); return { x: r.left + p.x, y: r.top + p.y }; }, [lon, lat]);
+
+test("map: one spectrum legend (shrinking / growing) and data-driven dot colours", async ({ page }) => {
+  await openMap(page);
+  await expect(page.getByTestId("legend")).toHaveCount(1);
+  await expect(page.getByTestId("legend")).toContainText("shrinking");
+  await expect(page.getByTestId("legend")).toContainText("growing");
+  await expect(page.getByTestId("spectrum")).toBeVisible();
+  const ex = await page.evaluate(() => (window as any).__map.getPaintProperty("lakes-circle", "circle-color"));
+  expect(ex[0]).toBe("case"); expect(ex[2][0]).toBe("interpolate");
+  const feats = await page.evaluate(() => (window as any).__map.querySourceFeatures("lakes").map((f: any) => f.properties));
+  expect(feats.some((f: any) => typeof f.trend === "number" && f.trend < 0)).toBe(true);
+  expect(feats.every((f: any) => f.trend === undefined || Math.abs(f.trend) <= 20)).toBe(true);
+});
 
 test("map -> click Burdur -> panel within 2 s -> add to compare", async ({ page }) => {
   await openMap(page);
@@ -30,7 +42,7 @@ test("map -> click Burdur -> panel within 2 s -> add to compare", async ({ page 
   await expect(page.getByTestId("summary")).toContainText("Burdur: the mean area of its last 3 valid years");
   const panel0 = page.getByTestId("panel");
   await expect(panel0.locator(".badges, .badge")).toHaveCount(0);
-  for (const re of [/validated against published data/i, /^reliable$/i, /reliability unknown/i, /How much water is stored/i, /No SWOT Prior Lake/i, /volume change/i])
+  for (const re of [/validated against published data/i, /^reliable$/i, /reliability unknown/i, /How much water is stored/i, /No SWOT Prior Lake/i, /volume change/i, /SWOT water level/i, /no pld/i])
     await expect(panel0.getByText(re)).toHaveCount(0);
   await page.getByRole("button", { name: "Add to compare" }).click();
   await page.getByRole("link", { name: /Open compare/ }).click();
@@ -92,6 +104,9 @@ test("top bar: brand, nav with aria-current, TR/EN switch, no overflow at 390 px
   await page.goto("/methods");
   const nav = page.getByRole("navigation", { name: "Main" });
   await expect(nav.getByRole("link", { name: "Methods" })).toHaveAttribute("aria-current", "page");
+  expect(await page.locator(".brand-name").evaluate((e) => getComputedStyle(e).textTransform)).toBe("none");
+  await expect(page.locator(".brand-name")).toHaveText("Lake Loss Detective");
+  expect(await nav.getByRole("link", { name: "Methods" }).evaluate((e) => getComputedStyle(e).borderBottomWidth)).toBe("0px");
   await expect(nav.getByRole("link", { name: "Map" })).not.toHaveAttribute("aria-current", "page");
   expect((await page.locator("header.top").boundingBox())!.height).toBeLessThanOrEqual(60);
   await expect(page.locator(".brand-name")).toHaveText("Lake Loss Detective");

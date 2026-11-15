@@ -42,7 +42,6 @@ describe("chart help", () => {
 describe("live cards and progress", () => {
   const live: Live = { lake_id: "burdur", name: "Burdur", stale: false, generated_utc: "x", cards: {
     landsat: { source: "Landsat C2 L2", ok: true, cached: true, stale: false, age_s: 60, area_km2: 120.5, latest_scene: "2026-11-01", lst_c: 12.3, change_vs_last_year_pct: -2.1 },
-    swot: { source: "SWOT", ok: false, error: "no pld_id", cached: false, stale: false, age_s: 0 },
     precip: { source: "NASA POWER", ok: true, cached: false, stale: true, age_s: 9000, precip_mm: 210, pct_of_normal: 95, data_until: "2026-11-12", refresh_error: "timeout" } } };
   it("shows source, data date, cache and stale labels and 'no data' for failed sources", () => {
     render(<LiveCards live={live} loading={false} />);
@@ -50,7 +49,7 @@ describe("live cards and progress", () => {
     expect(screen.getByText("stale")).toBeInTheDocument();
     expect(screen.getByText("120.5")).toBeInTheDocument();
     expect(screen.getAllByText(/2026-11-01/).length).toBe(2);
-    expect(screen.getByText(/no pld_id/)).toBeInTheDocument();
+    expect(screen.queryByText(/no pld_id|SWOT water level/)).toBeNull();
   });
   it("shows a spinner while the first live call runs", () => {
     render(<LiveCards loading />);
@@ -84,6 +83,9 @@ describe("forecast chart", () => {
 });
 
 describe("removed UI: top badges and SWOT volume section", () => {
+  it("live cards have no SWOT water level card and no live.swot strings", () => {
+    for (const lang of ["en", "tr"] as const) { const t = makeT(lang); for (const k of ["live.swot", "live.swot1y"]) expect(t(k)).toBe(k); }
+  });
   it("no Badges/VolumeChart components and no badge/volume strings in EN or TR", () => {
     expect((PanelMod as any).Badges).toBeUndefined();
     expect((ChartsMod as any).VolumeChart).toBeUndefined();
