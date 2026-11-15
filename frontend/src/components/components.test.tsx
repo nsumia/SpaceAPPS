@@ -7,8 +7,16 @@ import { I18nProvider, makeT } from "../i18n";
 import MethodsPage from "../pages/MethodsPage";
 import * as PanelMod from "./Panel";
 import * as ChartsMod from "./Charts";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Live } from "../lib/api";
 
+vi.mock("../lib/api", async (orig) => {
+  const m = await orig<typeof import("../lib/api")>();
+  const low = { ...burdurFull, summary: { ...burdurFull.summary, reliability: "low", reliability_note: "10 of 39 valid years jump by more than 15 %" },
+    reliability: { reliability: "low", note: "10 of 39 valid years jump by more than 15 % of the 1985-1990 mean. Single-year areas are NOT reliable." } };
+  return { ...m, useLakes: () => ({ data: [{ id: "burdur", alias: "burdur" }] }), useLake: () => ({ data: low }), useLive: () => ({ data: undefined, isLoading: true }),
+    useCompareIds: () => [[], () => {}, () => {}] };
+});
 vi.mock("echarts-for-react/lib/core", () => ({ default: () => <div data-testid="echart" /> }));
 
 describe("charts", () => {
@@ -67,16 +75,27 @@ describe("live cards and progress", () => {
   });
 });
 
+describe("panel reliability note", () => {
+  it("does not render the backend low-reliability warning", () => {
+    const { container } = render(<QueryClientProvider client={new QueryClient()}><I18nProvider><PanelMod.default sel={{ id: "burdur" }} onClose={() => {}} /></I18nProvider></QueryClientProvider>);
+    expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/jump by more than|NOT reliable/);
+  });
+});
+
 describe("forecast chart", () => {
   const yrs = Array.from({ length: 15 }, (_, i) => 2026 + i);
   const ok = { ok: true, horizon_year: 2040, n_valid: 40, note: "x", model: "sen_recent" as const, last_observed_year: 2025, last_observed_km2: 116.5, interpretable: true,
     years: yrs, median: yrs.map((y) => 116 - 2 * (y - 2025)), lo90: yrs.map((y) => 110 - 2 * (y - 2025)), hi90: yrs.map((y) => 122 - 2 * (y - 2025)),
     lo50: yrs.map((y) => 113 - 2 * (y - 2025)), hi50: yrs.map((y) => 119 - 2 * (y - 2025)), flags: [],
     milestones: [{ year: 2040, median_km2: 87, lo90_km2: 83, hi90_km2: 89, median_pct_of_ref: 43 }] };
-  it("draws the chart with a plain-language sentence and the 'not a projection' caveat", () => {
-    render(<ForecastChart d={{ ...burdurFull, forecast: ok }} />);
+  it("draws the chart with a plain-language sentence and no disclaimer note", () => {
+    const { container } = render(<ForecastChart d={{ ...burdurFull, forecast: ok }} />);
     expect(screen.getByTestId("echart")).toBeInTheDocument();
     expect(screen.getByTestId("forecast-text")).toHaveTextContent(/2040/);
+    expect(container.textContent).not.toMatch(/A forecast, not a fact|does not know future rainfall/);
+    expect(container.querySelector(".note")).toBeNull();
+    for (const lang of ["en", "tr"] as const) expect(makeT(lang)("fc.caveat")).toBe("fc.caveat");
   });
   it("shows 'No forecast' and no chart when the series is not reliable enough", () => {
     render(<ForecastChart d={{ ...burdurFull, forecast: { ok: false, reason: "unreliable_area_series", horizon_year: 2040, n_valid: 20, note: "x" } }} />);

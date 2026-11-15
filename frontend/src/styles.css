@@ -12,7 +12,7 @@
   color-scheme: dark;
   --bg: #0e0e0e; --surface: #1a1a1a; --line: #2e2e2e; --line-strong: #7d7d7d;
   --text: #fff; --text-2: #d9d9d9; --muted: #a8a8a8;
-  --blue: #0a3c91; --blue-lt: #8db1ff; --red: #fc3d23; --red-lt: #ff7a5c; --mag: #ba1e68; --mag-lt: #f472ae;
+  --blue: #0a3c91; --blue-lt: #8db1ff; --red: #fc3d23; --red-lt: #ff7a5c; --mag-lt: #f472ae;
   --good: #6fd1a6; --bad: #ff9a66; --ink: #0e0e0e;
   --font: "Franklin Gothic", "ITC Franklin Gothic", "Franklin Gothic Medium", "Libre Franklin Variable", "Libre Franklin", Arial, sans-serif;
 }
@@ -149,13 +149,13 @@ main > .spinner-row { padding: 24px; }
 .page .chart.wide { margin-top: 36px; padding-top: 14px; border-top: 2px solid var(--text); }
 .page .chart.wide h3 { font-size: 22px; margin-bottom: 4px; }
 .chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 12px; }
-.chip { display: inline-flex; align-items: center; padding-left: 10px; border-left: 4px solid; background: var(--surface); }
+.chip { display: inline-flex; align-items: center; padding-left: 10px; background: var(--surface); }
 .chip button { border: 0; padding: 0 8px; font-size: 16px; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); }
 thead th { vertical-align: bottom; max-width: 190px; border-bottom: 1px solid var(--line-strong); }
 tbody tr:hover td { background: var(--surface); }
-.rank .tr-lake td:nth-child(2) { font-weight: 700; box-shadow: inset 3px 0 var(--mag); }
+.rank .tr-lake td:nth-child(2) { font-weight: 700; }
 .sort { min-height: 0; padding: 0; border: 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: var(--text-2); text-align: left; }
 .sort:hover:not(:disabled) { color: var(--text); }
 .scatter-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; margin-top: 8px; font-size: 12.5px; color: var(--text-2); }
