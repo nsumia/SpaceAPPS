@@ -35,33 +35,6 @@ test("map -> click Burdur -> panel within 2 s -> add to compare", async ({ page 
   await page.screenshot({ path: process.env.SHOT_COMPARE ?? "test-results/compare.png", fullPage: true });
 });
 
-test("drawn rectangle starts an analysis job with visible progress (API mocked)", async ({ page }) => {
-  let polls = 0;
-  await page.route("**/api/analyze", (r) => r.fulfill({ status: 202, json: { job_id: "j1", lake_id: "custom-abc", status: "queued", progress: 0, current_year: null, phase: null, error: null, result_url: "", area_km2: 900 } }));
-  await page.route("**/api/jobs/j1", (r) => r.fulfill({ json: { job_id: "j1", lake_id: "custom-abc", status: "running", progress: 20 + 15 * polls++, current_year: 1990 + 5 * polls, phase: "preliminary (every 5th year)", error: null, result_url: "" } }));
-  await openMap(page);
-  await page.getByTestId("draw-rect").click();
-  const a = await px(page, 31.5, 40.2), b = await px(page, 32.2, 39.6);
-  await page.mouse.click(a.x, a.y);
-  await page.mouse.move(b.x, b.y, { steps: 5 });
-  await page.mouse.click(b.x, b.y);
-  await page.getByTestId("analyze").click();
-  const bar = page.getByTestId("analysis-progress");
-  await expect(bar).toBeVisible();
-  await expect(bar).toContainText(/year: \d{4}/);
-  await expect(bar.getByRole("progressbar")).toHaveAttribute("aria-valuenow", /\d+/);
-});
-
-test("analyze shows the backend 422 message for oversized areas", async ({ page }) => {
-  await page.route("**/api/analyze", (r) => r.fulfill({ status: 422, json: { detail: "area of 52,000 km2 is larger than the 20,000 km2 limit: please select a smaller area around the lake" } }));
-  await openMap(page);
-  await page.getByTestId("draw-rect").click();
-  const a = await px(page, 31, 41), b = await px(page, 32.4, 39.6);
-  await page.mouse.click(a.x, a.y); await page.mouse.move(b.x, b.y, { steps: 5 }); await page.mouse.click(b.x, b.y);
-  await page.getByTestId("analyze").click();
-  await expect(page.getByRole("alert")).toContainText("20,000 km2");
-});
-
 test("expand button widens the side panel, charts follow, state is remembered, collapse restores", async ({ page }) => {
   await openMap(page);
   await page.evaluate(() => (window as any).__map.jumpTo({ center: [30.17, 37.75], zoom: 6 }));

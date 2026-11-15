@@ -10,7 +10,7 @@ async function blockExternal(page: Page) {
 const px = (page: Page, lon: number, lat: number) =>
   page.evaluate(([x, y]) => { const m = (window as any).__map; const p = m.project([x, y]); const r = m.getCanvas().getBoundingClientRect(); return { x: r.left + p.x, y: r.top + p.y }; }, [lon, lat]);
 
-test("offline: local basemap, all lakes, cached live cards, compare, sample job", async ({ page }) => {
+test("offline: local basemap, all lakes, cached live cards, compare", async ({ page }) => {
   const external = await blockExternal(page);
   await page.goto("/");
   await page.waitForFunction(() => {
@@ -48,14 +48,5 @@ test("offline: local basemap, all lakes, cached live cards, compare, sample job"
   await expect(page.getByTestId("chosen")).toContainText("Burdur");
   await expect(page.locator("canvas").first()).toBeVisible({ timeout: 15_000 });
   expect(await page.locator("table tbody tr").count()).toBeGreaterThanOrEqual(17);
-  // 4. pre-computed sample job: progress -> done, labelled
-  await page.goto("/");
-  await page.getByTestId("sample-btn").click();
-  await expect(page.getByTestId("sample-label")).toContainText("PRE-COMPUTED SAMPLE");
-  await page.getByTestId("analyze").click();
-  await expect(page.getByTestId("analysis-progress")).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByTestId("analysis-progress")).toHaveCount(0, { timeout: 30_000 });
-  await expect(page.getByTestId("summary")).toBeVisible();
-  await expect(page.getByTestId("sample-label")).toBeVisible();
   expect(external.length).toBeGreaterThan(0);        // the page did try external hosts (basemap), all were blocked
 });

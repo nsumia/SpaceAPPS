@@ -2,8 +2,6 @@ import { useEffect, useRef } from "react";
 import * as maplibregl from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import type { GeoJSONSource, ImageSource, StyleSpecification } from "maplibre-gl";
-import { TerraDraw, TerraDrawPolygonMode, TerraDrawRectangleMode } from "terra-draw";
-import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
 import { api } from "../lib/api";
 import { trendColour } from "../lib/compare";
 import { MASK } from "../lib/palette";
@@ -13,7 +11,6 @@ import type { Selection } from "./Panel";
 maplibregl.setWorkerUrl(workerUrl);
 
 export type Basemap = "vector" | "bluemarble" | "viirs" | "offline";
-export type DrawMode = "off" | "rectangle" | "polygon";
 const GIBS = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
 const BG = "#0e0e0e";
 
@@ -59,8 +56,8 @@ export async function tintMask(uri: string, rgb: [number, number, number], alpha
 
 export interface MapProps {
   lakes: LakeSummary[]; index?: GeoJSON.FeatureCollection; selectedId: string | null; highlight: GeoJSON.Geometry | null;
-  basemap: Basemap; date: string; drawMode: DrawMode; masks: { base: MaskJson; cur: MaskJson } | null;
-  onSelect: (s: Selection) => void; onDraw: (g: GeoJSON.Geometry) => void; onBasemapFallback: () => void;
+  basemap: Basemap; date: string; masks: { base: MaskJson; cur: MaskJson } | null;
+  onSelect: (s: Selection) => void; onBasemapFallback: () => void;
 }
 
 const empty: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
@@ -70,7 +67,6 @@ export default function MapView(props: MapProps) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const pr = useRef(props);
   pr.current = props;
-  const drawRef = useRef<TerraDraw | null>(null);
   const maskTok = useRef(0);
   const styleOk = useRef(false);
 
@@ -129,21 +125,6 @@ export default function MapView(props: MapProps) {
     put("mask-cur", cur, m.cur.coordinates, "lakes-halo");
   };
 
-  const startDraw = () => {
-    const map = mapRef.current;
-    try { drawRef.current?.stop(); } catch { /* style swapped */ }
-    drawRef.current = null;
-    if (!map) return;
-    const draw = new TerraDraw({ adapter: new TerraDrawMapLibreGLAdapter({ map }), modes: [new TerraDrawRectangleMode(), new TerraDrawPolygonMode()] });
-    draw.start();
-    draw.on("finish", (id) => {
-      const f = draw.getSnapshot().find((x) => x.id === id);
-      if (f && f.geometry.type === "Polygon") { pr.current.onDraw(f.geometry as GeoJSON.Geometry); draw.clear(); draw.setMode("static"); }
-    });
-    drawRef.current = draw;
-    if (pr.current.drawMode !== "off") draw.setMode(pr.current.drawMode);
-  };
-
   useEffect(() => {
     const p = pr.current;
     const map = new maplibregl.Map({ container: el.current!, style: basemapStyle(p.basemap, p.date), center: [34, 38.8], zoom: 4.6,
@@ -151,7 +132,7 @@ export default function MapView(props: MapProps) {
     mapRef.current = map;
     (window as any).__map = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
-    map.on("style.load", () => { styleOk.current = true; syncAll(); startDraw(); });
+    map.on("style.load", () => { styleOk.current = true; syncAll(); });
     let netErrors = 0;
     map.on("error", (e) => {
       const err = (e as any).error;
@@ -169,7 +150,6 @@ export default function MapView(props: MapProps) {
     });
     map.on("mouseleave", "lakes-circle", () => { map.getCanvas().style.cursor = ""; popup.remove(); });
     map.on("click", async (e) => {
-      if (pr.current.drawMode !== "off") return;
       const hit = map.getLayer("lakes-circle") ? map.queryRenderedFeatures(e.point, { layers: ["lakes-circle"] })[0] : undefined;
       if (hit) { pr.current.onSelect({ id: String(hit.properties?.id), name: String(hit.properties?.name) }); return; }
       if (map.getZoom() < 5.5) return;
@@ -180,7 +160,7 @@ export default function MapView(props: MapProps) {
     });
     const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => map.resize()) : null;
     ro?.observe(el.current!);
-    return () => { ro?.disconnect(); try { drawRef.current?.stop(); } catch { /* ignore */ } map.remove(); mapRef.current = null; };
+    return () => { ro?.disconnect(); map.remove(); mapRef.current = null; };
   }, []);
 
   const first = useRef(true);
@@ -191,11 +171,6 @@ export default function MapView(props: MapProps) {
   }, [props.basemap, props.date]);
   useEffect(() => { syncAll(); }, [props.lakes, props.index, props.selectedId, props.highlight]);
   useEffect(() => { syncMasks(); }, [props.masks]);
-  useEffect(() => {
-    const d = drawRef.current;
-    if (!d) return;
-    try { d.setMode(props.drawMode === "off" ? "static" : props.drawMode); } catch { /* not started */ }
-  }, [props.drawMode]);
   useEffect(() => {
     const l = props.lakes.find((x) => x.id === props.selectedId);
     const map = mapRef.current;

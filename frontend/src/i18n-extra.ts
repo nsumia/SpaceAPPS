@@ -3,7 +3,7 @@ export const enX: Record<string, string> = {
   // map
   "map.legend": "Lake trend since 1985", "leg.fast": "shrinking fast (over 5 % per decade)", "leg.slow": "shrinking", "leg.ns": "no clear change (not significant)", "leg.inc": "growing",
   "leg.size": "bigger circle = bigger lake", "leg.turkey": "pink ring = Turkish lake, light ring = reference lake",
-  "map.draw.help": "Draw a rectangle or polygon around any lake to analyse it", "map.basemap.help": "Background map style",
+  "map.basemap.help": "Background map style",
   "timeline.legend": "cream = water in the first year, bright cyan = water in the selected year",
   "panel.expand": "Expand panel", "panel.collapse": "Collapse panel", "panel.resize": "Drag to resize the panel",
   // badges
@@ -61,7 +61,7 @@ export const enX: Record<string, string> = {
 export const trX: Record<string, string> = {
   "map.legend": "1985'ten beri göl eğilimi", "leg.fast": "hızla küçülüyor (on yılda %5'ten fazla)", "leg.slow": "küçülüyor", "leg.ns": "belirgin değişim yok (anlamsız)", "leg.inc": "büyüyor",
   "leg.size": "büyük daire = büyük göl", "leg.turkey": "pembe halka = Türkiye gölü, açık halka = referans göl",
-  "map.draw.help": "Analiz için bir gölün çevresine dikdörtgen ya da poligon çizin", "map.basemap.help": "Arka plan harita stili",
+  "map.basemap.help": "Arka plan harita stili",
   "timeline.legend": "krem = ilk yıldaki su, parlak camgöbeği = seçili yıldaki su",
   "panel.expand": "Paneli genişlet", "panel.collapse": "Paneli daralt", "panel.resize": "Yeniden boyutlandırmak için sürükleyin",
   "badge.validated": "yayımlanmış verilerle doğrulandı",
