@@ -1,4 +1,4 @@
-# Lake Loss Detective: one image, one port (8000). Stage 1 builds the React frontend, stage 2 serves it with the API.
+# Metalimnion: one image, one port (8000). Stage 1 builds the React frontend, stage 2 serves it with the API.
 FROM node:22-slim AS web
 WORKDIR /app/frontend
 COPY frontend/package.json frontend/package-lock.json ./

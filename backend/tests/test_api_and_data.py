@@ -12,7 +12,9 @@ def test_health_and_docs():
     c = TestClient(app)
     assert c.get("/api/health").json() == {"status": "ok"}
     assert c.get("/docs").status_code == 200
-    assert "/api/health" in c.get("/openapi.json").json()["paths"]
+    spec = c.get("/openapi.json").json()
+    assert "/api/health" in spec["paths"]
+    assert spec["info"]["title"] == "Metalimnion API"
 
 
 def power_monthly_fixture():

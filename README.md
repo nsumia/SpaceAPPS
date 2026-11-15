@@ -1,6 +1,6 @@
 <p align="center"><img src="docs/brand/augmented6th-logo-400.png" width="200" alt="Augmented 6th" /></p>
 
-# Lake Loss Detective
+# Metalimnion
 
 **Is this lake shrinking, since when, and is it the climate or something else?**
 A NASA Space Apps Challenge 2026 project (challenge: "Become An Earth Trend Detective!"). Team: **Augmented 6th**.
@@ -14,8 +14,7 @@ predict. The part that climate does not explain is a **sign, not proof**, of hum
 ![Burdur panel](docs/screenshots/map-burdur-panel.png)
 ![Compare](docs/screenshots/compare.png)
 
-(Screenshots were taken at the end of Stage 6; Stage 7 added the offline basemap, sample-job button and lazy loading
-but did not change the main layouts. They were not regenerated in Stage 8.)
+(Screenshots regenerated 2026-11-15 from the current build with `frontend/e2e/screenshots.mjs`, real basemap tiles.)
 
 ## What is in it
 - 4 Turkish lakes with full 1985-2025 records (Burdur, Akşehir, Eğirdir, Van) and 13 global reference lakes (Urmia, Aral

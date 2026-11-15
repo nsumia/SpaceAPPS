@@ -1,4 +1,4 @@
-"""Lake Loss Detective API. Run: .venv/bin/uvicorn backend.api.main:app   (OpenAPI UI at /docs)"""
+"""Metalimnion API. Run: .venv/bin/uvicorn backend.api.main:app   (OpenAPI UI at /docs)"""
 import hashlib
 import json
 import os
@@ -156,7 +156,7 @@ def create_app(settings=None, runner=None):
         yield
         jobs_holder["m"].close()
 
-    app = FastAPI(title="Lake Loss Detective API", version="0.4.0", lifespan=lifespan,
+    app = FastAPI(title="Metalimnion API", version="0.4.0", lifespan=lifespan,
                   description="Lake area / surface temperature / climate attribution from Landsat, NASA POWER, SWOT. "
                               "On-demand (custom) results are unverified.")
     app.state.settings = st
