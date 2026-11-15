@@ -73,10 +73,13 @@ describe("forecast chart", () => {
     years: yrs, median: yrs.map((y) => 116 - 2 * (y - 2025)), lo90: yrs.map((y) => 110 - 2 * (y - 2025)), hi90: yrs.map((y) => 122 - 2 * (y - 2025)),
     lo50: yrs.map((y) => 113 - 2 * (y - 2025)), hi50: yrs.map((y) => 119 - 2 * (y - 2025)), flags: [],
     milestones: [{ year: 2040, median_km2: 87, lo90_km2: 83, hi90_km2: 89, median_pct_of_ref: 43 }] };
-  it("draws the chart with a plain-language sentence and the 'not a projection' caveat", () => {
-    render(<ForecastChart d={{ ...burdurFull, forecast: ok }} />);
+  it("draws the chart with a plain-language sentence and no disclaimer note", () => {
+    const { container } = render(<ForecastChart d={{ ...burdurFull, forecast: ok }} />);
     expect(screen.getByTestId("echart")).toBeInTheDocument();
     expect(screen.getByTestId("forecast-text")).toHaveTextContent(/2040/);
+    expect(container.textContent).not.toMatch(/A forecast, not a fact|does not know future rainfall/);
+    expect(container.querySelector(".note")).toBeNull();
+    for (const lang of ["en", "tr"] as const) expect(makeT(lang)("fc.caveat")).toBe("fc.caveat");
   });
   it("shows 'No forecast' and no chart when the series is not reliable enough", () => {
     render(<ForecastChart d={{ ...burdurFull, forecast: { ok: false, reason: "unreliable_area_series", horizon_year: 2040, n_valid: 20, note: "x" } }} />);

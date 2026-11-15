@@ -161,8 +161,7 @@ export function ForecastChart({ d }: { d: LakeFull }) {
   if (!f || f.preliminary) return null;
   return (
     <Frame title={t("chart.forecast", { year: f.horizon_year })} help={t("help.forecast")} source={t("chart.source.forecast")}
-      note={<><div className="chart-text" data-testid="forecast-text">{forecastSentences(f, d.summary, t).join(" ")}</div>
-        <div className="note warn small">{t("fc.caveat")}</div></>}>
+      note={<div className="chart-text" data-testid="forecast-text">{forecastSentences(f, d.summary, t).join(" ")}</div>}>
       {f.ok ? <ReactECharts option={forecastOption(d, f, t)} style={{ height: 270 }} notMerge /> : (
         <div className="na" role="status"><strong>{t("fc.none")}</strong></div>)}
     </Frame>

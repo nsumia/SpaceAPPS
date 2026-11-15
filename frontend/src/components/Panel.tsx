@@ -184,7 +184,6 @@ export default function Panel({ sel, onClose, layout, onLayout }: { sel: Selecti
       <h2>{d?.summary.name ?? sel.name ?? "…"}</h2>
       {d && d.series.length > 0 && <Stats s={d.summary} />}
       {d && <RefInfo s={d.summary} />}
-      {d?.reliability?.note && d.summary.reliability === "low" && <div className="note bad">{d.reliability.note}</div>}
       {d && (
         <div className="actions">
           <button onClick={() => (inCompare ? remove(d.summary.id, d.summary.alias ?? "") : add(d.summary.id))} disabled={!inCompare && ids.length >= 6}>

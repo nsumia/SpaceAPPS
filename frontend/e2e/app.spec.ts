@@ -44,10 +44,14 @@ test("map -> click Burdur -> panel within 2 s -> add to compare", async ({ page 
   await expect(panel0.locator(".badges, .badge")).toHaveCount(0);
   for (const re of [/validated against published data/i, /^reliable$/i, /reliability unknown/i, /How much water is stored/i, /No SWOT Prior Lake/i, /volume change/i, /SWOT water level/i, /no pld/i])
     await expect(panel0.getByText(re)).toHaveCount(0);
+  await expect(page.getByTestId("panel").getByText(/A forecast, not a fact|jump by more than|are NOT reliable/)).toHaveCount(0);
   await page.getByRole("button", { name: "Add to compare" }).click();
   await page.getByRole("link", { name: /Open compare/ }).click();
   await expect(page).toHaveURL(/\/compare$/);
   await expect(page.getByTestId("chosen")).toContainText("Burdur");
+  await expect(page.getByTestId("chosen")).not.toContainText("★");
+  await expect(page.locator("tbody")).not.toContainText("★");
+  expect(await page.locator(".chip").first().evaluate((e) => getComputedStyle(e).borderLeftWidth)).toBe("0px");
   await page.screenshot({ path: process.env.SHOT_COMPARE ?? "test-results/compare.png", fullPage: true });
 });
 

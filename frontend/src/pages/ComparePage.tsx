@@ -106,7 +106,7 @@ export default function ComparePage() {
       <h1>{t("cmp.title")}</h1>
       <div className="chips" data-testid="chosen">
         {chosen.length === 0 && <span className="muted">{t("cmp.empty")}</span>}
-        {chosen.map((l, i) => <span key={l.id} className="chip" style={{ borderColor: LAKE_COLOURS[i % 6] }}>{l.name}<button onClick={() => remove(l.id, l.alias ?? "")} aria-label={`${t("cmp.remove")} ${l.name}`}>×</button></span>)}
+        {chosen.map((l) => <span key={l.id} className="chip">{l.name}<button onClick={() => remove(l.id, l.alias ?? "")} aria-label={`${t("cmp.remove")} ${l.name}`}>×</button></span>)}
         <Link to="/" className="btn">{t("nav.map")}</Link>
       </div>
       <section className="chart wide">
@@ -130,7 +130,7 @@ export default function ComparePage() {
             return (
               <tr key={l.id} className={l.group === "turkey" ? "tr-lake" : ""}>
                 <td><button disabled={!inn && ids.length >= 6} title={ids.length >= 6 && !inn ? t("cmp.max") : ""} onClick={() => (inn ? remove(l.id, l.alias ?? "") : add(l.id))}>{inn ? t("cmp.remove") : t("cmp.add")}</button></td>
-                <td>{l.group === "turkey" ? "★ " : ""}{l.name}{l.reliability === "low" ? <span title={t("tip.lowrel")} aria-label={t("tip.lowrel")}> ⚠</span> : ""} <span className="muted small">{l.group === "reference" ? `${l.country ?? ""}${l.cadence_years && l.cadence_years > 1 ? `, ${t("cmp.cadence", { n: l.cadence_years })}` : ""}` : ""}</span></td>
+                <td>{l.name}{l.reliability === "low" ? <span title={t("tip.lowrel")} aria-label={t("tip.lowrel")}> ⚠</span> : ""} <span className="muted small">{l.group === "reference" ? `${l.country ?? ""}${l.cadence_years && l.cadence_years > 1 ? `, ${t("cmp.cadence", { n: l.cadence_years })}` : ""}` : ""}</span></td>
                 <td>{l.trend_pct_per_decade == null ? <span className="muted">{t("na.data")}</span> : fmt(l.trend_pct_per_decade)}</td>
                 <td>{l.trend_p == null ? <span className="muted">{t("na.data")}</span> : <>{t(l.trend_p < 0.05 ? "sig.yes" : "sig.no")} <span className="muted small">(p {l.trend_p < 0.001 ? "< 0.001" : "= " + l.trend_p.toFixed(3)})</span></>}</td>
                 <td>{l.emergence_year == null ? <span className="muted">{t("na.data")}</span> : (l.emergence_censored_at_ref_end ? t("cmp.by") + " " : "") + l.emergence_year}</td>
