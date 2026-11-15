@@ -9,7 +9,7 @@ import threading
 import time
 from datetime import datetime, timezone
 
-from backend.core import live
+from backend.core import jsonsafe, live
 
 RETRY_FAIL_S = 300
 FETCHERS = {"landsat": live.landsat_now, "swot": live.swot_now, "precip": live.precip_now}
@@ -87,7 +87,7 @@ def get_live(st, lake_id, meta, now=None):
                 out[name] = dict(res, cached=False, stale=False, age_s=0)
         tmp = p + ".tmp"
         with open(tmp, "w") as f:
-            json.dump(cache, f)
+            jsonsafe.dump(cache, f)
         os.replace(tmp, p)
     snap = snapshot_path(st, lake_id)
     out["gibs"] = dict(live._ok("NASA GIBS VIIRS NOAA-20 true colour", image_url=live.gibs_image_url(cfg),

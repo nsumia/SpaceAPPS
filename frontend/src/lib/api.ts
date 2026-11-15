@@ -20,21 +20,22 @@ export interface LakeSummary {
   years_analysed?: number[] | null; window?: string[] | null; literature_direction?: string | null; our_direction?: string | null; literature_agrees?: boolean | null; literature_agreement?: string | null; validation_basis?: string | null;
 }
 export interface SeriesRow { year: number; area_km2: number | null; valid_frac?: number | null; lst_c?: number | null; volatile?: boolean; n_scenes?: number | null }
-export interface Trend { n: number; trend: string; p: number; sen_slope_per_year: number; sen_slope_per_decade: number; intercept: number; intercept_year: number }
+/** Numbers the server could not compute (NaN) arrive as null. */
+export interface Trend { n: number; trend: string; p: number | null; sen_slope_per_year: number | null; sen_slope_per_decade: number | null; intercept: number | null; intercept_year: number }
 export interface Emergence { year: number | null; status: string; ref_mean: number; sigma: number; k: number; threshold: number; censored_at_ref_end?: boolean; censored_note?: string }
 export interface Decomposition {
   ok: boolean; interpretable?: boolean; wording?: string; years?: number[]; cum_observed_loss_km2?: number[]; cum_predicted_loss_km2?: number[];
   explained_share?: number; explained_share_ci90?: [number, number]; interpretation_flags?: string[];
 }
-export interface ForecastMilestone { year: number; median_km2: number; lo90_km2: number; hi90_km2: number; median_pct_of_ref: number | null }
+export interface ForecastMilestone { year: number; median_km2: number | null; lo90_km2: number | null; hi90_km2: number | null; median_pct_of_ref: number | null }
 export interface Forecast {
   ok: boolean; reason?: string; horizon_year: number; n_valid: number; note: string; preliminary?: boolean;
   model?: "sen_full" | "sen_recent" | "persistence"; last_observed_year?: number; last_observed_km2?: number;
   slope_km2_per_decade?: number | null; slope_ci90_km2_per_decade?: [number, number] | null;
-  years?: number[]; median?: number[]; lo90?: number[]; hi90?: number[]; lo50?: number[]; hi50?: number[];
+  years?: number[]; median?: (number | null)[]; lo90?: (number | null)[]; hi90?: (number | null)[]; lo50?: (number | null)[]; hi50?: (number | null)[];
   milestones?: ForecastMilestone[]; flags?: string[]; interpretable?: boolean;
   backtest?: { n_origins: number; n_pairs: number; max_horizon_years: number; mae_km2: Record<string, number>;
-    skill_vs_persistence: Record<string, number>; chosen_skill: number; coverage90: number | null };
+    skill_vs_persistence: Record<string, number>; chosen_skill: number | null; coverage90: number | null };
 }
 export interface LakeFull {
   summary: LakeSummary; meta: Record<string, unknown>; series: SeriesRow[];

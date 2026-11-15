@@ -7,11 +7,17 @@ COPY frontend/ ./
 RUN npm run build
 
 FROM python:3.12-slim
+# rasterio's wheel bundles GDAL but links libexpat dynamically, and the slim image does not ship it
+# (production: "ImportError: libexpat.so.1" on the first on-demand analysis). The other non-glibc libraries the wheels
+# need (libz, libstdc++, libgcc_s) are part of slim. The smoke check below fails the BUILD if any native import breaks.
+RUN apt-get update && apt-get install -y --no-install-recommends libexpat1 \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PORT=8000
 COPY requirements.txt ./
 RUN pip install -r requirements.txt
 COPY backend ./backend
+RUN python -m backend.core.native_check
 COPY data ./data
 COPY --from=web /app/frontend/dist ./frontend/dist
 EXPOSE 8000

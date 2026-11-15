@@ -193,7 +193,7 @@ export default function Panel({ sel, onClose, layout, onLayout }: { sel: Selecti
       {canAnalyze && <button className="primary" onClick={start} data-testid="analyze">{t("an.analyze")}</button>}
       {err && <div className="note bad" role="alert"><strong>{t("an.error")}:</strong> {err}</div>}
       {job.data && running && <AnalysisProgress job={job.data} started={started.current} />}
-      {job.data?.status === "failed" && <div className="note bad" role="alert">{t("an.failed")}: {job.data.error}</div>}
+      {job.data?.status === "failed" && <div className="note bad" role="alert">{t("an.failed.msg")}</div>}
       {running && d && <div className="note">{t("an.prelim")}</div>}
       {d?.unverified && !isSample && <div className="note warn">{t("an.unverified")}</div>}
       {d && d.series.length > 0 && (
