@@ -47,17 +47,6 @@ export default function MethodsPage() {
         <li>Van, Akşehir, Eğirdir: checked for plausibility only (unverified).</li>
         <li>The full validation notes are in <code>VALIDATION.md</code> in the repository.</li>
       </ul>
-      <h2>Limitations</h2>
-      <ul>
-        <li>Akşehir is flagged low reliability: shallow, ephemeral water makes single years jump; its trend, emergence year and climate share are not reliable.</li>
-        <li>The climate share is only a statistical attribution. Burdur and Van have weak reference skill, so it is reported as not computable. The unexplained part is a sign, not proof, of human impact.</li>
-        <li>MERRA-2 is model output on a coarse grid (about 0.5 x 0.625 degrees); EVLAND is a land-surface proxy, not open-water evaporation.</li>
-        <li>Resolution differs between lakes (30 m vs 60/120 m), so compare trends rather than single-year values.</li>
-        <li>SWOT levels are not available for lakes without a configured prior-lake id (SWOT is not shown in the app yet).</li>
-        <li>The forecast only continues the past pattern of the area series. It does not use future rainfall, temperature, water policy, dams or pumping, it is not a climate projection, and a sudden change (a new dam, a wet decade, a diversion) will break it.</li>
-        <li>MNDWI can be wrong in very shallow or vegetated water and with salt crusts.</li>
-        <li>Live cards come from public APIs and can be cached (up to 3 h) or stale; the label says so.</li>
-      </ul>
     </div>
   );
 }

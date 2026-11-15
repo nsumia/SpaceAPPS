@@ -3,7 +3,8 @@ import { render, screen } from "@testing-library/react";
 import { burdurFull } from "../fixtures";
 import { AreaChart, areaOption, ClimateChart, ForecastChart } from "./Charts";
 import { AnalysisProgress, eta, LiveCards } from "./Panel";
-import { makeT } from "../i18n";
+import { I18nProvider, makeT } from "../i18n";
+import MethodsPage from "../pages/MethodsPage";
 import * as PanelMod from "./Panel";
 import * as ChartsMod from "./Charts";
 import type { Live } from "../lib/api";
@@ -43,10 +44,12 @@ describe("live cards and progress", () => {
   const live: Live = { lake_id: "burdur", name: "Burdur", stale: false, generated_utc: "x", cards: {
     landsat: { source: "Landsat C2 L2", ok: true, cached: true, stale: false, age_s: 60, area_km2: 120.5, latest_scene: "2026-11-01", lst_c: 12.3, change_vs_last_year_pct: -2.1 },
     precip: { source: "NASA POWER", ok: true, cached: false, stale: true, age_s: 9000, precip_mm: 210, pct_of_normal: 95, data_until: "2026-11-12", refresh_error: "timeout" } } };
-  it("shows source, data date, cache and stale labels and 'no data' for failed sources", () => {
+  it("shows source and data date, no cache/stale labels", () => {
     render(<LiveCards live={live} loading={false} />);
-    expect(screen.getAllByTestId("cache-tag").length).toBe(2);              // two Landsat-based cards
-    expect(screen.getByText("stale")).toBeInTheDocument();
+    expect(screen.queryByTestId("cache-tag")).toBeNull();
+    expect(screen.queryByText(/^(stale|cache|eski|önbellek)$/i)).toBeNull();
+    expect(screen.queryByText("timeout")).toBeNull();
+    expect(screen.getByText(/NASA POWER/)).toBeInTheDocument();
     expect(screen.getByText("120.5")).toBeInTheDocument();
     expect(screen.getAllByText(/2026-11-01/).length).toBe(2);
     expect(screen.queryByText(/no pld_id|SWOT water level/)).toBeNull();
@@ -93,6 +96,26 @@ describe("removed UI: top badges and SWOT volume section", () => {
       const t = makeT(lang);
       for (const k of ["badge.validated", "badge.rel.ok", "badge.rel.low", "badge.rel.unknown", "chart.volume", "volume.none", "help.volume"])
         expect(t(k)).toBe(k);
+    }
+  });
+});
+
+describe("removed UI: summary disclaimer, cache/stale labels, limitations section", () => {
+  it("summary title is just Summary / Ozet; cache and stale strings are gone", () => {
+    expect(makeT("en")("sum.title")).toBe("Summary");
+    expect(makeT("tr")("sum.title")).toBe("Özet");
+    for (const lang of ["en", "tr"] as const) {
+      const t = makeT(lang);
+      for (const k of ["live.cache", "live.stale", "tip.cache", "tip.stale"]) expect(t(k)).toBe(k);
+    }
+  });
+  it("Methods page is titled Methods and has no Limitations section (EN and TR)", () => {
+    for (const lang of ["en", "tr"] as const) {
+      const { container, unmount } = render(<I18nProvider initial={lang}><MethodsPage /></I18nProvider>);
+      expect(container.querySelector("h1")?.textContent).toBe(lang === "en" ? "Methods" : "Yöntem");
+      expect(screen.queryByRole("heading", { name: /limitations|sınırlamalar/i })).toBeNull();
+      expect(container.textContent).not.toMatch(/Live cards come from public APIs|Akşehir is flagged low reliability/);
+      unmount();
     }
   });
 });
