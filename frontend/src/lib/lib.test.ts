@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { makeT } from "../i18n";
 import { burdur } from "../fixtures";
-import { sortLakes, summarySentence, trendValue, SPECTRUM, SPECTRUM_MAX, spectrumExpression, spectrumCss } from "./util";
-import { circleRadius } from "../components/MapView";
+import { sortLakes, summarySentence, trendValue, SPECTRUM, SPECTRUM_MAX, spectrumExpression, spectrumCss, TREND_NS, clampDate, VIIRS_MIN_DATE } from "./util";
+import { circleRadius, sizeRange, SIZE_KEY_AREAS, basemapStyle } from "../components/MapView";
 
 describe("summary sentence", () => {
   const t = makeT("en");
@@ -46,13 +46,35 @@ describe("compare helpers", () => {
     expect(v).toEqual([...v].sort((a, b) => a - b));
     expect(v[0]).toBe(-SPECTRUM_MAX); expect(v[v.length - 1]).toBe(SPECTRUM_MAX);
     const ex = spectrumExpression() as any[];
-    expect(ex[0]).toBe("case"); expect(ex[2][0]).toBe("interpolate"); expect(ex[3]).toBe("#7a7a7a");
+    expect(ex[0]).toBe("case"); expect(ex[2][0]).toBe("interpolate"); expect(ex[3]).toBe(TREND_NS); // owner request 2026-11-15: darker grey (was #7a7a7a)
+    expect(TREND_NS).toBe("#4a4a4a");
     expect(SPECTRUM.find(([x]) => x === 0)?.[1]).toBe("#f7f7f7");
     expect(spectrumCss()).toMatch(/^linear-gradient\(90deg, #67001f 0\.00%.*#053061 100\.00%\)$/);
   });
   it("sizes markers by area within bounds", () => {
     expect(circleRadius(4000)).toBeGreaterThan(circleRadius(100));
     expect(circleRadius(1e9)).toBe(24);
+  });
+  it("circle AREA is proportional to lake area inside the stated range, clamped outside", () => {
+    const { min, max } = sizeRange();
+    expect(min).toBeLessThan(max);
+    expect(circleRadius(min)).toBeCloseTo(6, 6); expect(circleRadius(max)).toBeCloseTo(24, 6);
+    for (const a of [min, 2 * min, 400, max / 4]) expect(circleRadius(4 * a) / circleRadius(a)).toBeCloseTo(2, 6); // 4x area = 2x radius
+    expect(circleRadius(min / 10)).toBe(6); expect(circleRadius(max * 10)).toBe(24); expect(circleRadius(null)).toBe(6);
+    for (const a of SIZE_KEY_AREAS) expect(a).toBeGreaterThanOrEqual(min), expect(a).toBeLessThanOrEqual(max);
+    expect(circleRadius(SIZE_KEY_AREAS[1]) ** 2 / circleRadius(SIZE_KEY_AREAS[0]) ** 2).toBeCloseTo(SIZE_KEY_AREAS[1] / SIZE_KEY_AREAS[0], 6);
+  });
+  it("basemaps: dark and light OpenFreeMap vector styles", () => {
+    expect(basemapStyle("vector", "2026-01-01")).toBe("https://tiles.openfreemap.org/styles/dark");
+    expect(basemapStyle("vectorlight", "2026-01-01")).toBe("https://tiles.openfreemap.org/styles/positron");
+  });
+  it("VIIRS date: first daily image of the layer, typed dates are clamped", () => {
+    expect(VIIRS_MIN_DATE).toBe("2018-01-05");
+    expect(clampDate("2010-03-01", VIIRS_MIN_DATE, "2026-11-13")).toBe("2018-01-05");
+    expect(clampDate("2030-03-01", VIIRS_MIN_DATE, "2026-11-13")).toBe("2026-11-13");
+    expect(clampDate("2022-03-01", VIIRS_MIN_DATE, "2026-11-13")).toBe("2022-03-01");
+    expect(clampDate("", VIIRS_MIN_DATE, "2026-11-13")).toBeNull();
+    expect(clampDate("not-a-date", VIIRS_MIN_DATE, "2026-11-13")).toBeNull();
   });
 });
 
@@ -86,6 +108,14 @@ describe("compare scatter", () => {
     expect(urmia.share).toBeNull();                       // not computable -> hollow grey, not invisible
     expect(urmia.itemStyle.borderColor).toBe("#c8c8c8");
     expect(o.series.every((s: any) => s.labelLayout?.hideOverlap)).toBe(true);
+    expect(o.series.length).toBe(1);                      // one uniform series: no Turkish/reference split
+    expect(o.series[0].symbol).toBe("circle");
+    expect(pts.find((p: any) => p.full === "Van").symbolSize).toBe(markerSize(3500));
+  });
+  it("lake table sort is uniform: ties and missing values fall back to name, no group ordering", () => {
+    const r = (name: string, g: string, v: number | null) => ({ ...burdur, name, group: g, trend_pct_per_decade: v } as LakeSummary);
+    const out = sortLakes([r("Zed", "turkey", null), r("Beta", "reference", -5), r("Alpha", "turkey", -5), r("Mu", "reference", null)], "trend_pct_per_decade", 1);
+    expect(out.map((x) => x.name)).toEqual(["Alpha", "Beta", "Mu", "Zed"]);
   });
   it("lists lakes without warming values as excluded instead of dropping them silently", () => {
     const { shown, excluded } = scatterPoints(rows);

@@ -6,7 +6,7 @@ import type { TFn } from "../i18n";
 // colour-blind friendly (Okabe-Ito based), chosen to read on near-black AND on the bright Blue Marble basemap.
 // Meaning is also given by labels, never by colour alone. Water = cyan, temperature = orange (E69F00, different hue AND lightness from water),
 // loss = Okabe-Ito vermillion #D55E00 (hue 27, darker) - deliberately NOT the CTA red-orange #fc3d23 (hue 7); emergence = reddish purple.
-// Magenta is UI-only (tags, Turkey marker ring); red-orange / royal blue are UI-only.
+// Magenta is UI-only (tags); red-orange / royal blue are UI-only.
 /** Same stack as --font in styles.css (canvas text in charts cannot read CSS variables). */
 export const FONT = '"Franklin Gothic", "ITC Franklin Gothic", "Franklin Gothic Medium", "Libre Franklin Variable", "Libre Franklin", Arial, sans-serif';
 export const C = {
@@ -15,7 +15,19 @@ export const C = {
   emergence: "#CC79A7", turkey: "#f472ae", text: "#ffffff", muted: "#b0b0b0", grid: "#333333", bg: "#0e0e0e", panel: "#161616", ink: "#0e0e0e",
 };
 /** Trend classes shared by the map markers, the legend and the compare table: fast = saturated vermillion, slow = pale peach (lightness differs). */
-export const TREND_NS = "#7a7a7a"; // mid grey: clearly darker than the white-ish zero of the ramp
+/** Dot colour of lakes without a significant trend (map dots AND legend swatch). Dark grey: readable with the white ring + dark halo on
+ * Blue Marble, VIIRS, dark vector and light vector basemaps, and clearly darker than the white-ish zero of the ramp (was #7a7a7a). */
+export const TREND_NS = "#4a4a4a";
+/** First daily image of the GIBS layer VIIRS_NOAA20_CorrectedReflectance_TrueColor (the layer MapView uses).
+ * Source: NASA GIBS WMTS GetCapabilities https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/1.0.0/WMTSCapabilities.xml,
+ * layer Time dimension: <Value>2018-01-05/2018-02-21/P1D</Value> (first of five daily ranges; read 2026-11-15). The ranges have
+ * 2-day gaps (2018-02-22/23, 2018-03-13, 2020-01-01, 2022-01-13); such days return no tile. */
+export const VIIRS_MIN_DATE = "2018-01-05";
+/** Clamp an ISO date (YYYY-MM-DD) into [min, max]; null for empty / unparsable input. ISO strings compare lexicographically. */
+export function clampDate(v: string, min: string, max: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v) || Number.isNaN(Date.parse(v))) return null;
+  return v < min ? min : v > max ? max : v;
+}
 /** Clamp of the spectrum, %/decade: the strongest loss in the data is -28, 6 of 17 lakes lose more than 10; gains are all < 1.5, so a symmetric +-20 keeps small gains light blue. */
 export const SPECTRUM_MAX = 20;
 /** Continuous diverging dot colour ramp by trend (%/decade): ColorBrewer RdBu, dark red (strong loss) -> white (0) -> dark blue (strong gain).
@@ -42,10 +54,11 @@ export function sortLakes(rows: LakeSummary[], key: SortKey, dir: 1 | -1): LakeS
   const val = (r: LakeSummary): number | string | null => (key === "name" ? r.name : (r[key] as number | null));
   return [...rows].sort((a, b) => {
     const x = val(a), y = val(b);
-    if (x == null && y == null) return 0;
+    const byName = a.name.localeCompare(b.name);   // uniform tie-break for every lake, regardless of API order / group
+    if (x == null && y == null) return byName;
     if (x == null) return 1;          // missing values always last
     if (y == null) return -1;
-    return (x < y ? -1 : x > y ? 1 : 0) * dir;
+    return (x < y ? -1 : x > y ? 1 : 0) * dir || byName;
   });
 }
 

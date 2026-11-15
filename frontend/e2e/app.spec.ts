@@ -51,10 +51,10 @@ test("map -> click Burdur -> panel within 2 s -> add to compare", async ({ page 
   await expect(page.getByTestId("chosen")).toContainText("Burdur");
   await expect(page.getByTestId("chosen")).not.toContainText("★");
   await expect(page.locator("tbody")).not.toContainText("★");
-  const trCell = page.locator(".rank .tr-lake td:nth-child(2)").first();
-  await expect(trCell).toBeVisible();
-  await expect(trCell).not.toContainText("★");
-  expect(await trCell.evaluate((e) => getComputedStyle(e).boxShadow)).toBe("none");
+  // owner request 2026-11-15: no Turkish/reference distinction (this replaced the ".tr-lake" bold-name check)
+  await expect(page.locator(".rank tr.tr-lake")).toHaveCount(0);
+  await expect(page.getByTestId("group-filter")).toHaveCount(0);
+  await expect(page.locator(".page.compare")).not.toContainText(/Turkish|Reference|Group/);
   expect(await page.locator(".chip").first().evaluate((e) => getComputedStyle(e).borderLeftWidth)).toBe("0px");
   await page.screenshot({ path: process.env.SHOT_COMPARE ?? "test-results/compare.png", fullPage: true });
 });
@@ -152,4 +152,51 @@ test("panel shows no method-limitation note even when the API sends mndwi_note",
   await expect(page.getByTestId("panel")).toBeVisible({ timeout: 3000 });
   await expect(page.getByTestId("refinfo")).toBeVisible();
   await expect(page.getByTestId("panel")).not.toContainText(/SECRET-NOTE|Method limitation|Yöntem sınırlaması/);
+});
+
+const PNG = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64");
+
+test("legend: size key drawn from circleRadius, darker grey swatch, honest size rule (EN and TR)", async ({ page }) => {
+  await openMap(page);
+  const key = page.getByTestId("size-key");
+  await expect(key).toContainText("Circle area is proportional to lake area");
+  await expect(key).toContainText("300 km²"); await expect(key).toContainText("3,000 km²");
+  const rs = await key.locator("figure").evaluateAll((els) => els.map((e) => Number(e.getAttribute("data-r"))));
+  expect(rs.length).toBe(3);
+  // 10x lake area -> sqrt(10) x radius (all three samples sit inside the proportional range)
+  expect(rs[2] / rs[1]).toBeCloseTo(Math.sqrt(3), 5);
+  const circleR = await key.locator("svg circle").evaluateAll((els) => els.map((e) => Number(e.getAttribute("r"))));
+  expect(circleR).toEqual(rs);
+  expect(await page.locator(".legend i.ns").evaluate((e) => getComputedStyle(e).backgroundColor)).toBe("rgb(74, 74, 74)");
+  const feats = await page.evaluate(() => (window as any).__map.querySourceFeatures("lakes").map((f: any) => f.properties.r));
+  expect(Math.max(...feats)).toBeLessThanOrEqual(24); expect(Math.min(...feats)).toBeGreaterThanOrEqual(6);
+  await page.getByRole("button", { name: /Switch language/ }).click();
+  await expect(page.getByTestId("size-key")).toContainText("Daire alanı göl alanıyla");
+});
+
+test("basemap selector has Vector (light) next to Vector (dark); the light style is requested", async ({ page }) => {
+  const urls: string[] = [];
+  await page.route(/openfreemap|gibs\.earthdata/, (r) => { urls.push(r.request().url()); r.abort(); });
+  await page.goto("/");
+  const sel = page.getByTestId("toolbar").locator("select");
+  await expect(sel.locator("option")).toHaveCount(5);
+  const labels = await sel.locator("option").allTextContents();
+  expect(labels.slice(0, 2)).toEqual(["Vector (dark)", "Vector (light)"]);
+  await sel.selectOption("vectorlight");
+  await expect.poll(() => urls.some((u) => u.includes("/styles/positron"))).toBe(true);
+});
+
+test("VIIRS date input: min = first daily image, typed earlier/later dates are clamped", async ({ page }) => {
+  await page.route(/openfreemap/, (r) => r.abort());
+  await page.route(/gibs\.earthdata/, (r) => r.fulfill({ body: PNG, contentType: "image/png" }));
+  await page.goto("/");
+  await page.getByTestId("toolbar").locator("select").selectOption("viirs");
+  const d = page.getByTestId("viirs-date");
+  await expect(d).toHaveAttribute("min", "2018-01-05");
+  await d.fill("2010-03-01"); await d.blur();
+  await expect(d).toHaveValue("2018-01-05");
+  await d.fill("2999-03-01"); await d.blur();
+  expect(await d.inputValue() <= new Date().toISOString().slice(0, 10)).toBe(true);
+  await d.fill("2022-05-06"); await d.blur();
+  await expect(d).toHaveValue("2022-05-06");
 });
