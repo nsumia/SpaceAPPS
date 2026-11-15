@@ -130,13 +130,14 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
       for (const k of ["live.cache", "live.stale", "tip.cache", "tip.stale"]) expect(t(k)).toBe(k);
     }
   });
-  it("About page shows only the page title, Project summary and How to read this app (EN and TR)", () => {
+  it("About page shows the page title, Project summary, How to read this app and Data sources, in that order (EN and TR)", () => {
     const SUMMARY_EN = "Metalimnion is a visual analysis app which simplifies the viewing and observation of lakes worldwide and significant changes that have affected said lakes. Metalimnion is a sophisticated app that can display individual measurements of area and surface temperature over the years and analyze these measurements to attribute changes to climatological phenomena or human activity. The analyses are then evaluated on the basis of reliability and are summarized. All analyzed lakes are shown on the various available easy-to-navigate maps with helpful circles and name descriptors. It addresses the challenge by making significant changes regarding lakes much easier to view and reason about, especially for non-experts. It allows everyone to see the change and future predictions concerning water area and surface temperature allowing them to act against the day by day shrinking of water resources, which are already very limited. This matters because global water trends affect many living things worldwide, and more attention must be drawn to crucial concerns such as this if we, the people, want to tend to our planet well.";
     for (const lang of ["en", "tr"] as const) {
       const { container, unmount } = render(<I18nProvider initial={lang}><MethodsPage /></I18nProvider>);
       expect(container.querySelector("h1")?.textContent).toBe(lang === "en" ? "About" : "Hakkında");
       const heads = [...container.querySelectorAll("h2")].map((h) => h.textContent);
-      expect(heads).toEqual(lang === "en" ? ["Project summary", "How to read this app"] : ["Proje özeti", "Bu uygulama nasıl okunur"]);
+      expect(heads).toEqual(lang === "en" ? ["Project summary", "How to read this app", "Data sources"] : ["Proje özeti", "Bu uygulama nasıl okunur", "Veri kaynakları"]);
+      expect([...container.querySelectorAll("h3")].map((h) => h.textContent)).toEqual(lang === "en" ? ["NASA", "Non-NASA"] : ["NASA", "NASA dışı"]);
       const t = makeT(lang);
       expect(container.querySelectorAll("p").length).toBe(2);
       expect(container.querySelectorAll("p")[0].textContent).toBe(t("sum.proj.body"));
@@ -147,11 +148,50 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
         expect(container.querySelectorAll("p")[0].textContent).toMatch(/^Metalimnion, dünya genelindeki göllerin/);
       }
       expect(container.textContent).not.toMatch(/Report Summary|Update III/);
-      for (const name of [/limitations|sınırlamalar/i, /glossary|sözlük/i, /data sources|veri kaynakları/i, /^method$|^yöntem$/i, /validation|doğrulama/i]) {
+      for (const name of [/limitations|sınırlamalar/i, /glossary|sözlük/i, /^method$|^yöntem$/i, /validation|doğrulama/i]) {
         expect(screen.queryByRole("heading", { name })).toBeNull();
       }
       expect(container.querySelector("table, ul, dl, [data-testid=glossary]")).toBeNull();
+      expect(container.querySelectorAll("ol").length).toBe(2);
       expect(container.textContent).not.toMatch(/Live cards come from public APIs|Akşehir is flagged low reliability|Landsat Collection 2|Sabuncu/);
+      unmount();
+    }
+  });
+  it("About Data sources: 10 items in order, exact hrefs, new-tab links, no doi.org (EN and TR)", () => {
+    const GIBS = "https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs-api";
+    const EXPECTED: [string, string][] = [
+      ["Landsat 4-5 TM Collection 2 Level-2 (NASA/USGS)", "https://www.usgs.gov/centers/eros/science/usgs-eros-archive-landsat-archives-landsat-4-5-tm-collection-2-level-2-science"],
+      ["Landsat 8-9 OLI/TIRS Collection 2 Level-2 (NASA/USGS)", "https://www.usgs.gov/centers/eros/science/usgs-eros-archive-landsat-archives-landsat-8-9-olitirs-collection-2-level-2"],
+      ["NASA POWER monthly API", "https://power.larc.nasa.gov/"],
+      ["MERRA-2 tavg1_2d_lnd_Nx (NASA GMAO)", "https://www.earthdata.nasa.gov/data/catalog/ges-disc-m2t1nxlnd-5.12.4"],
+      ["NASA GIBS, layer VIIRS NOAA-20 Corrected Reflectance True Color", GIBS],
+      ["NASA GIBS, layer Blue Marble Shaded Relief and Bathymetry", GIBS],
+      ["Microsoft Planetary Computer", "https://planetarycomputer.microsoft.com/dataset/landsat-c2-l2"],
+      ["HydroBASINS (HydroSHEDS)", "https://www.hydrosheds.org/products/hydrobasins"],
+      ["Natural Earth 10m lakes and countries", "https://www.naturalearthdata.com/downloads/10m-physical-vectors/"],
+      ["OpenFreeMap", "https://openfreemap.org/"],
+    ];
+    for (const lang of ["en", "tr"] as const) {
+      const { container, unmount } = render(<I18nProvider initial={lang}><MethodsPage /></I18nProvider>);
+      const links = [...container.querySelectorAll("a")];
+      expect(links.map((a) => [a.textContent, a.getAttribute("href")])).toEqual(EXPECTED);
+      const lis = [...container.querySelectorAll("ol li")];
+      expect(lis.length).toBe(10);
+      lis.forEach((li, i) => { expect(li.querySelector("a")).toBe(links[i]); expect(li.textContent!.length).toBeGreaterThan(links[i].textContent!.length + 5); });
+      expect(container.querySelectorAll("ol")[0].querySelectorAll("li").length).toBe(6);
+      expect(container.querySelectorAll("ol")[1].getAttribute("start")).toBe("7");
+      for (const a of links) {
+        expect(a.getAttribute("target")).toBe("_blank");
+        expect(a.getAttribute("rel")).toBe("noopener noreferrer");
+        expect(a.getAttribute("href")).not.toContain("doi.org");
+      }
+      expect(container.innerHTML).not.toContain("doi.org");
+      expect(container.textContent).not.toMatch(/SWOT/);
+      if (lang === "tr") {
+        expect(container.textContent).toContain("Su alanı ve yüzey sıcaklığı, 1985-2012.");
+        expect(container.textContent).toContain("Çevrimiçi vektör altlık harita.");
+        expect(container.textContent).not.toMatch(/Water area|Online vector/);
+      }
       unmount();
     }
   });
