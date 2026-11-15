@@ -189,7 +189,8 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
         expect(a.getAttribute("href")).not.toContain("doi.org");
       }
       expect(container.innerHTML).not.toContain("doi.org");
-      expect([...container.querySelectorAll("ol")].map((o) => o.textContent).join(" ")).not.toMatch(/SWOT/); // sources list only; the glossary keeps a SWOT entry
+      expect([...container.querySelectorAll("ol")].map((o) => o.textContent).join(" ")).not.toMatch(/SWOT/);
+      expect(container.textContent).not.toMatch(/SWOT/i); // whole About page, EN and TR
       if (lang === "tr") {
         expect(container.textContent).toContain("Su alanı ve yüzey sıcaklığı, 1985-2012.");
         expect(container.textContent).toContain("Çevrimiçi vektör altlık harita.");
@@ -199,8 +200,8 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
     }
   });
   it("About glossary: one dt/dd pair per GLOSSARY entry, in order, EN and TR", () => {
-    expect(GLOSSARY.length).toBe(14);
-    expect(GLOSSARY.map((g) => g[0])).toEqual(["Landsat", "MNDWI", "Sen slope", "p-value / significant", "σ (sigma) and normal range", "Emergence year", "Surface temperature (LST)", "Sensor break", "P−E", "EVLAND", "Climate share", "Not computable", "Reliability", "SWOT"]);
+    expect(GLOSSARY.length).toBe(13);
+    expect(GLOSSARY.map((g) => g[0])).toEqual(["Landsat", "MNDWI", "Sen slope", "p-value / significant", "σ (sigma) and normal range", "Emergence year", "Surface temperature (LST)", "Sensor break", "P−E", "EVLAND", "Climate share", "Not computable", "Reliability"]);
     for (const lang of ["en", "tr"] as const) {
       const { container, unmount } = render(<I18nProvider initial={lang}><MethodsPage /></I18nProvider>);
       const dl = container.querySelector("dl.glossary")!;

@@ -460,7 +460,6 @@ export const GLOSSARY: [string, string, string][] = [
   ["Climate share","How much of the lake's loss a rain-minus-evaporation model explains. The rest is unexplained: a sign of other causes (irrigation, withdrawals, model error), not proof of human impact.","Bir yağış-eksi-buharlaşma modelinin göl kaybının ne kadarını açıkladığı. Kalanı açıklanamayan kısımdır: başka nedenlerin (sulama, çekim, model hatası) işareti, insan etkisinin kanıtı değil."],
   ["Not computable","The data are too weak to give an honest number, so we show none instead of a misleading one.","Veriler dürüst bir sayı vermek için fazla zayıf; yanıltıcı bir sayı yerine hiçbir şey göstermiyoruz."],
   ["Reliability","How steady the yearly measurements are. Low = single years jump a lot (shallow, ephemeral water), so trends are shaky.","Yıllık ölçümlerin ne kadar tutarlı olduğu. Düşük = tek tek yıllar çok zıplıyor (sığ, geçici su), eğilimler sallantılı."],
-  ["SWOT","A NASA/CNES satellite (2022) measuring water level; not used in the app yet.","Su seviyesini ölçen NASA/CNES uydusu (2022); uygulamada henüz kullanılmıyor."],
 ];
 const dict = { en, tr };
 
