@@ -1,7 +1,7 @@
 import { useState } from "react";
 import ReactECharts from "../lib/ReactECharts";
 import type { EChartsOption } from "echarts";
-import { C } from "../lib/palette";
+import { C, LST5 } from "../lib/palette";
 import { useI18n, type TFn } from "../i18n";
 import type { LakeFull } from "../lib/types";
 
@@ -71,7 +71,7 @@ export function lstOption(d: LakeFull, t: TFn): EChartsOption {
   const b = base(t, t("ax.temp"));
   const series: any[] = [{ name: t("ser.lst"), type: "line", data: rows.map((r) => pt(r, r.lst_c)), color: C.temp, symbolSize: 5,
     markLine: { symbol: "none", lineStyle: { color: C.muted, type: "dotted" }, data: [{ xAxis: 2012.5, label: { formatter: "Landsat 5 | 8", color: C.muted, position: "insideEndTop" } }] } }];
-  if (l5) series.push({ name: t("ser.lst5"), type: "line", showSymbol: false, color: "#f5c04a", lineStyle: { type: "dashed" },
+  if (l5) series.push({ name: t("ser.lst5"), type: "line", showSymbol: false, color: LST5, lineStyle: { type: "dashed" },
     data: [1985, 2012].map((y) => [y, l5.intercept + l5.sen_slope_per_year * (y - l5.intercept_year)]) });
   return { ...b, series, tooltip: { trigger: "axis", formatter: sceneTooltip(t) } };
 }

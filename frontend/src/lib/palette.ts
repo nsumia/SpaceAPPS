@@ -6,5 +6,6 @@ export const C = {
   emergence: "#e08fbf", sand: "#f2c36b", text: "#e8f1f7", muted: "#9db3c6", grid: "#1f3850", bg: "#08121d", panel: "#0f1e2f",
 };
 /** Trend classes shared by the map markers, the legend and the compare table. */
-export const TREND = { fast: "#ff5a45", slow: "#f2a08a", ns: "#9fb0be", inc: "#56B4E9" };
+export const TREND = { fast: "#ff5a45", slow: "#f7b9a6", ns: "#9fb0be", inc: "#56B4E9" };
+export const LST5 = "#f5c04a"; // Landsat 5 temperature trend line
 export const LAKE_COLOURS = ["#56B4E9", "#E69F00", "#009E73", "#F0E442", "#CC79A7", "#D55E00"];

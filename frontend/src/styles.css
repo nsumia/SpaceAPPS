@@ -4,7 +4,7 @@
 :root {
   color-scheme: dark;
   --bg: #08121d; --bg-2: #0b1826; --panel: #0f1e2f; --surface: #14283d; --surface-2: #1a3249;
-  --line: #234158; --line-strong: #35607e;
+  --line: #234158; --line-strong: #4a7a99;
   --text: #e8f1f7; --text-2: #c5d4e0; --muted: #9db3c6;
   --water: #38c8e8; --water-deep: #0b6a8c; --accent: #38c8e8; --sand: #f2c36b; --sand-ink: #06101a; --temp: #E69F00;
   --good: #5fd4a8; --warn: #f2c36b; --bad: #ff8d7b;
@@ -167,4 +167,4 @@ tbody tr:hover td { background: rgba(56, 200, 232, .05); }
   .cards { grid-template-columns: 1fr; }
 }
 @media (max-width: 520px) { .brand-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; } .top nav a { padding: 6px 8px; font-size: 13px; } }
-.cards > * { min-width: 0; } .card { overflow-wrap: anywhere; }
+.cards > * { min-width: 0; } .card-v, .card .src { overflow-wrap: anywhere; } .tag { white-space: nowrap; flex-shrink: 0; }

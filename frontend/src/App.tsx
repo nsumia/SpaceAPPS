@@ -12,7 +12,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="top">
-        <a className="skip" href="#main">{lang === "tr" ? "İçeriğe geç" : "Skip to content"}</a>
+        <a className="skip" href="#main">{t("nav.skip")}</a>
         <strong className="brand">
           <svg className="brand-mark" viewBox="0 0 32 32" width="26" height="26" aria-hidden="true" focusable="false">
             <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="2" />
