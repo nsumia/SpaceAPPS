@@ -60,7 +60,7 @@ export function scatterOption(rows: LakeSummary[], t: (k: string) => string): EC
       return `<b>${d.full}</b>${d.country ? ` (${d.country})` : ""}<br/>${t("tip.warming")}: ${sgn(d.value[0], 2)} °C ${t("tip.perdec")}<br/>${t("tip.trend")}: ${sgn(d.value[1])} % ${t("tip.perdec")}<br/>${t("tip.sig")} ${pWords(d.p, t)}<br/>${t("tip.climate")}: ${d.share == null ? t("tip.nocl") : Math.round(100 * d.share) + " %"}<br/>${t("tip.area")}: ${d.area == null ? t("na.data") : Math.round(d.area).toLocaleString("en") + " km²"}`; } },
     xAxis: { type: "value", name: t("cmp.x"), nameLocation: "middle", nameGap: 30, nameTextStyle: { color: C.text }, scale: true, axisLabel: { color: C.muted, formatter: (v: number) => sgn(v, 1) }, splitLine: { lineStyle: { color: C.grid } } },
     yAxis: { type: "value", name: t("cmp.y"), nameLocation: "middle", nameGap: 44, nameTextStyle: { color: C.text }, scale: true, axisLabel: { color: C.muted, formatter: (v: number) => `${v}%` }, splitLine: { lineStyle: { color: C.grid } } },
-    graphic: [{ type: "text", right: 30, bottom: 62, silent: true, style: { text: `↘ ${t("cmp.quad")}`, fill: "#ffb3a5", font: "12px Inter Variable, system-ui" } }],
+    graphic: [{ type: "text", right: 30, bottom: 62, silent: true, style: { text: `↘ ${t("cmp.quad")}`, fill: "#ffb3a5", font: "12px IBM Plex Sans, system-ui" } }],
     series: [ser(false), ser(true)],
   };
 }

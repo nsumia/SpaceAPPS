@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes } from "react-router-dom";
+import { Link, NavLink, Route, Routes } from "react-router-dom";
 import { useI18n } from "./i18n";
 import { lazy, Suspense } from "react";
 
@@ -13,20 +13,27 @@ export default function App() {
     <div className="app">
       <header className="top">
         <a className="skip" href="#main">{t("nav.skip")}</a>
-        <strong className="brand">
-          <svg className="brand-mark" viewBox="0 0 32 32" width="26" height="26" aria-hidden="true" focusable="false">
-            <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="2" />
-            <path d="M4.5 18c3-3 5.5-3 8 0s5 3 8 0 4-2.5 7-1" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <circle cx="22" cy="9.5" r="2.6" fill="var(--sand)" />
+        <Link to="/" className="brand" aria-label={t("app.title")}>
+          <svg className="brand-mark" viewBox="0 0 32 32" width="30" height="30" aria-hidden="true" focusable="false">
+            <path d="M16 3.5c5.6 0 11.5 4.3 12 10.6.5 6.6-4.8 14.4-12.4 14.4S3.4 22.4 4.3 15.6C5.1 8.6 10.4 3.5 16 3.5z" fill="currentColor" opacity=".22" />
+            <path d="M16 3.5c5.6 0 11.5 4.3 12 10.6.5 6.6-4.8 14.4-12.4 14.4S3.4 22.4 4.3 15.6C5.1 8.6 10.4 3.5 16 3.5z" fill="none" stroke="currentColor" strokeWidth="1.8" />
+            <path d="M16.2 9c3.5.2 6.8 2.9 6.9 6.6.1 4-3 7.4-7 7.2-3.8-.2-6.2-3.5-5.7-7C10.9 12 12.7 8.8 16.2 9z" fill="none" stroke="var(--sand)" strokeWidth="1.6" strokeDasharray="2.6 2.2" />
+            <circle cx="16" cy="16" r="2.4" fill="var(--sand)" />
           </svg>
-          <span className="brand-text">{t("app.title")}</span>
-        </strong>
-        <nav>
+          <span className="brand-text">
+            <span className="brand-name">{t("app.title")}</span>
+            <span className="brand-sub">{t("app.sub")}</span>
+          </span>
+        </Link>
+        <nav aria-label={t("nav.main")}>
           <NavLink to="/" end>{t("nav.map")}</NavLink>
           <NavLink to="/compare">{t("nav.compare")}</NavLink>
           <NavLink to="/methods">{t("nav.methods")}</NavLink>
         </nav>
-        <button className="lang" onClick={() => setLang(lang === "en" ? "tr" : "en")} aria-label="language">{lang === "en" ? "TR" : "EN"}</button>
+        <button className="lang" onClick={() => setLang(lang === "en" ? "tr" : "en")} aria-label={t("nav.lang")}>
+          <span className={lang === "tr" ? "on" : ""} aria-hidden="true">TR</span>
+          <span className={lang === "en" ? "on" : ""} aria-hidden="true">EN</span>
+        </button>
       </header>
       <main id="main" tabIndex={-1}>
         <Suspense fallback={<div className="spinner-row" role="status"><span className="spinner" /></div>}>
