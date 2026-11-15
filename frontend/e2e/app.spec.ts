@@ -124,8 +124,10 @@ test("top bar: brand, nav with aria-current, TR/EN switch, no overflow at 390 px
   await expect(page.locator(".prose ol a").first()).toHaveAttribute("target", "_blank");
   expect(await page.locator("a[href*=\"doi.org\"]").count()).toBe(0);
   await expect(page.getByRole("heading", { name: /validation/i })).toHaveCount(0);
-  await expect(page.locator("dl.glossary dt")).toHaveCount(14);
-  await expect(page.locator("dl.glossary dd")).toHaveCount(14);
+  await expect(page.locator("dl.glossary dt")).toHaveCount(13);
+  await expect(page.locator("dl.glossary dd")).toHaveCount(13);
+  await expect(page.locator("dl.glossary dt")).toHaveText(["Landsat", "MNDWI", "Sen slope", "p-value / significant", "σ (sigma) and normal range", "Emergence year", "Surface temperature (LST)", "Sensor break", "P−E", "EVLAND", "Climate share", "Not computable", "Reliability"]);
+  expect(await page.locator("body").innerText()).not.toMatch(/SWOT/i);
   await expect(page.locator("main, .page").getByText(/^Metalimnion is a visual analysis app which simplifies/)).toBeVisible();
   await expect(page.getByText("Report Summary")).toHaveCount(0);
   expect(await page.locator(".brand-name").evaluate((e) => getComputedStyle(e).textTransform)).toBe("none");
@@ -148,7 +150,8 @@ test("top bar: brand, nav with aria-current, TR/EN switch, no overflow at 390 px
   await expect(page.locator(".prose ol a")).toHaveCount(10);
   await expect(page.locator(".prose h3")).toHaveText(["NASA", "NASA Ortaklı", "NASA dışı"]);
   expect(await page.locator(".prose ol").evaluateAll((os) => os.map((o) => [o.querySelectorAll("li").length, o.getAttribute("start")]))).toEqual([[4, "1"], [2, "5"], [4, "7"]]);
-  await expect(page.locator("dl.glossary dt")).toHaveCount(14);
+  await expect(page.locator("dl.glossary dt")).toHaveCount(13);
+  expect(await page.locator("body").innerText()).not.toMatch(/SWOT/i);
   await expect(page.locator("dl.glossary")).not.toContainText(/1997|censored/);
   await expect(page.getByText("Su alanı ve yüzey sıcaklığı, 2013-2025.")).toBeVisible();
   await expect(page.getByText(/^Metalimnion, dünya genelindeki göllerin/)).toBeVisible();
