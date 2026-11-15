@@ -2,23 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useI18n } from "../i18n";
 import { api, ApiError, useCompareIds, useLake, useLakes, useLive, type Job, type LakeFull, type Live, type LiveCard } from "../lib/api";
-import { Info, summarySentence } from "../lib/util";
-import { AreaChart, ClimateChart, ForecastChart, LstChart, VolumeChart } from "./Charts";
+import { summarySentence } from "../lib/util";
+import { AreaChart, ClimateChart, ForecastChart, LstChart } from "./Charts";
 import { Link } from "react-router-dom";
 
 export interface Selection { id: string | null; name?: string; polygon?: GeoJSON.Geometry | null }
-
-export function Badges({ d }: { d: LakeFull }) {
-  const { t } = useI18n();
-  const s = d.summary, rel = s.reliability;
-  return (
-    <div className="badges">
-      {s.validated && <span className="badge good" title={t("tip.validated")}>{t("badge.validated")}{s.validation_basis ? ` (${s.validation_basis})` : ""}</span>}
-      <span className={"badge " + (rel === "low" ? "bad" : rel === "ok" ? "good" : "")} title={t("tip.rel")}>{t(`badge.rel.${rel === "ok" || rel === "low" ? rel : "unknown"}`)}</span>
-      <Info text={t("tip.rel")} />
-    </div>
-  );
-}
 
 /** Headline numbers, straight from the summary record. */
 export function Stats({ s }: { s: LakeFull["summary"] }) {
@@ -201,7 +189,6 @@ export default function Panel({ sel, onClose, layout, onLayout }: { sel: Selecti
         <button className="close" onClick={onClose} aria-label={t("panel.close")}>×</button>
       </div>
       <h2>{d?.summary.name ?? sel.name ?? "…"}</h2>
-      {d && <Badges d={d} />}
       {d && d.series.length > 0 && <Stats s={d.summary} />}
       {d && <RefInfo s={d.summary} />}
       {d?.reliability?.note && d.summary.reliability === "low" && <div className="note bad">{d.reliability.note}</div>}
@@ -227,7 +214,6 @@ export default function Panel({ sel, onClose, layout, onLayout }: { sel: Selecti
             {!running && <ForecastChart d={d} />}
             <LstChart d={d} />
             {d.climate && <ClimateChart d={d} />}
-            {!d.unverified && <VolumeChart d={d} />}
           </div>
         </>)}
       {lake.isLoading && !!lakeId && <div className="spinner-row"><span className="spinner" /></div>}

@@ -155,7 +155,7 @@ Details in [VALIDATION.md](VALIDATION.md).
   Great Salt Lake, Lake Mead, Dead Sea, Poopó, Tuz; inconclusive for Aral North and Qinghai (no significant trend); not tested
   for Chad, Balkhash, Sevan (literature mixed); Titicaca's "stable" expectation is unverified and our series declines (-2.85 %/decade).
   Some literature directions rest on abstracts or news; see VALIDATION.md.
-- Only Burdur is quantitatively validated. The "validated" badge means: Turkish lake, or reference lake whose direction matches the literature, and not low reliability.
+- Only Burdur is quantitatively validated.
 
 ## Limitations
 - **The forecast is an extrapolation, not a projection**: it continues the past pattern of the area series and uses no

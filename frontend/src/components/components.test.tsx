@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { burdurFull } from "../fixtures";
-import { areaOption, ClimateChart, ForecastChart, VolumeChart } from "./Charts";
-import { AnalysisProgress, Badges, eta, LiveCards } from "./Panel";
+import { AreaChart, areaOption, ClimateChart, ForecastChart } from "./Charts";
+import { AnalysisProgress, eta, LiveCards } from "./Panel";
 import { makeT } from "../i18n";
+import * as PanelMod from "./Panel";
+import * as ChartsMod from "./Charts";
 import type { Live } from "../lib/api";
 
 vi.mock("echarts-for-react/lib/core", () => ({ default: () => <div data-testid="echart" /> }));
@@ -18,18 +20,6 @@ describe("charts", () => {
     expect(screen.queryByRole("checkbox")).toBeNull();
     expect(screen.getByText(/sign, not proof/)).toBeInTheDocument();
   });
-  it("badges: validated badge shown, no 'not checked against published data' badge", () => {
-    const { rerender } = render(<Badges d={burdurFull} />);
-    expect(screen.getByText(/validated against published data/)).toBeInTheDocument();
-    rerender(<Badges d={{ ...burdurFull, summary: { ...burdurFull.summary, validated: false } }} />);
-    expect(screen.queryByText(/published data/)).toBeNull();
-    expect(screen.queryByText(/not checked/)).toBeNull();
-  });
-  it("volume chart shows 'No data' and the reason when SWOT is unavailable", () => {
-    render(<VolumeChart d={burdurFull} />);
-    expect(screen.getByText("No data")).toBeInTheDocument();
-    expect(screen.getByText("No SWOT PLD id")).toBeInTheDocument();
-  });
   it("area chart labels a left-censored emergence line 'by 1997' and draws the Sen line", () => {
     const o: any = areaOption(burdurFull, makeT("en"));
     const obs = o.series.find((s: any) => s.markLine);
@@ -43,7 +33,7 @@ describe("charts", () => {
 
 describe("chart help", () => {
   it("every panel chart has a 'What this shows' caption", () => {
-    render(<><ClimateChart d={burdurFull} /><VolumeChart d={burdurFull} /></>);
+    render(<><ClimateChart d={burdurFull} /><AreaChart d={burdurFull} /></>);
     expect(screen.getAllByTestId("chart-help").length).toBe(2);
     expect(screen.getAllByText("What this shows:").length).toBe(2);
   });
@@ -90,5 +80,17 @@ describe("forecast chart", () => {
     render(<ForecastChart d={{ ...burdurFull, forecast: { ok: false, reason: "unreliable_area_series", horizon_year: 2040, n_valid: 20, note: "x" } }} />);
     expect(screen.queryByTestId("echart")).toBeNull();
     expect(screen.getByText("No forecast")).toBeInTheDocument();
+  });
+});
+
+describe("removed UI: top badges and SWOT volume section", () => {
+  it("no Badges/VolumeChart components and no badge/volume strings in EN or TR", () => {
+    expect((PanelMod as any).Badges).toBeUndefined();
+    expect((ChartsMod as any).VolumeChart).toBeUndefined();
+    for (const lang of ["en", "tr"] as const) {
+      const t = makeT(lang);
+      for (const k of ["badge.validated", "badge.rel.ok", "badge.rel.low", "badge.rel.unknown", "chart.volume", "volume.none", "help.volume"])
+        expect(t(k)).toBe(k);
+    }
   });
 });

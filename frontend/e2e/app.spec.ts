@@ -28,6 +28,10 @@ test("map -> click Burdur -> panel within 2 s -> add to compare", async ({ page 
   await expect(page.getByRole("heading", { name: "Burdur" })).toBeVisible({ timeout: 2000 });
   expect(Date.now() - t0).toBeLessThan(2000);
   await expect(page.getByTestId("summary")).toContainText("Burdur: the mean area of its last 3 valid years");
+  const panel0 = page.getByTestId("panel");
+  await expect(panel0.locator(".badges, .badge")).toHaveCount(0);
+  for (const re of [/validated against published data/i, /^reliable$/i, /reliability unknown/i, /How much water is stored/i, /No SWOT Prior Lake/i, /volume change/i])
+    await expect(panel0.getByText(re)).toHaveCount(0);
   await page.getByRole("button", { name: "Add to compare" }).click();
   await page.getByRole("link", { name: /Open compare/ }).click();
   await expect(page).toHaveURL(/\/compare$/);
