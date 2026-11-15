@@ -237,9 +237,9 @@ Notes on the table
 - Lake Chad: series only 2013-2025 (13 valid years): the Planetary Computer Landsat 5/8/9 collection has no Aug-Sep scenes over the lake before 2013 (STAC searches for 1985, 1987, ..., 2010 returned 0 items), and Landsat 7 is excluded by design. Open-water area about 390-400 km2 inside the 1985-1990 detection polygon, no trend (p = 0.54). Literature "mixed", so no agreement test. Vegetation/flooding (MNDWI limitation) means the number is a lower bound.
 - Sevan: significant but small increase (+0.45 %/decade); literature "mixed" (historic drawdown, recovery since the early 2000s), no agreement test.
 - Balkhash: only 8 valid years (1994-2025, every 3rd year, 120 m), fewer than the 10 needed for a trend test, so no trend and no agreement test is reported. Coverage before 1994 is too sparse (Landsat 5 downlink).
-- Dead Sea: a decline of 687 km2 (1985) to 593 km2 (2025) inside the polygon; southern evaporation ponds are excluded only if not connected to the main body (see note on the lake page).
+- Dead Sea: a decline of 687 km2 (1985) to 593 km2 (2025) inside the polygon; southern evaporation ponds are excluded only if not connected to the main body (see the method limitations below).
 
-### Method limitations by lake (also shown on each lake page)
+### Method limitations by lake
 Chad (vegetation, rising-season window), Poopo (shallow, turbid, salt crust), Tuz Golu (salt crust and seasonality; spring window), Great Salt Lake / Urmia / Dead Sea (salt and evaporation ponds may count as water; only the connected component is kept), Titicaca (reeds in shallow bays), Balkhash and Aral (very large: coarse resolution, partial scene coverage, boundary between North and South Aral at 46.1 N is approximate). Transboundary lakes (Aral, Chad, Dead Sea, Titicaca) are described with data only; no statement is made about responsibility.
 
 ### Engineering notes

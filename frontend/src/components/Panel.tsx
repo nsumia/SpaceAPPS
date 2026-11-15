@@ -32,7 +32,6 @@ export function RefInfo({ s }: { s: LakeFull["summary"] }) {
   return (
     <section className="refinfo" data-testid="refinfo">
       {s.why_selected && <p><strong>{t("ref.why")}:</strong> {s.why_selected}</p>}
-      {s.mndwi_note && <p className="note warn"><strong>{t("ref.mndwi")}:</strong> {s.mndwi_note}</p>}
       <p className="small"><strong>{t("ref.cadence")}:</strong> {s.cadence_note ?? "?"}; {s.resolution_m ?? "?"} m{s.window ? `; ${s.window[0]} to ${s.window[1]}` : ""}</p>
       {lit && <p className="small"><strong>{t("ref.lit")}:</strong> {lit} ({t(`ref.a.${s.literature_agreement ?? "not_tested"}`)})</p>}
     </section>
