@@ -35,33 +35,6 @@ test("map -> click Burdur -> panel within 2 s -> add to compare", async ({ page 
   await page.screenshot({ path: process.env.SHOT_COMPARE ?? "test-results/compare.png", fullPage: true });
 });
 
-test("drawn rectangle starts an analysis job with visible progress (API mocked)", async ({ page }) => {
-  let polls = 0;
-  await page.route("**/api/analyze", (r) => r.fulfill({ status: 202, json: { job_id: "j1", lake_id: "custom-abc", status: "queued", progress: 0, current_year: null, phase: null, error: null, result_url: "", area_km2: 900 } }));
-  await page.route("**/api/jobs/j1", (r) => r.fulfill({ json: { job_id: "j1", lake_id: "custom-abc", status: "running", progress: 20 + 15 * polls++, current_year: 1990 + 5 * polls, phase: "preliminary (every 5th year)", error: null, result_url: "" } }));
-  await openMap(page);
-  await page.getByTestId("draw-rect").click();
-  const a = await px(page, 31.5, 40.2), b = await px(page, 32.2, 39.6);
-  await page.mouse.click(a.x, a.y);
-  await page.mouse.move(b.x, b.y, { steps: 5 });
-  await page.mouse.click(b.x, b.y);
-  await page.getByTestId("analyze").click();
-  const bar = page.getByTestId("analysis-progress");
-  await expect(bar).toBeVisible();
-  await expect(bar).toContainText(/year: \d{4}/);
-  await expect(bar.getByRole("progressbar")).toHaveAttribute("aria-valuenow", /\d+/);
-});
-
-test("analyze shows the backend 422 message for oversized areas", async ({ page }) => {
-  await page.route("**/api/analyze", (r) => r.fulfill({ status: 422, json: { detail: "area of 52,000 km2 is larger than the 20,000 km2 limit: please select a smaller area around the lake" } }));
-  await openMap(page);
-  await page.getByTestId("draw-rect").click();
-  const a = await px(page, 31, 41), b = await px(page, 32.4, 39.6);
-  await page.mouse.click(a.x, a.y); await page.mouse.move(b.x, b.y, { steps: 5 }); await page.mouse.click(b.x, b.y);
-  await page.getByTestId("analyze").click();
-  await expect(page.getByRole("alert")).toContainText("20,000 km2");
-});
-
 test("expand button widens the side panel, charts follow, state is remembered, collapse restores", async ({ page }) => {
   await openMap(page);
   await page.evaluate(() => (window as any).__map.jumpTo({ center: [30.17, 37.75], zoom: 6 }));
@@ -76,7 +49,7 @@ test("expand button widens the side panel, charts follow, state is remembered, c
   await page.getByTestId("panel-expand").click();
   await expect.poll(async () => (await panel.boundingBox())!.width).toBeGreaterThan(w0 + 200);
   // echarts re-fitted: the canvas got wider (2-column layout) and still lies inside the panel
-  await expect.poll(async () => (await panel.locator("canvas").first().boundingBox())!.width, { timeout: 5000 }).toBeGreaterThan(c0 + 20);
+  await expect.poll(async () => (await panel.locator("canvas").first().boundingBox())?.width ?? 0, { timeout: 5000 }).toBeGreaterThan(c0 + 20);
   const pb = (await panel.boundingBox())!, cb = (await panel.locator("canvas").first().boundingBox())!;
   expect(cb.x + cb.width).toBeLessThanOrEqual(pb.x + pb.width + 1);
   expect(await page.evaluate(() => localStorage.getItem("panelLayout"))).toContain('"expanded":true');
@@ -118,7 +91,8 @@ test("top bar: brand, nav with aria-current, TR/EN switch, no overflow at 390 px
   await expect(nav.getByRole("link", { name: "Map" })).not.toHaveAttribute("aria-current", "page");
   expect((await page.locator("header.top").boundingBox())!.height).toBeLessThanOrEqual(60);
   await expect(page.locator(".brand-name")).toHaveText("Lake Loss Detective");
-  await expect(page.locator(".brand-name")).toHaveCSS("font-family", /Fraunces/);
+  await expect(page.locator(".brand-name")).toHaveCSS("font-family", /Roboto/);
+  expect(await page.evaluate(async () => { await document.fonts.ready; return document.fonts.check('600 19px "Roboto Variable"'); })).toBe(true);
   await page.getByRole("button", { name: /Switch language/ }).click();
   await expect(page.locator(".brand-name")).toHaveText("Göl Kaybı Dedektifi");
   await expect(page.getByRole("navigation", { name: "Ana menü" }).getByRole("link", { name: "Yöntem" })).toHaveAttribute("aria-current", "page");

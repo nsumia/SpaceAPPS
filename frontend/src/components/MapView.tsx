@@ -2,8 +2,6 @@ import { useEffect, useRef } from "react";
 import * as maplibregl from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import type { GeoJSONSource, ImageSource, StyleSpecification } from "maplibre-gl";
-import { TerraDraw, TerraDrawPolygonMode, TerraDrawRectangleMode } from "terra-draw";
-import { TerraDrawMapLibreGLAdapter } from "terra-draw-maplibre-gl-adapter";
 import { api } from "../lib/api";
 import { trendColour } from "../lib/compare";
 import { MASK } from "../lib/palette";
@@ -13,9 +11,8 @@ import type { Selection } from "./Panel";
 maplibregl.setWorkerUrl(workerUrl);
 
 export type Basemap = "vector" | "bluemarble" | "viirs" | "offline";
-export type DrawMode = "off" | "rectangle" | "polygon";
 const GIBS = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
-const BG = "#171915";
+const BG = "#0e0e0e";
 
 export function basemapStyle(bm: Basemap, date: string): StyleSpecification | string {
   const raster = (id: string, tiles: string, maxzoom: number, attribution: string): StyleSpecification => ({
@@ -31,8 +28,8 @@ export function basemapStyle(bm: Basemap, date: string): StyleSpecification | st
   // offline: local Natural Earth 50m country borders served by the API (no external host)
   return { version: 8, sources: { countries: { type: "geojson", data: "/api/basemap/countries" } }, layers: [
     { id: "bg", type: "background", paint: { "background-color": BG } },
-    { id: "countries-fill", type: "fill", source: "countries", paint: { "fill-color": "#26302b" } },
-    { id: "countries-line", type: "line", source: "countries", paint: { "line-color": "#6b9199", "line-width": 0.9 } }] };
+    { id: "countries-fill", type: "fill", source: "countries", paint: { "fill-color": "#1c1c1c" } },
+    { id: "countries-line", type: "line", source: "countries", paint: { "line-color": "#7d7d7d", "line-width": 0.9 } }] };
 }
 
 export function circleRadius(area: number | null): number {
@@ -59,8 +56,8 @@ export async function tintMask(uri: string, rgb: [number, number, number], alpha
 
 export interface MapProps {
   lakes: LakeSummary[]; index?: GeoJSON.FeatureCollection; selectedId: string | null; highlight: GeoJSON.Geometry | null;
-  basemap: Basemap; date: string; drawMode: DrawMode; masks: { base: MaskJson; cur: MaskJson } | null;
-  onSelect: (s: Selection) => void; onDraw: (g: GeoJSON.Geometry) => void; onBasemapFallback: () => void;
+  basemap: Basemap; date: string; masks: { base: MaskJson; cur: MaskJson } | null;
+  onSelect: (s: Selection) => void; onBasemapFallback: () => void;
 }
 
 const empty: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
@@ -70,7 +67,6 @@ export default function MapView(props: MapProps) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const pr = useRef(props);
   pr.current = props;
-  const drawRef = useRef<TerraDraw | null>(null);
   const maskTok = useRef(0);
   const styleOk = useRef(false);
 
@@ -78,7 +74,7 @@ export default function MapView(props: MapProps) {
     type: "FeatureCollection",
     features: pr.current.lakes.filter((l) => l.centre).map((l) => ({
       type: "Feature", geometry: { type: "Point", coordinates: l.centre as [number, number] },
-      properties: { id: l.id, name: l.name, colour: trendColour(l), ring: l.group === "turkey" ? "#e3ac3c" : "#f2ead9", r: circleRadius(l.latest_area_km2), area: l.latest_area_km2 ?? 0 } })),
+      properties: { id: l.id, name: l.name, colour: trendColour(l), ring: l.group === "turkey" ? "#f472ae" : "#ffffff", r: circleRadius(l.latest_area_km2), area: l.latest_area_km2 ?? 0 } })),
   });
 
   const syncAll = () => {
@@ -91,13 +87,13 @@ export default function MapView(props: MapProps) {
       map.addSource("lakes", { type: "geojson", data: empty });
       map.addSource("hl", { type: "geojson", data: empty });
       // Fit the OpenFreeMap dark style to the navy theme (guarded: ids may differ between style versions).
-      for (const [id, prop, col] of [["background", "background-color", BG], ["water", "fill-color", "#0c2a31"], ["landcover_wood", "fill-color", "#1b211c"], ["landuse_park", "fill-color", "#1b211c"]] as const)
+      for (const [id, prop, col] of [["background", "background-color", BG], ["water", "fill-color", "#0a1830"], ["landcover_wood", "fill-color", "#161616"], ["landuse_park", "fill-color", "#161616"]] as const)
         if (map.getLayer(id)) { try { map.setPaintProperty(id, prop, col); } catch { /* keep the stock colour */ } }
       map.addLayer({ id: "index-fill", type: "fill", source: "index", minzoom: 5.5, paint: { "fill-color": "#4cc9e0", "fill-opacity": 0.22 } });
       map.addLayer({ id: "index-line", type: "line", source: "index", minzoom: 5.5, paint: { "line-color": "#a9e3f2", "line-width": 1, "line-opacity": 0.85 } });
       map.addLayer({ id: "hl-fill", type: "fill", source: "hl", paint: { "fill-color": "#ffffff", "fill-opacity": 0.1 } });
       map.addLayer({ id: "hl-line", type: "line", source: "hl", paint: { "line-color": "#ffffff", "line-width": 2, "line-dasharray": [2, 1] } });
-      map.addLayer({ id: "lakes-halo", type: "circle", source: "lakes", paint: { "circle-color": "#14110a", "circle-opacity": 0.5, "circle-radius": ["+", ["get", "r"], 4], "circle-blur": 0.6 } });
+      map.addLayer({ id: "lakes-halo", type: "circle", source: "lakes", paint: { "circle-color": "#0e0e0e", "circle-opacity": 0.5, "circle-radius": ["+", ["get", "r"], 4], "circle-blur": 0.6 } });
       map.addLayer({ id: "lakes-circle", type: "circle", source: "lakes", paint: {
         "circle-color": ["get", "colour"], "circle-radius": ["get", "r"], "circle-opacity": 0.92, "circle-stroke-color": ["get", "ring"], "circle-stroke-width": 2 } });
       map.addLayer({ id: "lakes-sel", type: "circle", source: "lakes", filter: ["==", ["get", "id"], ""], paint: {
@@ -129,21 +125,6 @@ export default function MapView(props: MapProps) {
     put("mask-cur", cur, m.cur.coordinates, "lakes-halo");
   };
 
-  const startDraw = () => {
-    const map = mapRef.current;
-    try { drawRef.current?.stop(); } catch { /* style swapped */ }
-    drawRef.current = null;
-    if (!map) return;
-    const draw = new TerraDraw({ adapter: new TerraDrawMapLibreGLAdapter({ map }), modes: [new TerraDrawRectangleMode(), new TerraDrawPolygonMode()] });
-    draw.start();
-    draw.on("finish", (id) => {
-      const f = draw.getSnapshot().find((x) => x.id === id);
-      if (f && f.geometry.type === "Polygon") { pr.current.onDraw(f.geometry as GeoJSON.Geometry); draw.clear(); draw.setMode("static"); }
-    });
-    drawRef.current = draw;
-    if (pr.current.drawMode !== "off") draw.setMode(pr.current.drawMode);
-  };
-
   useEffect(() => {
     const p = pr.current;
     const map = new maplibregl.Map({ container: el.current!, style: basemapStyle(p.basemap, p.date), center: [34, 38.8], zoom: 4.6,
@@ -151,7 +132,7 @@ export default function MapView(props: MapProps) {
     mapRef.current = map;
     (window as any).__map = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
-    map.on("style.load", () => { styleOk.current = true; syncAll(); startDraw(); });
+    map.on("style.load", () => { styleOk.current = true; syncAll(); });
     let netErrors = 0;
     map.on("error", (e) => {
       const err = (e as any).error;
@@ -169,7 +150,6 @@ export default function MapView(props: MapProps) {
     });
     map.on("mouseleave", "lakes-circle", () => { map.getCanvas().style.cursor = ""; popup.remove(); });
     map.on("click", async (e) => {
-      if (pr.current.drawMode !== "off") return;
       const hit = map.getLayer("lakes-circle") ? map.queryRenderedFeatures(e.point, { layers: ["lakes-circle"] })[0] : undefined;
       if (hit) { pr.current.onSelect({ id: String(hit.properties?.id), name: String(hit.properties?.name) }); return; }
       if (map.getZoom() < 5.5) return;
@@ -180,7 +160,7 @@ export default function MapView(props: MapProps) {
     });
     const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => map.resize()) : null;
     ro?.observe(el.current!);
-    return () => { ro?.disconnect(); try { drawRef.current?.stop(); } catch { /* ignore */ } map.remove(); mapRef.current = null; };
+    return () => { ro?.disconnect(); map.remove(); mapRef.current = null; };
   }, []);
 
   const first = useRef(true);
@@ -191,11 +171,6 @@ export default function MapView(props: MapProps) {
   }, [props.basemap, props.date]);
   useEffect(() => { syncAll(); }, [props.lakes, props.index, props.selectedId, props.highlight]);
   useEffect(() => { syncMasks(); }, [props.masks]);
-  useEffect(() => {
-    const d = drawRef.current;
-    if (!d) return;
-    try { d.setMode(props.drawMode === "off" ? "static" : props.drawMode); } catch { /* not started */ }
-  }, [props.drawMode]);
   useEffect(() => {
     const l = props.lakes.find((x) => x.id === props.selectedId);
     const map = mapRef.current;

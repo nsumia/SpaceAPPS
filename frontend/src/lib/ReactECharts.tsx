@@ -9,10 +9,10 @@ import { CanvasRenderer } from "echarts/renderers";
 import EChartsReactCore from "echarts-for-react/lib/core";
 import type { EChartsReactProps } from "echarts-for-react/lib/types";
 
-// Shared dark "Earth observation" theme: near-black tooltips, IBM Plex Sans. Chart-specific colours live in palette.ts / Charts.tsx.
+// Shared dark "Earth observation" theme: near-black tooltips, Roboto. Chart-specific colours live in palette.ts / Charts.tsx.
 echarts.registerTheme("earth", {
-  textStyle: { fontFamily: "IBM Plex Sans, system-ui, sans-serif" },
-  tooltip: { backgroundColor: "#0f110e", borderColor: "#6b9199", borderWidth: 1, textStyle: { color: "#f2ead9", fontSize: 12 }, extraCssText: "box-shadow:0 6px 22px rgba(0,0,0,.5);border-radius:8px;" },
+  textStyle: { fontFamily: "Roboto Variable, Roboto, system-ui, sans-serif" },
+  tooltip: { backgroundColor: "#0a0a0a", borderColor: "#7d7d7d", borderWidth: 1, textStyle: { color: "#ffffff", fontSize: 12 }, extraCssText: "box-shadow:0 6px 22px rgba(0,0,0,.5);border-radius:8px;" },
 });
 echarts.use([LineChart, ScatterChart, GraphicComponent, GridComponent, LegendComponent, MarkLineComponent, TooltipComponent, VisualMapComponent, LabelLayout, CanvasRenderer]);
 

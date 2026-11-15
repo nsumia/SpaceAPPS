@@ -4,7 +4,7 @@ import { useI18n } from "../i18n";
 import { TREND } from "../lib/palette";
 import { useIndex, useLakes } from "../hooks";
 import { api } from "../lib/api";
-import MapView, { type Basemap, type DrawMode } from "../components/MapView";
+import MapView, { type Basemap } from "../components/MapView";
 import Panel, { clampWidth, type PanelLayout, type Selection } from "../components/Panel";
 import Timeline from "../components/Timeline";
 
@@ -21,7 +21,6 @@ export default function MapPage() {
   const [basemap, setBasemap] = useState<Basemap>(typeof navigator !== "undefined" && navigator.onLine === false ? "offline" : "bluemarble"); // default NASA Blue Marble; offline/unreachable -> local country basemap (no saved choice exists)
   const [autoOffline, setAutoOffline] = useState(false);
   const [date, setDate] = useState(yesterday());
-  const [draw, setDraw] = useState<DrawMode>("off");
   const [year, setYear] = useState(2025);
   const [layout, setLayoutState] = useState<PanelLayout>(loadLayout);
   const setLayout = (l: PanelLayout) => { setLayoutState(l); try { localStorage.setItem("panelLayout", JSON.stringify(l)); } catch { /* private mode */ } };
@@ -33,13 +32,12 @@ export default function MapPage() {
   const cur = useQuery({ queryKey: ["mask", lake?.id, y], queryFn: () => api.mask(lake!.id, y), enabled: !!lake && !!years, staleTime: Infinity });
   const masks = base.data && cur.data ? { base: base.data, cur: cur.data } : null;
 
-  const select = (s: Selection) => { setSel(s); setDraw("off"); const l = lakes.data?.find((x) => x.id === s.id); if (l?.years) setYear(l.years[1]); };
+  const select = (s: Selection) => { setSel(s); const l = lakes.data?.find((x) => x.id === s.id); if (l?.years) setYear(l.years[1]); };
   return (
     <div className="mappage">
       <div className="mapwrap">
         <MapView lakes={lakes.data ?? []} index={index.data} selectedId={sel?.id ?? null} highlight={sel?.polygon ?? null}
-          basemap={basemap} date={date} drawMode={draw} masks={masks} onSelect={select}
-          onDraw={(g) => { setSel({ id: null, name: t("map.draw"), polygon: g }); setDraw("off"); }}
+          basemap={basemap} date={date} masks={masks} onSelect={select}
           onBasemapFallback={() => { setBasemap("offline"); setAutoOffline(true); }} />
         <div className="toolbar" data-testid="toolbar">
           <label title={t("map.basemap.help")}>{t("map.basemap")}
@@ -48,13 +46,6 @@ export default function MapPage() {
               <option value="viirs">{t("bm.viirs")}</option><option value="offline">{t("bm.offline")}</option>
             </select></label>
           {basemap === "viirs" && <label>{t("map.date")} <input type="date" value={date} max={yesterday()} onChange={(e) => e.target.value && setDate(e.target.value)} /></label>}
-          <div className="seg" role="group" aria-label={t("map.draw")} title={t("map.draw.help")}>
-            <span>{t("map.draw")}</span>
-            <button className={draw === "rectangle" ? "on" : ""} onClick={() => setDraw(draw === "rectangle" ? "off" : "rectangle")} data-testid="draw-rect">{t("map.rect")}</button>
-            <button className={draw === "polygon" ? "on" : ""} onClick={() => setDraw(draw === "polygon" ? "off" : "polygon")} data-testid="draw-poly">{t("map.poly")}</button>
-            {sel && <button onClick={() => { setSel(null); setDraw("off"); }}>{t("map.clear")}</button>}
-          </div>
-          <button onClick={() => { setSel({ id: "sample-sevan", name: "Sevan (pre-computed sample)", sample: "sevan" }); setDraw("off"); }} data-testid="sample-btn">{t("sample.btn")}</button>
         </div>
         <div className={"stack" + (lake && years ? " above-timeline" : "")} data-testid="stack">
         {autoOffline && <div className="hint" role="status" data-testid="offline-note">{t("map.offline_auto")}</div>}

@@ -75,7 +75,7 @@ describe("compare scatter", () => {
     }
     const urmia = pts.find((p: any) => p.full === "Urmia");
     expect(urmia.share).toBeNull();                       // not computable -> hollow grey, not invisible
-    expect(urmia.itemStyle.borderColor).toBe("#c9c4b4");
+    expect(urmia.itemStyle.borderColor).toBe("#c8c8c8");
     expect(o.series.every((s: any) => s.labelLayout?.hideOverlap)).toBe(true);
   });
   it("lists lakes without warming values as excluded instead of dropping them silently", () => {
@@ -85,7 +85,7 @@ describe("compare scatter", () => {
   });
   it("colour and size helpers behave", () => {
     expect(shareColour(0)).not.toBe(shareColour(1));
-    expect(shareColour(null)).toBe("#171915");
+    expect(shareColour(null)).toBe("#0e0e0e");
     expect(markerSize(0)).toBe(10); expect(markerSize(1e6)).toBe(24); expect(markerSize(3500)).toBeLessThan(24);
     expect(shortName("Aral Sea (South / Large Aral)")).toBe("Aral Sea (South)");
   });

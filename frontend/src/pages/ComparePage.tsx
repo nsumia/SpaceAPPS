@@ -15,12 +15,12 @@ const fmt = (x: number | null | undefined, d = 1) => (x == null ? "n/a" : x.toFi
 const sgn = (x: number, d = 1) => (x > 0 ? "+" : "") + x.toFixed(d);
 /** Short label: drop the bracketed qualifier ("Aral Sea (South / Large Aral)" -> "Aral Sea (South)" would be ambiguous, so keep the first bracket word). */
 export const shortName = (n: string) => n.replace(/\s*\((\w+)[^)]*\)/, " ($1)").replace(/^Custom lake /, "Custom ");
-const HOLLOW = { fill: "#171915", line: "#c9c4b4" };
-/** climate share 0..1 -> colour (light yellow -> orange -> dark red). null / not interpretable -> hollow grey marker. */
+const HOLLOW = { fill: "#0e0e0e", line: "#c8c8c8" };
+/** climate share 0..1 -> colour (light yellow -> orange -> dark vermillion). null / not interpretable -> hollow grey marker. */
 export function shareColour(share: number | null): string {
   if (share == null || Number.isNaN(share)) return HOLLOW.fill;
   const s = Math.min(1, Math.max(0, share));
-  const stops = [[253, 224, 139], [244, 109, 67], [215, 48, 39]];
+  const stops = [[253, 224, 139], [238, 148, 40], [196, 70, 0]];
   const k = s * 2, i = Math.min(1, Math.floor(k)), f = k - i;
   const c = stops[i].map((v, j) => Math.round(v + (stops[i + 1][j] - v) * f));
   return `rgb(${c[0]},${c[1]},${c[2]})`;
@@ -42,12 +42,12 @@ export function scatterOption(rows: LakeSummary[], t: (k: string) => string): EC
     const hollow = share == null;
     return { name: shortName(r.name), full: r.name, country: r.country, p: r.trend_p, share, area: r.latest_area_km2,
       value: [r.warming_c_per_decade, r.trend_pct_per_decade], symbolSize: markerSize(r.latest_area_km2) + (turkey ? 4 : 0),
-      itemStyle: { color: shareColour(share), borderColor: hollow ? HOLLOW.line : turkey ? C.sand : "#14110a", borderWidth: hollow ? 2 : turkey ? 3 : 1.5, opacity: 1 } };
+      itemStyle: { color: shareColour(share), borderColor: hollow ? HOLLOW.line : turkey ? C.turkey : "#0e0e0e", borderWidth: hollow ? 2 : turkey ? 3 : 1.5, opacity: 1 } };
   });
   const ser = (turkey: boolean): any => ({
     name: t(turkey ? "cmp.turkey" : "cmp.reference"), type: "scatter", data: mk(turkey), z: turkey ? 5 : 3,
     symbol: turkey ? "diamond" : "circle",
-    label: { show: true, formatter: (p: any) => p.name, color: turkey ? C.sand : C.text, fontWeight: turkey ? "bold" : "normal", position: "top", fontSize: 11, distance: 3 },
+    label: { show: true, formatter: (p: any) => p.name, color: turkey ? C.turkey : C.text, fontWeight: turkey ? "bold" : "normal", position: "top", fontSize: 11, distance: 3 },
     labelLayout: { hideOverlap: true, moveOverlap: "shiftY" },
     labelLine: { show: false },
     emphasis: { focus: "self", scale: 1.3, label: { show: true, fontSize: 13 } },
@@ -60,7 +60,7 @@ export function scatterOption(rows: LakeSummary[], t: (k: string) => string): EC
       return `<b>${d.full}</b>${d.country ? ` (${d.country})` : ""}<br/>${t("tip.warming")}: ${sgn(d.value[0], 2)} °C ${t("tip.perdec")}<br/>${t("tip.trend")}: ${sgn(d.value[1])} % ${t("tip.perdec")}<br/>${t("tip.sig")} ${pWords(d.p, t)}<br/>${t("tip.climate")}: ${d.share == null ? t("tip.nocl") : Math.round(100 * d.share) + " %"}<br/>${t("tip.area")}: ${d.area == null ? t("na.data") : Math.round(d.area).toLocaleString("en") + " km²"}`; } },
     xAxis: { type: "value", name: t("cmp.x"), nameLocation: "middle", nameGap: 30, nameTextStyle: { color: C.text }, scale: true, axisLabel: { color: C.muted, formatter: (v: number) => sgn(v, 1) }, splitLine: { lineStyle: { color: C.grid } } },
     yAxis: { type: "value", name: t("cmp.y"), nameLocation: "middle", nameGap: 44, nameTextStyle: { color: C.text }, scale: true, axisLabel: { color: C.muted, formatter: (v: number) => `${v}%` }, splitLine: { lineStyle: { color: C.grid } } },
-    graphic: [{ type: "text", right: 30, bottom: 62, silent: true, style: { text: `↘ ${t("cmp.quad")}`, fill: "#ffb3a5", font: "12px IBM Plex Sans, system-ui" } }],
+    graphic: [{ type: "text", right: 30, bottom: 62, silent: true, style: { text: `↘ ${t("cmp.quad")}`, fill: "#ffc2a3", font: "12px Roboto Variable, Roboto, system-ui, sans-serif" } }],
     series: [ser(false), ser(true)],
   };
 }
