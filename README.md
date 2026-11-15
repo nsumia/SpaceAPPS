@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/brand/augmented6th-logo-400.png" width="200" alt="Augmented 6th" /></p>
+
 # Lake Loss Detective
 
 **Is this lake shrinking, since when, and is it the climate or something else?**

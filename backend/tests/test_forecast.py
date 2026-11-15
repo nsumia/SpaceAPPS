@@ -88,3 +88,13 @@ def test_api_serves_the_forecast(tmp_path):
     assert f["years"][-1] == 2030 and [m["year"] for m in f["milestones"]] == [2030]
     assert c.get("/api/lakes/demo/forecast?horizon=2100").status_code == 422
     assert c.get("/api/lakes/nope/forecast").status_code == 404
+
+
+def test_forecast_endpoint_on_committed_real_records():
+    """Burdur (reliable) gets a forecast to 2040; the low-reliability Aksehir record gets none (offline, reads data/lakes only)."""
+    c = TestClient(create_app(Settings(start_worker=False)))
+    b = c.get("/api/lakes/burdur/forecast").json()
+    assert b["ok"] and b["years"][-1] == 2040 and b["lo90"][-1] <= b["median"][-1] <= b["hi90"][-1] and b["slope_km2_per_decade"] < 0
+    a = c.get("/api/lakes/aksehir/forecast").json()
+    assert not a["ok"] and a["reason"] == "unreliable_area_series"
+    assert c.get("/api/lakes/burdur/forecast?horizon=2100").status_code == 422

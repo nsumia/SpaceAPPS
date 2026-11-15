@@ -1,4 +1,4 @@
-import type { LakeFull, LakeSummary } from "./lib/types";
+import type { LakeFull, LakeSummary } from "./lib/api";
 
 export const burdur: LakeSummary = {
   id: "burdur", alias: "burdur", name: "Burdur", country: "TR", centre: [30.17, 37.75], group: "turkey", validated: true, unverified: false,

@@ -33,7 +33,9 @@ a { color: var(--blue-lt); }
 /* ---- top bar */
 .app { display: flex; flex-direction: column; height: 100%; }
 .top { display: flex; align-items: stretch; gap: 28px; height: 52px; padding: 0 16px; border-bottom: 1px solid var(--line); position: relative; z-index: 10; }
-.brand { display: flex; flex-direction: column; justify-content: center; gap: 3px; color: var(--text); text-decoration: none; white-space: nowrap; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; white-space: nowrap; }
+.brand-logo { width: 36px; height: 36px; flex: none; }
+.brand-text { display: flex; flex-direction: column; justify-content: center; gap: 3px; }
 .brand-name { font: 800 17px/1 var(--font); letter-spacing: .02em; text-transform: uppercase; }
 .brand-sub { font-size: 11px; line-height: 1; color: var(--muted); }
 .top nav { display: flex; gap: 22px; flex: 1; }
@@ -181,4 +183,4 @@ tbody tr:hover td { background: var(--surface); }
   .panel-resize, .timeline, .legend, .hint { display: none; }
   .cards { grid-template-columns: 1fr; }
 }
-@media (max-width: 520px) { .brand-name { font-size: 12px; line-height: 1.15; white-space: normal; max-width: 86px; } .top nav a { font-size: 13px; } }
+@media (max-width: 520px) { .brand { gap: 8px; } .brand-logo { width: 28px; height: 28px; } .brand-name { font-size: 12px; line-height: 1.15; white-space: normal; max-width: 86px; } .top nav a { font-size: 13px; } }

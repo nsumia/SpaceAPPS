@@ -1,13 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { burdurFull } from "../fixtures";
-import { areaOption, ClimateChart, VolumeChart } from "./Charts";
-import { LiveCards } from "./LiveCards";
-import { AnalysisProgress, Badges, eta } from "./Panel";
+import { areaOption, ClimateChart, ForecastChart, VolumeChart } from "./Charts";
+import { AnalysisProgress, Badges, eta, LiveCards } from "./Panel";
 import { makeT } from "../i18n";
-import type { Live } from "../lib/types";
+import type { Live } from "../lib/api";
 
-vi.mock("../lib/ReactECharts", () => ({ default: () => <div data-testid="echart" /> }));
+vi.mock("echarts-for-react/lib/core", () => ({ default: () => <div data-testid="echart" /> }));
 
 describe("charts", () => {
   it("climate chart always shows the curves, with no 'Not computable' block, reasons, technical line or toggle", () => {
@@ -73,5 +72,23 @@ describe("live cards and progress", () => {
     render(<AnalysisProgress started={Date.now() - 30_000} job={{ job_id: "j", lake_id: "l", status: "running", progress: 40, current_year: 2005, phase: "filling gaps", error: null, result_url: "" }} />);
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "40");
     expect(screen.getByText(/year: 2005/)).toBeInTheDocument();
+  });
+});
+
+describe("forecast chart", () => {
+  const yrs = Array.from({ length: 15 }, (_, i) => 2026 + i);
+  const ok = { ok: true, horizon_year: 2040, n_valid: 40, note: "x", model: "sen_recent" as const, last_observed_year: 2025, last_observed_km2: 116.5, interpretable: true,
+    years: yrs, median: yrs.map((y) => 116 - 2 * (y - 2025)), lo90: yrs.map((y) => 110 - 2 * (y - 2025)), hi90: yrs.map((y) => 122 - 2 * (y - 2025)),
+    lo50: yrs.map((y) => 113 - 2 * (y - 2025)), hi50: yrs.map((y) => 119 - 2 * (y - 2025)), flags: [],
+    milestones: [{ year: 2040, median_km2: 87, lo90_km2: 83, hi90_km2: 89, median_pct_of_ref: 43 }] };
+  it("draws the chart with a plain-language sentence and the 'not a projection' caveat", () => {
+    render(<ForecastChart d={{ ...burdurFull, forecast: ok }} />);
+    expect(screen.getByTestId("echart")).toBeInTheDocument();
+    expect(screen.getByTestId("forecast-text")).toHaveTextContent(/2040/);
+  });
+  it("shows 'No forecast' and no chart when the series is not reliable enough", () => {
+    render(<ForecastChart d={{ ...burdurFull, forecast: { ok: false, reason: "unreliable_area_series", horizon_year: 2040, n_valid: 20, note: "x" } }} />);
+    expect(screen.queryByTestId("echart")).toBeNull();
+    expect(screen.getByText("No forecast")).toBeInTheDocument();
   });
 });

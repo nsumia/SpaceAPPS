@@ -14,8 +14,11 @@ export default function App() {
       <header className="top">
         <a className="skip" href="#main">{t("nav.skip")}</a>
         <Link to="/" className="brand" aria-label={t("app.title")}>
-          <span className="brand-name">{t("app.title")}</span>
-          <span className="brand-sub">{t("app.sub")}</span>
+          <img className="brand-logo" src="/logo-64.png" width="36" height="36" alt="Augmented 6th" />
+          <span className="brand-text">
+            <span className="brand-name">{t("app.title")}</span>
+            <span className="brand-sub">{t("app.sub")}</span>
+          </span>
         </Link>
         <nav aria-label={t("nav.main")}>
           <NavLink to="/" end>{t("nav.map")}</NavLink>

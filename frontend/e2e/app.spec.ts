@@ -91,8 +91,12 @@ test("top bar: brand, nav with aria-current, TR/EN switch, no overflow at 390 px
   await expect(nav.getByRole("link", { name: "Map" })).not.toHaveAttribute("aria-current", "page");
   expect((await page.locator("header.top").boundingBox())!.height).toBeLessThanOrEqual(60);
   await expect(page.locator(".brand-name")).toHaveText("Lake Loss Detective");
-  await expect(page.locator(".brand-name")).toHaveCSS("font-family", /Roboto/);
-  expect(await page.evaluate(async () => { await document.fonts.ready; return document.fonts.check('600 19px "Roboto Variable"'); })).toBe(true);
+  await expect(page.locator(".brand-name")).toHaveCSS("font-family", /Franklin/);
+  expect(await page.evaluate(async () => { await document.fonts.ready; return document.fonts.check('600 19px "Libre Franklin Variable"'); })).toBe(true);
+  const logo = page.locator("img.brand-logo");
+  await expect(logo).toHaveAttribute("alt", "Augmented 6th");
+  expect(await logo.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth)).toBeGreaterThan(0);
+  expect((await page.request.get("/favicon-32.png")).status()).toBe(200);
   await page.getByRole("button", { name: /Switch language/ }).click();
   await expect(page.locator(".brand-name")).toHaveText("Göl Kaybı Dedektifi");
   await expect(page.getByRole("navigation", { name: "Ana menü" }).getByRole("link", { name: "Yöntem" })).toHaveAttribute("aria-current", "page");

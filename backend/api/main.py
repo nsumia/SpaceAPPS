@@ -339,6 +339,9 @@ def create_app(settings=None, runner=None):
             app.add_api_route("/" + route, lambda: FileResponse(index_html), include_in_schema=False)
         if os.path.isdir(os.path.join(dist, "assets")):
             app.mount("/assets", StaticFiles(directory=os.path.join(dist, "assets")), name="assets")
+        for icon in ("logo-64.png", "favicon-32.png", "apple-touch-icon.png"):      # team logo + icons from frontend/public
+            if os.path.exists(os.path.join(dist, icon)):
+                app.add_api_route("/" + icon, lambda icon=icon: FileResponse(os.path.join(dist, icon), media_type="image/png", headers={"Cache-Control": "public, max-age=86400"}), include_in_schema=False)
         app.add_api_route("/", lambda: FileResponse(index_html), include_in_schema=False)
     return app
 
