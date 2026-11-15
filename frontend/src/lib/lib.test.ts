@@ -4,6 +4,7 @@ import { burdur } from "../fixtures";
 import { summarySentence } from "./summary";
 import { sortLakes, trendColour } from "./compare";
 import { circleRadius } from "../components/MapView";
+import { TREND } from "./palette";
 
 describe("summary sentence", () => {
   const t = makeT("en");
@@ -36,9 +37,9 @@ describe("compare helpers", () => {
     expect(sortLakes(rows, "emergence_year", -1).map((r) => r.name)).toEqual(["B", "C", "A"]);
   });
   it("colours trends: dark red fast loss, grey not significant, blue increase", () => {
-    expect(trendColour({ trend_p: 0.001, trend_pct_per_decade: -10 })).toBe("#a50f15");
-    expect(trendColour({ trend_p: 0.5, trend_pct_per_decade: -10 })).toBe("#9a9a9a");
-    expect(trendColour({ trend_p: 0.01, trend_pct_per_decade: 4 })).toBe("#56B4E9");
+    expect(trendColour({ trend_p: 0.001, trend_pct_per_decade: -10 })).toBe(TREND.fast);
+    expect(trendColour({ trend_p: 0.5, trend_pct_per_decade: -10 })).toBe(TREND.ns);
+    expect(trendColour({ trend_p: 0.01, trend_pct_per_decade: 4 })).toBe(TREND.inc);
   });
   it("sizes markers by area within bounds", () => {
     expect(circleRadius(4000)).toBeGreaterThan(circleRadius(100));
@@ -74,7 +75,7 @@ describe("compare scatter", () => {
     }
     const urmia = pts.find((p: any) => p.full === "Urmia");
     expect(urmia.share).toBeNull();                       // not computable -> hollow grey, not invisible
-    expect(urmia.itemStyle.borderColor).toBe("#b8c0cc");
+    expect(urmia.itemStyle.borderColor).toBe("#b8c9d8");
     expect(o.series.every((s: any) => s.labelLayout?.hideOverlap)).toBe(true);
   });
   it("lists lakes without warming values as excluded instead of dropping them silently", () => {
@@ -84,7 +85,7 @@ describe("compare scatter", () => {
   });
   it("colour and size helpers behave", () => {
     expect(shareColour(0)).not.toBe(shareColour(1));
-    expect(shareColour(null)).toBe("#0f141b");
+    expect(shareColour(null)).toBe("#08121d");
     expect(markerSize(0)).toBe(10); expect(markerSize(1e6)).toBe(24); expect(markerSize(3500)).toBeLessThan(24);
     expect(shortName("Aral Sea (South / Large Aral)")).toBe("Aral Sea (South)");
   });

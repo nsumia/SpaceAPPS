@@ -14,7 +14,7 @@ maplibregl.setWorkerUrl(workerUrl);
 export type Basemap = "vector" | "bluemarble" | "viirs" | "offline";
 export type DrawMode = "off" | "rectangle" | "polygon";
 const GIBS = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
-const BG = "#0f141b";
+const BG = "#08121d";
 
 export function basemapStyle(bm: Basemap, date: string): StyleSpecification | string {
   const raster = (id: string, tiles: string, maxzoom: number, attribution: string): StyleSpecification => ({
@@ -30,8 +30,8 @@ export function basemapStyle(bm: Basemap, date: string): StyleSpecification | st
   // offline: local Natural Earth 50m country borders served by the API (no external host)
   return { version: 8, sources: { countries: { type: "geojson", data: "/api/basemap/countries" } }, layers: [
     { id: "bg", type: "background", paint: { "background-color": BG } },
-    { id: "countries-fill", type: "fill", source: "countries", paint: { "fill-color": "#1b2634" } },
-    { id: "countries-line", type: "line", source: "countries", paint: { "line-color": "#51657d", "line-width": 0.9 } }] };
+    { id: "countries-fill", type: "fill", source: "countries", paint: { "fill-color": "#12263a" } },
+    { id: "countries-line", type: "line", source: "countries", paint: { "line-color": "#3f6784", "line-width": 0.9 } }] };
 }
 
 export function circleRadius(area: number | null): number {
@@ -77,7 +77,7 @@ export default function MapView(props: MapProps) {
     type: "FeatureCollection",
     features: pr.current.lakes.filter((l) => l.centre).map((l) => ({
       type: "Feature", geometry: { type: "Point", coordinates: l.centre as [number, number] },
-      properties: { id: l.id, name: l.name, colour: trendColour(l), ring: l.group === "turkey" ? "#ffd166" : "#0b0f14", r: circleRadius(l.latest_area_km2), area: l.latest_area_km2 ?? 0 } })),
+      properties: { id: l.id, name: l.name, colour: trendColour(l), ring: l.group === "turkey" ? "#f2c36b" : "#06101a", r: circleRadius(l.latest_area_km2), area: l.latest_area_km2 ?? 0 } })),
   });
 
   const syncAll = () => {
@@ -89,8 +89,11 @@ export default function MapView(props: MapProps) {
       map.addSource("index", { type: "geojson", data: empty });
       map.addSource("lakes", { type: "geojson", data: empty });
       map.addSource("hl", { type: "geojson", data: empty });
-      map.addLayer({ id: "index-fill", type: "fill", source: "index", minzoom: 5.5, paint: { "fill-color": "#4aa3df", "fill-opacity": 0.16 } });
-      map.addLayer({ id: "index-line", type: "line", source: "index", minzoom: 5.5, paint: { "line-color": "#7fb8e6", "line-width": 0.8, "line-opacity": 0.7 } });
+      // Fit the OpenFreeMap dark style to the navy theme (guarded: ids may differ between style versions).
+      for (const [id, prop, col] of [["background", "background-color", BG], ["water", "fill-color", "#0b2238"], ["landcover_wood", "fill-color", "#0d1d2c"], ["landuse_park", "fill-color", "#0d1d2c"]] as const)
+        if (map.getLayer(id)) { try { map.setPaintProperty(id, prop, col); } catch { /* keep the stock colour */ } }
+      map.addLayer({ id: "index-fill", type: "fill", source: "index", minzoom: 5.5, paint: { "fill-color": "#38c8d6", "fill-opacity": 0.16 } });
+      map.addLayer({ id: "index-line", type: "line", source: "index", minzoom: 5.5, paint: { "line-color": "#6fdde6", "line-width": 0.8, "line-opacity": 0.7 } });
       map.addLayer({ id: "hl-fill", type: "fill", source: "hl", paint: { "fill-color": "#ffffff", "fill-opacity": 0.1 } });
       map.addLayer({ id: "hl-line", type: "line", source: "hl", paint: { "line-color": "#ffffff", "line-width": 2, "line-dasharray": [2, 1] } });
       map.addLayer({ id: "lakes-circle", type: "circle", source: "lakes", paint: {

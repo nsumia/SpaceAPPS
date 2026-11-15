@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useI18n } from "../i18n";
+import { TREND } from "../lib/palette";
 import { useIndex, useLakes } from "../hooks";
 import { api } from "../lib/api";
 import MapView, { type Basemap, type DrawMode } from "../components/MapView";
@@ -60,10 +61,10 @@ export default function MapPage() {
         {!sel && <div className="hint">{lakes.isLoading ? t("map.loading") : t("map.hint")}</div>}
         <div className={"legend"} data-testid="legend">
           <strong>{t("map.legend")}</strong>
-          <div><i style={{ background: "#a50f15" }} /> {t("leg.fast")}</div>
-          <div><i style={{ background: "#d6604d" }} /> {t("leg.slow")}</div>
-          <div><i style={{ background: "#9a9a9a" }} /> {t("leg.ns")}</div>
-          <div><i style={{ background: "#56B4E9" }} /> {t("leg.inc")}</div>
+          <div><i style={{ background: TREND.fast }} /> {t("leg.fast")}</div>
+          <div><i style={{ background: TREND.slow }} /> {t("leg.slow")}</div>
+          <div><i style={{ background: TREND.ns }} /> {t("leg.ns")}</div>
+          <div><i style={{ background: TREND.inc }} /> {t("leg.inc")}</div>
           <div className="small muted">{t("leg.size")}</div>
           <div className="small muted">{t("leg.turkey")}</div>
         </div>

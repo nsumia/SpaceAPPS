@@ -1,4 +1,5 @@
 import type { LakeSummary } from "./types";
+import { TREND } from "./palette";
 
 export type SortKey = "name" | "trend_pct_per_decade" | "trend_p" | "emergence_year" | "warming_c_per_decade" | "climate_explained_share";
 
@@ -14,6 +15,6 @@ export function sortLakes(rows: LakeSummary[], key: SortKey, dir: 1 | -1): LakeS
 }
 
 export function trendColour(s: Pick<LakeSummary, "trend_p" | "trend_pct_per_decade">): string {
-  if (s.trend_p == null || s.trend_pct_per_decade == null || s.trend_p >= 0.05) return "#9a9a9a";
-  return s.trend_pct_per_decade < 0 ? (s.trend_pct_per_decade < -5 ? "#a50f15" : "#d6604d") : "#56B4E9";
+  if (s.trend_p == null || s.trend_pct_per_decade == null || s.trend_p >= 0.05) return TREND.ns;
+  return s.trend_pct_per_decade < 0 ? (s.trend_pct_per_decade < -5 ? TREND.fast : TREND.slow) : TREND.inc;
 }

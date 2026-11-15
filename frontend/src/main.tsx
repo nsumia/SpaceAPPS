@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "maplibre-gl/dist/maplibre-gl.css";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/space-grotesk";
 import "./styles.css";
 import { I18nProvider } from "./i18n";
 import App from "./App";
