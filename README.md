@@ -102,10 +102,10 @@ Summaries in the UI are filled from templates, so every number comes from the da
   flags, forecast), `climate.py`, `basin.py`, `swot.py`, `live.py`, `lakes.py`, `offline.py`.
 - `backend/api/`: `main.py` (app, endpoints, response models), `store.py` (reads records, summaries, forecast cache),
   `live_cache.py`, `jobs.py`. `backend/jobs/runner.py` runs on-demand analyses; `backend/scripts/` are command-line tools.
-- `frontend/src/`: `App.tsx`, `main.tsx`, `i18n.tsx` (all EN/TR strings), `styles.css` (theme and font),
+- `frontend/src/`: `App.tsx`, `main.tsx`, `i18n.tsx` (all EN/TR strings and the `GLOSSARY` terms), `styles.css` (theme and font),
   `lib/api.ts` (types, client, hooks), `lib/util.tsx` (colours, sorting, summary sentence, help bubble),
   `components/` (`MapView`, `Panel` incl. live cards, `Charts` incl. the ECharts wrapper), `pages/` (`MapPage` incl. the
-  timeline, `ComparePage`, `MethodsPage` (the About page: project summary, "How to read this app" and the "Data sources" list with direct links)).
+  timeline, `ComparePage`, `MethodsPage` (the About page: project summary, "How to read this app", the plain-language glossary and the "Data sources" list with direct links)).
 - Design: flat, editorial; Franklin Gothic where it is installed, otherwise the bundled open-source Libre Franklin
   (Franklin Gothic itself is licensed and is not shipped).
 

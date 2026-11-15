@@ -1,4 +1,4 @@
-import { useI18n } from "../i18n";
+import { GLOSSARY, useI18n } from "../i18n";
 
 const GIBS = "https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs-api";
 
@@ -17,7 +17,7 @@ export const SOURCES: { n: number; group: "nasa" | "other"; name: string; url: s
 ];
 
 export default function MethodsPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const list = (group: "nasa" | "other") => {
     const items = SOURCES.filter((s) => s.group === group);
     return (
@@ -41,6 +41,11 @@ export default function MethodsPage() {
       <p>{t("sum.proj.body")}</p>
       <h2>{t("how.title")}</h2>
       <p>{t("how.body")}</p>
+      <h2 id="glossary">{t("gl.title")}</h2>
+      <p className="muted">{t("gl.intro")}</p>
+      <dl className="glossary" data-testid="glossary">
+        {GLOSSARY.map(([term, en, tr]) => (<div key={term}><dt>{term}</dt><dd>{lang === "tr" ? tr : en}</dd></div>))}
+      </dl>
       <h2>{t("src.title")}</h2>
       {list("nasa")}
       {list("other")}

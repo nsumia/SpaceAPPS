@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { burdurFull } from "../fixtures";
 import { AreaChart, areaOption, ClimateChart, ForecastChart } from "./Charts";
 import { AnalysisProgress, eta, LiveCards } from "./Panel";
-import { I18nProvider, makeT } from "../i18n";
+import { GLOSSARY, I18nProvider, makeT } from "../i18n";
 import MethodsPage from "../pages/MethodsPage";
 import App from "../App";
 import { MemoryRouter } from "react-router-dom";
@@ -130,28 +130,29 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
       for (const k of ["live.cache", "live.stale", "tip.cache", "tip.stale"]) expect(t(k)).toBe(k);
     }
   });
-  it("About page shows the page title, Project summary, How to read this app and Data sources, in that order (EN and TR)", () => {
+  it("About page shows the page title, Project summary, How to read this app, Plain-language glossary and Data sources, in that order (EN and TR)", () => {
     const SUMMARY_EN = "Metalimnion is a visual analysis app which simplifies the viewing and observation of lakes worldwide and significant changes that have affected said lakes. Metalimnion is a sophisticated app that can display individual measurements of area and surface temperature over the years and analyze these measurements to attribute changes to climatological phenomena or human activity. The analyses are then evaluated on the basis of reliability and are summarized. All analyzed lakes are shown on the various available easy-to-navigate maps with helpful circles and name descriptors. It addresses the challenge by making significant changes regarding lakes much easier to view and reason about, especially for non-experts. It allows everyone to see the change and future predictions concerning water area and surface temperature allowing them to act against the day by day shrinking of water resources, which are already very limited. This matters because global water trends affect many living things worldwide, and more attention must be drawn to crucial concerns such as this if we, the people, want to tend to our planet well.";
     for (const lang of ["en", "tr"] as const) {
       const { container, unmount } = render(<I18nProvider initial={lang}><MethodsPage /></I18nProvider>);
       expect(container.querySelector("h1")?.textContent).toBe(lang === "en" ? "About" : "Hakkında");
       const heads = [...container.querySelectorAll("h2")].map((h) => h.textContent);
-      expect(heads).toEqual(lang === "en" ? ["Project summary", "How to read this app", "Data sources"] : ["Proje özeti", "Bu uygulama nasıl okunur", "Veri kaynakları"]);
+      expect(heads).toEqual(lang === "en" ? ["Project summary", "How to read this app", "Plain-language glossary", "Data sources"] : ["Proje özeti", "Bu uygulama nasıl okunur", "Sade dille sözlük", "Veri kaynakları"]);
       expect([...container.querySelectorAll("h3")].map((h) => h.textContent)).toEqual(lang === "en" ? ["NASA", "Non-NASA"] : ["NASA", "NASA dışı"]);
       const t = makeT(lang);
-      expect(container.querySelectorAll("p").length).toBe(2);
+      expect(container.querySelectorAll("p").length).toBe(3);
       expect(container.querySelectorAll("p")[0].textContent).toBe(t("sum.proj.body"));
       expect(container.querySelectorAll("p")[1].textContent).toBe(t("how.body"));
+      expect(container.querySelectorAll("p")[2].textContent).toBe(t("gl.intro"));
       if (lang === "en") {
         expect(container.querySelectorAll("p")[0].textContent).toBe(SUMMARY_EN);
       } else {
         expect(container.querySelectorAll("p")[0].textContent).toMatch(/^Metalimnion, dünya genelindeki göllerin/);
       }
       expect(container.textContent).not.toMatch(/Report Summary|Update III/);
-      for (const name of [/limitations|sınırlamalar/i, /glossary|sözlük/i, /^method$|^yöntem$/i, /validation|doğrulama/i]) {
+      for (const name of [/limitations|sınırlamalar/i, /^method$|^yöntem$/i, /validation|doğrulama/i]) {
         expect(screen.queryByRole("heading", { name })).toBeNull();
       }
-      expect(container.querySelector("table, ul, dl, [data-testid=glossary]")).toBeNull();
+      expect(container.querySelector("table, ul")).toBeNull();
       expect(container.querySelectorAll("ol").length).toBe(2);
       expect(container.textContent).not.toMatch(/Live cards come from public APIs|Akşehir is flagged low reliability|Landsat Collection 2|Sabuncu/);
       unmount();
@@ -186,7 +187,7 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
         expect(a.getAttribute("href")).not.toContain("doi.org");
       }
       expect(container.innerHTML).not.toContain("doi.org");
-      expect(container.textContent).not.toMatch(/SWOT/);
+      expect([...container.querySelectorAll("ol")].map((o) => o.textContent).join(" ")).not.toMatch(/SWOT/); // sources list only; the glossary keeps a SWOT entry
       if (lang === "tr") {
         expect(container.textContent).toContain("Su alanı ve yüzey sıcaklığı, 1985-2012.");
         expect(container.textContent).toContain("Çevrimiçi vektör altlık harita.");
@@ -195,12 +196,22 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
       unmount();
     }
   });
-  it("removed About strings and the glossary export are gone", async () => {
+  it("About glossary: one dt/dd pair per GLOSSARY entry, in order, EN and TR", () => {
+    expect(GLOSSARY.length).toBe(15);
     for (const lang of ["en", "tr"] as const) {
-      const t = makeT(lang);
-      for (const k of ["gl.title", "gl.intro"]) expect(t(k)).toBe(k);
+      const { container, unmount } = render(<I18nProvider initial={lang}><MethodsPage /></I18nProvider>);
+      const dl = container.querySelector("dl.glossary")!;
+      expect(dl).not.toBeNull();
+      expect(dl.querySelectorAll("dt").length).toBe(GLOSSARY.length);
+      expect(dl.querySelectorAll("dd").length).toBe(GLOSSARY.length);
+      expect([...dl.querySelectorAll("dt")].map((e) => e.textContent)).toEqual(GLOSSARY.map((g) => g[0]));
+      expect([...dl.querySelectorAll("dd")].map((e) => e.textContent)).toEqual(GLOSSARY.map((g) => g[lang === "tr" ? 2 : 1]));
+      expect(container.querySelector("h2#glossary")?.textContent).toBe(lang === "en" ? "Plain-language glossary" : "Sade dille sözlük");
+      expect(container.textContent).not.toMatch(/\(see About\)|Hakkında sayfasına bakın/);
+      unmount();
     }
-    expect("GLOSSARY" in (await import("../i18n"))).toBe(false);
+    expect(makeT("en")("gl.intro")).toBe("Short explanations of the technical words used in this app.");
+    expect(makeT("tr")("gl.intro")).toBe("Bu uygulamada geçen teknik sözcüklerin kısa açıklamaları.");
   });
 });
 

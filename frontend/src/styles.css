@@ -173,6 +173,8 @@ tbody tr:hover td { background: var(--surface); }
 .prose h2 { margin: 36px 0 10px; padding-top: 10px; border-top: 2px solid var(--text); font-size: 22px; }
 .prose p, .prose li, .prose dd { color: var(--text-2); max-width: 72ch; }
 .prose li { margin: 6px 0; }
+.glossary dt { margin-top: 12px; font-weight: 700; }
+.glossary dd { margin: 2px 0 0; }
 
 @media (max-width: 800px) {
   .top { gap: 14px; padding: 0 12px; }

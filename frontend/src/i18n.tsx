@@ -198,6 +198,8 @@ const en: Record<string, string> = {
   "sum.proj.body": "Metalimnion is a visual analysis app which simplifies the viewing and observation of lakes worldwide and significant changes that have affected said lakes. Metalimnion is a sophisticated app that can display individual measurements of area and surface temperature over the years and analyze these measurements to attribute changes to climatological phenomena or human activity. The analyses are then evaluated on the basis of reliability and are summarized. All analyzed lakes are shown on the various available easy-to-navigate maps with helpful circles and name descriptors. It addresses the challenge by making significant changes regarding lakes much easier to view and reason about, especially for non-experts. It allows everyone to see the change and future predictions concerning water area and surface temperature allowing them to act against the day by day shrinking of water resources, which are already very limited. This matters because global water trends affect many living things worldwide, and more attention must be drawn to crucial concerns such as this if we, the people, want to tend to our planet well.",
   "how.title": "How to read this app",
   "how.body": "Click a lake on the map. The side panel shows how its water area changed since 1985 using free NASA/USGS satellite pictures, whether the change is statistically real, how warm the surface got, and how much rainfall can explain. Use the arrow button on the panel to make it wider.",
+  "gl.title": "Plain-language glossary",
+  "gl.intro": "Short explanations of the technical words used in this app.",
   "src.title": "Data sources",
   "src.nasa": "NASA",
   "src.other": "Non-NASA",
@@ -416,6 +418,8 @@ const tr: Record<string, string> = {
   "sum.proj.body": "Metalimnion, dünya genelindeki göllerin ve bu göllerde meydana gelen önemli değişimlerin görüntülenmesini ve gözlemlenmesini kolaylaştıran görsel bir analiz uygulamasıdır. Metalimnion, yıllar boyunca yüzey alanı ve yüzey sıcaklığına ilişkin tekil ölçümleri gösterebilen ve bu ölçümleri analiz ederek değişimleri iklimsel olaylara veya insan faaliyetlerine atfedebilen gelişmiş bir uygulamadır. Analizler daha sonra güvenilirlik açısından değerlendirilir ve özetlenir. Analiz edilen tüm göller, yardımcı daireler ve ad etiketleriyle birlikte, kolayca gezilebilen çeşitli haritalarda gösterilir. Uygulama, göllerle ilgili önemli değişimlerin, özellikle uzman olmayanlar için, görüntülenmesini ve üzerinde düşünülmesini çok daha kolay hale getirerek bu zorluğa yanıt verir. Herkesin su alanı ve yüzey sıcaklığındaki değişimi ve gelecek tahminlerini görmesine olanak tanır; böylece zaten çok sınırlı olan su kaynaklarının her geçen gün azalmasına karşı harekete geçebilirler. Bu önemlidir, çünkü küresel su eğilimleri dünya genelinde birçok canlıyı etkiler ve biz insanlar gezegenimize iyi bakmak istiyorsak bu tür önemli sorunlara daha fazla dikkat çekilmelidir.",
   "how.title": "Bu uygulama nasıl okunur",
   "how.body": "Haritada bir göle tıklayın. Yan panel, 1985'ten beri su alanının ücretsiz NASA/USGS uydu görüntülerine göre nasıl değiştiğini, değişimin istatistiksel olarak gerçek olup olmadığını, yüzeyin ne kadar ısındığını ve yağışın ne kadarını açıklayabildiğini gösterir. Paneli genişletmek için paneldeki ok düğmesini kullanın.",
+  "gl.title": "Sade dille sözlük",
+  "gl.intro": "Bu uygulamada geçen teknik sözcüklerin kısa açıklamaları.",
   "src.title": "Veri kaynakları",
   "src.nasa": "NASA",
   "src.other": "NASA dışı",
@@ -439,6 +443,24 @@ const tr: Record<string, string> = {
   "col.forecast": "2040 tahmini (1985-1990'ın %'si)",
   "tip.col.forecast": "Göl geçmişteki gibi davranmayı sürdürürse 2040'taki en olası alan; 1985-1990 ortalamasının yüzdesi olarak. Güvenilir tahmin yapılamıyorsa boştur.",
 };
+/** Glossary on the About page: [term, English, Turkish]. */
+export const GLOSSARY: [string, string, string][] = [
+  ["Landsat","A pair of NASA/USGS satellite series photographing the whole Earth every 16 days since 1984. We use their pictures from August-September.","1984'ten beri tüm Dünya'yı 16 günde bir görüntüleyen NASA/USGS uydu serisi. Ağustos-Eylül görüntülerini kullanıyoruz."],
+  ["MNDWI","A water index: a simple calculation on two colour bands that makes water bright and land dark, so a computer can draw the lake outline. It can be fooled by very shallow water, plants and salt crusts.","Su indeksi: iki renk bandı üzerinde basit bir hesap; suyu parlak, karayı koyu gösterir, böylece bilgisayar göl sınırını çizer. Çok sığ su, bitki ve tuz kabuğu tarafından yanıltılabilir."],
+  ["Sen slope","The typical yearly change, found as the median of all pairwise slopes. Robust against odd years. Shown as the dashed trend line.","Tipik yıllık değişim; tüm ikili eğimlerin medyanı. Tuhaf yıllara dayanıklıdır. Kesikli eğilim çizgisi olarak gösterilir."],
+  ["p-value / significant","How likely a trend this strong would appear by pure chance. Below 0.05 (5 %) we call it statistically significant. It says the trend is probably real, not that it is large or what caused it.","Bu kadar güçlü bir eğilimin salt şansla ortaya çıkma olasılığı. 0,05 (%5) altı için istatistiksel olarak anlamlı deriz. Eğilimin muhtemelen gerçek olduğunu söyler; büyük olduğunu ya da nedenini değil."],
+  ["σ (sigma) and normal range","σ measures how much a lake's area normally wiggles from year to year. The grey band is the first-12-years average ± 2σ: changes inside it could be ordinary variation.","σ bir gölün alanının yıldan yıla normalde ne kadar dalgalandığını ölçer. Gri bant ilk 12 yıl ortalaması ± 2σ'dır: bunun içindeki değişimler olağan dalgalanma olabilir."],
+  ["Emergence year","The first year after which the trend stays outside the normal range, i.e. the change became clearly visible.","Eğilimin normal aralığın dışında kalmaya başladığı ilk yıl, yani değişimin belirgin hale geldiği yıl."],
+  ["'by 1997' (censored)","When the lake was already outside its normal range at the start of the record, we only know the change happened in that year or earlier.","Göl kayıt başladığında zaten normal aralığın dışındaysa, değişimin o yıl ya da daha önce olduğunu biliriz."],
+  ["Surface temperature (LST)","How hot the water or land surface looks to the satellite's thermal camera. Not the same as air temperature.","Uydunun termal kamerasına göre su ya da kara yüzeyinin sıcaklığı. Hava sıcaklığı ile aynı değildir."],
+  ["Sensor break","Landsat 5 was replaced by Landsat 8 around 2012/13 and the new sensor reads about 3 °C higher. So we compute warming from Landsat 5 only (1985-2012).","Landsat 5, 2012/13 civarında Landsat 8 ile değişti ve yeni sensör yaklaşık 3 °C daha yüksek okur. Bu yüzden ısınmayı yalnız Landsat 5 (1985-2012) ile hesaplarız."],
+  ["P−E","Precipitation minus evaporation: the rain a region gains minus the water that evaporates. Positive = wetter, negative = drier.","Yağış eksi buharlaşma: bölgenin aldığı yağmur eksi buharlaşan su. Pozitif = daha nemli, negatif = daha kuru."],
+  ["EVLAND","NASA's modelled evaporation from land surfaces. It is a stand-in for lake evaporation, not a direct measurement.","NASA'nın kara yüzeyi buharlaşma modeli. Göl buharlaşmasının yerine kullanılan bir vekildir, doğrudan ölçüm değildir."],
+  ["Climate share","How much of the lake's loss a rain-minus-evaporation model explains. The rest is unexplained: a sign of other causes (irrigation, withdrawals, model error), not proof of human impact.","Bir yağış-eksi-buharlaşma modelinin göl kaybının ne kadarını açıkladığı. Kalanı açıklanamayan kısımdır: başka nedenlerin (sulama, çekim, model hatası) işareti, insan etkisinin kanıtı değil."],
+  ["Not computable","The data are too weak to give an honest number, so we show none instead of a misleading one.","Veriler dürüst bir sayı vermek için fazla zayıf; yanıltıcı bir sayı yerine hiçbir şey göstermiyoruz."],
+  ["Reliability","How steady the yearly measurements are. Low = single years jump a lot (shallow, ephemeral water), so trends are shaky.","Yıllık ölçümlerin ne kadar tutarlı olduğu. Düşük = tek tek yıllar çok zıplıyor (sığ, geçici su), eğilimler sallantılı."],
+  ["SWOT","A NASA/CNES satellite (2022) measuring water level; not used in the app yet.","Su seviyesini ölçen NASA/CNES uydusu (2022); uygulamada henüz kullanılmıyor."],
+];
 const dict = { en, tr };
 
 export function makeT(lang: Lang): TFn {
