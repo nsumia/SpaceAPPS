@@ -7,6 +7,7 @@ const out = process.env.OUT ?? "../docs/screenshots";
 if (process.env.OFFLINE) await page.route(/openfreemap|gibs\.earthdata/, (r) => r.abort());
 await page.goto("http://127.0.0.1:8000/");
 await page.waitForFunction(() => window.__map?.querySourceFeatures("lakes").length >= 10, null, { timeout: 30000 });
+await page.waitForTimeout(Number(process.env.LIVE_WAIT ?? 4000)); // basemap tiles (GIBS) need a few seconds
 await page.screenshot({ path: `${out}/map-overview.png` });
 await page.evaluate(() => window.__map.jumpTo({ center: [30.17, 37.75], zoom: 8 }));
 await page.waitForTimeout(800);
