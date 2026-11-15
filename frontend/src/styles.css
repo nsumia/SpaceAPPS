@@ -80,7 +80,7 @@ input[type=range] { accent-color: var(--red); }
 .legend .spectrum-ends { display: flex; justify-content: space-between; font-weight: 600; font-size: 12px; }
 .legend .spectrum-ends span:first-child { color: #ff8a73; } .legend .spectrum-ends span:last-child { color: #7fc0ec; }
 .legend .spectrum-unit { color: var(--muted); margin: 2px 0 6px; }
-.legend i.ns { background: #b0b0b0; }
+.legend i.ns { background: #7a7a7a; }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 7px; outline: 1px solid rgba(255, 255, 255, .5); }
 .hint { padding: 6px 12px; font-size: 13px; color: var(--text-2); }
 .timeline { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 3; display: flex; gap: 12px; align-items: center; padding: 8px 14px; width: min(640px, calc(100% - 30px)); }

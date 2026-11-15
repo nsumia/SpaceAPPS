@@ -91,7 +91,7 @@ export default function MapView(props: MapProps) {
       map.addLayer({ id: "index-line", type: "line", source: "index", minzoom: 5.5, paint: { "line-color": "#a9e3f2", "line-width": 1, "line-opacity": 0.85 } });
       map.addLayer({ id: "hl-fill", type: "fill", source: "hl", paint: { "fill-color": "#ffffff", "fill-opacity": 0.1 } });
       map.addLayer({ id: "hl-line", type: "line", source: "hl", paint: { "line-color": "#ffffff", "line-width": 2, "line-dasharray": [2, 1] } });
-      map.addLayer({ id: "lakes-halo", type: "circle", source: "lakes", paint: { "circle-color": "#0e0e0e", "circle-opacity": 0.5, "circle-radius": ["+", ["get", "r"], 4], "circle-blur": 0.6 } });
+      map.addLayer({ id: "lakes-halo", type: "circle", source: "lakes", paint: { "circle-color": "#0e0e0e", "circle-opacity": 0.85, "circle-radius": ["+", ["get", "r"], 3.5], "circle-blur": 0.15 } });
       map.addLayer({ id: "lakes-circle", type: "circle", source: "lakes", paint: {
         "circle-color": spectrumExpression() as never, "circle-radius": ["get", "r"], "circle-opacity": 0.92, "circle-stroke-color": ["get", "ring"], "circle-stroke-width": 2 } });
       map.addLayer({ id: "lakes-sel", type: "circle", source: "lakes", filter: ["==", ["get", "id"], ""], paint: {
