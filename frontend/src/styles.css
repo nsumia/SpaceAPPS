@@ -190,3 +190,6 @@ tbody tr:hover td { background: var(--surface); }
   .cards { grid-template-columns: 1fr; }
 }
 @media (max-width: 520px) { .brand { gap: 8px; } .brand-logo { width: 28px; height: 28px; } .brand-name { font-size: 12px; line-height: 1.15; white-space: normal; max-width: 86px; } .top nav { gap: 8px; } .top nav a { font-size: 13px; } }
+.prose h3 { margin: 18px 0 6px; font-size: 16px; }
+.prose ol.sources { padding-left: 1.6em; }
+.prose ol.sources li { overflow-wrap: anywhere; }
