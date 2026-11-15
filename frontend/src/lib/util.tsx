@@ -15,14 +15,15 @@ export const C = {
   emergence: "#CC79A7", turkey: "#f472ae", text: "#ffffff", muted: "#b0b0b0", grid: "#333333", bg: "#0e0e0e", panel: "#161616", ink: "#0e0e0e",
 };
 /** Trend classes shared by the map markers, the legend and the compare table: fast = saturated vermillion, slow = pale peach (lightness differs). */
-export const TREND_NS = "#b0b0b0";
+export const TREND_NS = "#7a7a7a"; // mid grey: clearly darker than the white-ish zero of the ramp
 /** Clamp of the spectrum, %/decade: the strongest loss in the data is -28, 6 of 17 lakes lose more than 10; gains are all < 1.5, so a symmetric +-20 keeps small gains light blue. */
 export const SPECTRUM_MAX = 20;
-/** Continuous dot colour ramp by trend (%/decade). Loss: ColorBrewer YlOrRd (light yellow -> dark red); gain: ColorBrewer Blues (light -> dark navy).
- * Stops are ascending; the jump at 0 (yellow | light blue) is intended: zero change is the hinge. Used for the MapLibre interpolate expression AND the legend gradient. */
+/** Continuous diverging dot colour ramp by trend (%/decade): ColorBrewer RdBu, dark red (strong loss) -> white (0) -> dark blue (strong gain).
+ * Stops are ascending and symmetric, smooth through white (no hinge). Used for the MapLibre interpolate expression AND the legend gradient. */
 export const SPECTRUM: [number, string][] = [
-  [-20, "#67001f"], [-14, "#b10026"], [-8, "#e31a1c"], [-3, "#fd8d3c"], [-0.001, "#fed976"],
-  [0, "#c6dbef"], [4, "#6baed6"], [10, "#2171b5"], [20, "#08306b"],
+  [-20, "#67001f"], [-15, "#b2182b"], [-10, "#d6604d"], [-5, "#f4a582"], [-2, "#fddbc7"],
+  [0, "#f7f7f7"],
+  [2, "#d1e5f0"], [5, "#92c5de"], [10, "#4393c3"], [15, "#2166ac"], [20, "#053061"],
 ];
 /** MapLibre data-driven colour: property "trend" (number, absent = grey). */
 export const spectrumExpression = (): unknown[] => ["case", ["has", "trend"],

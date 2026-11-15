@@ -46,8 +46,9 @@ describe("compare helpers", () => {
     expect(v).toEqual([...v].sort((a, b) => a - b));
     expect(v[0]).toBe(-SPECTRUM_MAX); expect(v[v.length - 1]).toBe(SPECTRUM_MAX);
     const ex = spectrumExpression() as any[];
-    expect(ex[0]).toBe("case"); expect(ex[2][0]).toBe("interpolate"); expect(ex[3]).toBe("#b0b0b0");
-    expect(spectrumCss()).toMatch(/^linear-gradient\(90deg, #67001f 0\.00%.*#08306b 100\.00%\)$/);
+    expect(ex[0]).toBe("case"); expect(ex[2][0]).toBe("interpolate"); expect(ex[3]).toBe("#7a7a7a");
+    expect(SPECTRUM.find(([x]) => x === 0)?.[1]).toBe("#f7f7f7");
+    expect(spectrumCss()).toMatch(/^linear-gradient\(90deg, #67001f 0\.00%.*#053061 100\.00%\)$/);
   });
   it("sizes markers by area within bounds", () => {
     expect(circleRadius(4000)).toBeGreaterThan(circleRadius(100));
