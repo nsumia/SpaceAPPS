@@ -109,3 +109,23 @@ test("default basemap is NASA Blue Marble (GIBS tiles requested first); no unver
   await expect(page.getByTestId("panel")).toBeVisible({ timeout: 3000 });
   await expect(page.getByTestId("panel")).not.toContainText(/not checked against published data|Not computable|show the \(non-interpretable\)/);
 });
+
+test("top bar: brand, nav with aria-current, TR/EN switch, no overflow at 390 px", async ({ page }) => {
+  await page.route(/openfreemap|gibs\.earthdata/, (r) => r.abort());
+  await page.goto("/methods");
+  const nav = page.getByRole("navigation", { name: "Main" });
+  await expect(nav.getByRole("link", { name: "Methods" })).toHaveAttribute("aria-current", "page");
+  await expect(nav.getByRole("link", { name: "Map" })).not.toHaveAttribute("aria-current", "page");
+  expect((await page.locator("header.top").boundingBox())!.height).toBeLessThanOrEqual(60);
+  await expect(page.locator(".brand-name")).toHaveText("Lake Loss Detective");
+  await expect(page.locator(".brand-name")).toHaveCSS("font-family", /Fraunces/);
+  await page.getByRole("button", { name: /Switch language/ }).click();
+  await expect(page.locator(".brand-name")).toHaveText("Göl Kaybı Dedektifi");
+  await expect(page.getByRole("navigation", { name: "Ana menü" }).getByRole("link", { name: "Yöntem" })).toHaveAttribute("aria-current", "page");
+  await page.setViewportSize({ width: 390, height: 800 });
+  const w = await page.evaluate(() => { const h = document.querySelector("header.top")!; return [h.scrollWidth, h.clientWidth]; });
+  expect(w[0]).toBeLessThanOrEqual(w[1]);
+  await page.reload();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "İçeriğe geç" })).toBeFocused();
+});
