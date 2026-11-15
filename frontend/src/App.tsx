@@ -17,8 +17,8 @@ export default function App() {
           <svg className="brand-mark" viewBox="0 0 32 32" width="30" height="30" aria-hidden="true" focusable="false">
             <path d="M16 3.5c5.6 0 11.5 4.3 12 10.6.5 6.6-4.8 14.4-12.4 14.4S3.4 22.4 4.3 15.6C5.1 8.6 10.4 3.5 16 3.5z" fill="currentColor" opacity=".22" />
             <path d="M16 3.5c5.6 0 11.5 4.3 12 10.6.5 6.6-4.8 14.4-12.4 14.4S3.4 22.4 4.3 15.6C5.1 8.6 10.4 3.5 16 3.5z" fill="none" stroke="currentColor" strokeWidth="1.8" />
-            <path d="M16.2 9c3.5.2 6.8 2.9 6.9 6.6.1 4-3 7.4-7 7.2-3.8-.2-6.2-3.5-5.7-7C10.9 12 12.7 8.8 16.2 9z" fill="none" stroke="var(--sand)" strokeWidth="1.6" strokeDasharray="2.6 2.2" />
-            <circle cx="16" cy="16" r="2.4" fill="var(--sand)" />
+            <path d="M16.2 9c3.5.2 6.8 2.9 6.9 6.6.1 4-3 7.4-7 7.2-3.8-.2-6.2-3.5-5.7-7C10.9 12 12.7 8.8 16.2 9z" fill="none" stroke="var(--red-lt)" strokeWidth="1.6" strokeDasharray="2.6 2.2" />
+            <circle cx="16" cy="16" r="2.4" fill="var(--red-lt)" />
           </svg>
           <span className="brand-text">
             <span className="brand-name">{t("app.title")}</span>
