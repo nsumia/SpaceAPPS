@@ -1,4 +1,4 @@
-/* Lake Loss Detective. Flat, editorial look: one typeface (Franklin Gothic), hairline rules instead of boxes, square corners,
+/* Metalimnion. Flat, editorial look: one typeface (Franklin Gothic), hairline rules instead of boxes, square corners,
    no shadows / blur / gradients. Owner palette: near-black #0e0e0e, white, royal blue #0a3c91 (selected state), red-orange
    #fc3d23 (the one call to action and the active tab), magenta #ba1e68 (Turkish lakes only). Text colours keep WCAG AA on
    #0e0e0e: white 19:1, --text-2 14:1, --muted 9:1, --blue-lt 9:1, --red-lt 7.6:1. Data colours live in lib/util.tsx.

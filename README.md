@@ -1,6 +1,6 @@
 <p align="center"><img src="docs/brand/augmented6th-logo-400.png" width="200" alt="Augmented 6th" /></p>
 
-# Lake Loss Detective
+# Metalimnion
 
 **Is this lake shrinking, since when, and is it the climate or something else?**
 A NASA Space Apps Challenge 2026 project (challenge: "Become An Earth Trend Detective!"). Team: **Augmented 6th**.

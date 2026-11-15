@@ -4,7 +4,7 @@ export type Lang = "en" | "tr";
 export type TFn = (key: string, vars?: Record<string, string | number>) => string;
 
 const en: Record<string, string> = {
-  "app.title": "Lake Loss Detective",
+  "app.title": "Metalimnion",
   "app.sub": "NASA Space Apps 2026 · Augmented 6th",
   "nav.main": "Main",
   "nav.lang": "Switch language to Turkish",
@@ -208,7 +208,7 @@ const en: Record<string, string> = {
   "tip.col.forecast": "Most likely area in 2040 if the lake keeps behaving as in the past, as a share of its 1985-1990 average. Empty when no trustworthy forecast can be made.",
 };
 const tr: Record<string, string> = {
-  "app.title": "Göl Kaybı Dedektifi",
+  "app.title": "Metalimnion",
   "app.sub": "NASA Space Apps 2026 · Augmented 6th",
   "nav.main": "Ana menü",
   "nav.lang": "Dili İngilizceye çevir",

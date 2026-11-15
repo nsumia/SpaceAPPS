@@ -1,4 +1,4 @@
-# Lake Loss Detective - project summary
+# Metalimnion - project summary
 
 **Team:** Augmented 6th. **Challenge:** Become An Earth Trend Detective!
 
