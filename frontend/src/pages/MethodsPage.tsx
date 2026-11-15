@@ -1,5 +1,4 @@
-import { useI18n } from "../i18n";
-import { GLOSSARY } from "../i18n-extra";
+import { GLOSSARY, useI18n } from "../i18n";
 
 const SOURCES: [string, string, string][] = [
   ["Landsat Collection 2 Level-2 (5, 7, 8, 9) via Microsoft Planetary Computer", "Crawford et al. 2023, Remote Sensing of Environment", "10.1016/j.rse.2023.113776"],
@@ -39,6 +38,7 @@ export default function MethodsPage() {
         <li>Emergence year: the first year after which the Sen line stays outside the reference mean +/- 2 sigma. When the line was already outside at the end of the reference period, the year is shown as "by &lt;year&gt;" (left-censored): the real date is earlier or equal.</li>
         <li>Surface temperature: Landsat thermal band, Aug-Sep. Warming uses Landsat 5 only (1985-2012), because Landsat 5 to 8 shows a step of about +3 C at 2012/13.</li>
         <li>Climate or human: yearly area change is regressed on precipitation minus evaporation (water-year, NASA POWER / MERRA-2) over the 1985-1999 reference; the model is extrapolated after 1999 and the observed minus predicted cumulative loss is the unexplained part. Bootstrap confidence intervals are shown; when the reference skill is weak or the share is outside 0-1, the share is declared not computable.</li>
+        <li>Forecast to 2040: three simple models are fitted to the valid yearly areas (Sen trend of the whole record, Sen trend of the last 15 valid years, and "stays at the mean of the last 3 valid years"). Each is tested on the past: it is fitted to the years up to a cut-off and scored on the following 10 years, for every possible cut-off. The model with the smallest error is used, and a trend model only if it beats "no change" by more than 5 %. The bands come from 2000 simulated futures (trend refitted on resampled years, plus year-to-year noise with memory) and show the 25-75 % and 5-95 % ranges. No forecast is made for low-reliability lakes or lakes with fewer than 15 valid years; numbers are not printed when the 90 % band held under 70 % of the real values in the test.</li>
         <li>On-demand analyses use the same pipeline but are labelled unverified.</li>
       </ul>
       <h2>Validation</h2>
@@ -54,6 +54,7 @@ export default function MethodsPage() {
         <li>MERRA-2 is model output on a coarse grid (about 0.5 x 0.625 degrees); EVLAND is a land-surface proxy, not open-water evaporation.</li>
         <li>Resolution differs between lakes (30 m vs 60/120 m), so compare trends rather than single-year values.</li>
         <li>SWOT levels are not available for lakes without a configured prior-lake id; the volume chart then shows "no data".</li>
+        <li>The forecast only continues the past pattern of the area series. It does not use future rainfall, temperature, water policy, dams or pumping, it is not a climate projection, and a sudden change (a new dam, a wet decade, a diversion) will break it.</li>
         <li>MNDWI can be wrong in very shallow or vegetated water and with salt crusts.</li>
         <li>Live cards come from public APIs and can be cached (up to 3 h) or stale; the label says so.</li>
       </ul>

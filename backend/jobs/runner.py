@@ -94,7 +94,7 @@ def _run_analysis(st, lake_id, request, progress, catalog=None, analyze_year=Non
         if grid:
             _write(os.path.join(out, "masks"), "grid.json", grid)
         stats = compute_stats(pd.DataFrame(rows), MIN_VALID) if len(rows) >= 10 or i == len(years) - 1 else {}
-        from backend.core import quality
+        from backend.core import stats as quality
         _write(out, "series.json", dict(lake=meta["name"], bbox=list(bbox), window="Aug 1 - Sep 30", min_valid=MIN_VALID,
                                          resolution_m=res, crs=crs, series=rows, stats=stats or None,
                                          reliability=quality.assess(rows, MIN_VALID), unverified=True))

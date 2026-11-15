@@ -2,10 +2,8 @@ import { useEffect, useRef } from "react";
 import * as maplibregl from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import type { GeoJSONSource, ImageSource, StyleSpecification } from "maplibre-gl";
-import { api } from "../lib/api";
-import { trendColour } from "../lib/compare";
-import { MASK } from "../lib/palette";
-import type { LakeSummary, MaskJson } from "../lib/types";
+import { api, type LakeSummary, type MaskJson } from "../lib/api";
+import { MASK, trendColour } from "../lib/util";
 import type { Selection } from "./Panel";
 
 maplibregl.setWorkerUrl(workerUrl);

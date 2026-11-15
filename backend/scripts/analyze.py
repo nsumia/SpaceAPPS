@@ -9,7 +9,8 @@ import sys
 
 import pandas as pd
 
-from backend.core import climate, quality, swot
+from backend.core import climate, swot
+from backend.core import stats as quality
 from backend.core.lakes import lake_dir
 from backend.core.stats import compute_stats
 

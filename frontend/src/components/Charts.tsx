@@ -1,8 +1,39 @@
-import ReactECharts from "../lib/ReactECharts";
+// Charts: tree-shaken ECharts wrapper (only the chart types this app uses) and the lake-panel charts.
+import { useEffect, useRef } from "react";
+import * as echarts from "echarts/core";
+import { LineChart, ScatterChart } from "echarts/charts";
+import { GraphicComponent, GridComponent, LegendComponent, MarkLineComponent, TooltipComponent, VisualMapComponent } from "echarts/components";
+import { LabelLayout } from "echarts/features";
+import { CanvasRenderer } from "echarts/renderers";
+import EChartsReactCore from "echarts-for-react/lib/core";
+import type { EChartsReactProps } from "echarts-for-react/lib/types";
 import type { EChartsOption } from "echarts";
-import { C, LST5 } from "../lib/palette";
+import { C, FONT, LST5 } from "../lib/util";
 import { useI18n, type TFn } from "../i18n";
-import type { LakeFull } from "../lib/types";
+import type { Forecast, LakeFull } from "../lib/api";
+
+// Shared chart theme: flat near-black tooltip, the page font.
+echarts.registerTheme("earth", {
+  textStyle: { fontFamily: FONT },
+  tooltip: { backgroundColor: "#0a0a0a", borderColor: "#7d7d7d", borderWidth: 1, textStyle: { color: "#ffffff", fontSize: 12 }, extraCssText: "box-shadow:none;border-radius:0;" },
+});
+echarts.use([LineChart, ScatterChart, GraphicComponent, GridComponent, LegendComponent, MarkLineComponent, TooltipComponent, VisualMapComponent, LabelLayout, CanvasRenderer]);
+
+// the package is CommonJS: depending on the bundler the default import is the component or { default: component }
+const Core: React.ComponentType<any> = (EChartsReactCore as any).default ?? EChartsReactCore;
+
+/** Wrapper that also re-fits the chart whenever its container width changes (e.g. the side panel is expanded or dragged). */
+export function ReactECharts(props: EChartsReactProps) {
+  const box = useRef<HTMLDivElement>(null);
+  const chart = useRef<any>(null);
+  useEffect(() => {
+    if (!box.current || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => { try { chart.current?.getEchartsInstance?.().resize(); } catch { /* disposed */ } });
+    ro.observe(box.current);
+    return () => ro.disconnect();
+  }, []);
+  return <div ref={box} style={{ width: "100%" }}><Core ref={chart} echarts={echarts} theme="earth" {...props} /></div>;
+}
 
 /** Years that rest on a single Landsat scene are drawn hollow and say "1 scene" in the tooltip. */
 export const oneScene = (r: { n_scenes?: number | null }) => r.n_scenes != null && r.n_scenes <= 1;
@@ -79,6 +110,63 @@ export function climateOption(dec: NonNullable<NonNullable<LakeFull["climate"]>[
     { name: t("ser.observed"), type: "line", data: yrs.map((y, i) => [y, o[i]]), color: C.water, symbolSize: 4, lineStyle: { width: 2 } },
     { name: t("ser.predicted"), type: "line", data: yrs.map((y, i) => [y, p[i]]), color: C.climate, symbolSize: 4, lineStyle: { type: "dashed", width: 2 } },
   ] };
+}
+
+/** Forecast chart: observed area, then the median forecast (dashed) inside its 50 % and 90 % bands. Bands start at the last observation. */
+export function forecastOption(d: LakeFull, f: Forecast, t: TFn): EChartsOption {
+  const mv = d.min_valid ?? 0.8;
+  const rows = d.series.filter((r) => r.area_km2 != null && (r.valid_frac ?? 1) >= mv);
+  const yrs = f.years ?? [], y0 = f.last_observed_year!, v0 = f.last_observed_km2!;
+  const line = (a: number[] = []) => [[y0, v0], ...yrs.map((y, i) => [y, a[i]])];
+  const band = (name: string, lo: number[] = [], hi: number[] = [], opacity: number): any[] => [
+    { name, type: "line", stack: name, data: line(lo), showSymbol: false, silent: true, color: C.waterPale, lineStyle: { opacity: 0 }, tooltip: { show: false } },
+    { name, type: "line", stack: name, data: [[y0, 0], ...yrs.map((y, i) => [y, hi[i] - lo[i]])], showSymbol: false, silent: true, color: C.waterPale, lineStyle: { opacity: 0 },
+      areaStyle: { color: C.waterPale, opacity }, tooltip: { show: false } }];
+  const b = base(t, t("ax.area"));
+  const tip = (ps: any) => {
+    const arr = Array.isArray(ps) ? ps : [ps], year = arr[0]?.value?.[0], i = yrs.indexOf(year);
+    if (i < 0) return sceneTooltip(t)(arr.filter((p: any) => p.seriesName === t("ser.observed")));
+    return `${year}<br/>${t("ser.fc.median")}: ${f.median![i].toFixed(1)}<br/>${t("ser.fc.b50")}: ${f.lo50![i].toFixed(1)} - ${f.hi50![i].toFixed(1)}<br/>${t("ser.fc.b90")}: ${f.lo90![i].toFixed(1)} - ${f.hi90![i].toFixed(1)}`;
+  };
+  return { ...b, yAxis: { ...(b.yAxis as object), scale: false, min: 0 }, tooltip: { trigger: "axis", formatter: tip },
+    legend: { ...(b.legend as object), data: [t("ser.observed"), t("ser.fc.median"), t("ser.fc.b50"), t("ser.fc.b90")] },
+    series: [
+      ...band(t("ser.fc.b90"), f.lo90, f.hi90, 0.16), ...band(t("ser.fc.b50"), f.lo50, f.hi50, 0.3),
+      { name: t("ser.observed"), type: "line", data: rows.map((r) => pt(r, r.area_km2)), color: C.water, symbolSize: 5, lineStyle: { width: 2 },
+        markLine: { symbol: "none", silent: true, lineStyle: { color: C.muted, type: "dotted" }, data: [{ xAxis: y0 + 0.5, label: { formatter: t("fc.starts") + " →", color: C.muted, position: "end", rotate: 0, align: "left", padding: [0, 0, 0, 4] } }] } },
+      { name: t("ser.fc.median"), type: "line", data: line(f.median), showSymbol: false, color: C.waterPale, lineStyle: { type: "dashed", width: 2 } },
+    ] };
+}
+
+/** Template text for the forecast (no AI): numbers are printed only when the forecast is interpretable. */
+export function forecastSentences(f: Forecast, s: LakeFull["summary"], t: TFn): string[] {
+  if (!f.ok) return [t(`fc.na.${f.reason ?? "other"}`)];
+  const out: string[] = [], bt = f.backtest, flags = f.flags ?? [], m = (f.milestones ?? []).at(-1);
+  const cov = bt?.coverage90 == null ? "?" : Math.round(100 * bt.coverage90);
+  if (!f.interpretable) out.push(t("fc.narrow", { cov }));
+  else if (m) {
+    const rf = s.ref_years ?? [1985, 1990];
+    out.push(t(f.model === "persistence" ? "fc.flat" : "fc.trend", { year: m.year, med: m.median_km2.toFixed(0), lo: m.lo90_km2.toFixed(0), hi: m.hi90_km2.toFixed(0) })
+      + (m.median_pct_of_ref != null ? " " + t("fc.pct", { pct: Math.round(m.median_pct_of_ref), r0: rf[0], r1: rf[1] }) : ""));
+    if (flags.includes("trend_not_distinguishable_from_zero")) out.push(t("fc.zero"));
+    if (bt) out.push(t(f.model === "persistence" ? "fc.test.flat" : "fc.test", { skill: Math.round(100 * bt.chosen_skill), cov, h: bt.max_horizon_years, n: bt.n_pairs }));
+  }
+  if (flags.includes("sparse_cadence")) out.push(t("fc.sparse"));
+  return out;
+}
+
+export function ForecastChart({ d }: { d: LakeFull }) {
+  const { t } = useI18n();
+  const f = d.forecast;
+  if (!f || f.preliminary) return null;
+  return (
+    <Frame title={t("chart.forecast", { year: f.horizon_year })} help={t("help.forecast")} source={t("chart.source.forecast")}
+      note={<><div className="chart-text" data-testid="forecast-text">{forecastSentences(f, d.summary, t).join(" ")}</div>
+        <div className="note warn small">{t("fc.caveat")}</div></>}>
+      {f.ok ? <ReactECharts option={forecastOption(d, f, t)} style={{ height: 270 }} notMerge /> : (
+        <div className="na" role="status"><strong>{t("fc.none")}</strong></div>)}
+    </Frame>
+  );
 }
 
 export function AreaChart({ d }: { d: LakeFull }) {
