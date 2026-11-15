@@ -1,8 +1,8 @@
-import { Link, NavLink, Route, Routes } from "react-router-dom";
+import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
 import { useI18n } from "./i18n";
 import { lazy, Suspense } from "react";
 
-// Route-level code splitting: the map (maplibre), compare (ECharts) and methods pages load on first visit.
+// Route-level code splitting: the map (maplibre), compare (ECharts) and about pages load on first visit.
 const MapPage = lazy(() => import("./pages/MapPage"));
 const ComparePage = lazy(() => import("./pages/ComparePage"));
 const MethodsPage = lazy(() => import("./pages/MethodsPage"));
@@ -23,7 +23,7 @@ export default function App() {
         <nav aria-label={t("nav.main")}>
           <NavLink to="/" end>{t("nav.map")}</NavLink>
           <NavLink to="/compare">{t("nav.compare")}</NavLink>
-          <NavLink to="/methods">{t("nav.methods")}</NavLink>
+          <NavLink to="/about">{t("nav.methods")}</NavLink>
         </nav>
         <button className="lang" onClick={() => setLang(lang === "en" ? "tr" : "en")} aria-label={t("nav.lang")}>
           <span className={lang === "tr" ? "on" : ""} aria-hidden="true">TR</span>
@@ -35,7 +35,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<MapPage />} />
           <Route path="/compare" element={<ComparePage />} />
-          <Route path="/methods" element={<MethodsPage />} />
+          <Route path="/about" element={<MethodsPage />} />
+          <Route path="/methods" element={<Navigate to="/about" replace />} />
           <Route path="*" element={<MapPage />} />
         </Routes>
         </Suspense>

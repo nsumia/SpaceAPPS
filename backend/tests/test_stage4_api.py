@@ -300,7 +300,7 @@ def test_index_endpoint_and_spa_serving(st, tmp_path):
     (dist / "assets" / "a.js").write_text("1")
     st.dist_dir = str(dist)
     c = TestClient(create_app(st, runner=fake_runner))
-    for p in ("/", "/compare", "/methods"):
+    for p in ("/", "/compare", "/about", "/methods"):
         assert c.get(p).text == "<html>app</html>", p
     assert c.get("/assets/a.js").status_code == 200 and c.get("/api/health").json() == {"status": "ok"}
 

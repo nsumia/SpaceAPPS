@@ -20,7 +20,7 @@ from backend.core.jsonsafe import SafeJSONResponse as JSONResponse        # NaN/
 
 MAX_POLYGON_KM2 = 20_000.0
 DIST = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
-SPA_ROUTES = ("compare", "methods")
+SPA_ROUTES = ("compare", "about", "methods")
 
 
 # Response models, so the OpenAPI schema (and openapi-typescript) carry real types for /api/lakes.

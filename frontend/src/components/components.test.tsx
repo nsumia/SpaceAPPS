@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { burdurFull } from "../fixtures";
 import { AreaChart, areaOption, ClimateChart, ForecastChart } from "./Charts";
 import { AnalysisProgress, eta, LiveCards } from "./Panel";
 import { I18nProvider, makeT } from "../i18n";
 import MethodsPage from "../pages/MethodsPage";
+import App from "../App";
+import { MemoryRouter } from "react-router-dom";
 import * as PanelMod from "./Panel";
 import * as ChartsMod from "./Charts";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -128,12 +130,25 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
       for (const k of ["live.cache", "live.stale", "tip.cache", "tip.stale"]) expect(t(k)).toBe(k);
     }
   });
-  it("Methods page is titled Methods and has no Limitations section (EN and TR)", () => {
+  it("About page is titled About / Hakkında and has no Limitations section (EN and TR)", () => {
     for (const lang of ["en", "tr"] as const) {
       const { container, unmount } = render(<I18nProvider initial={lang}><MethodsPage /></I18nProvider>);
-      expect(container.querySelector("h1")?.textContent).toBe(lang === "en" ? "Methods" : "Yöntem");
+      expect(container.querySelector("h1")?.textContent).toBe(lang === "en" ? "About" : "Hakkında");
       expect(screen.queryByRole("heading", { name: /limitations|sınırlamalar/i })).toBeNull();
       expect(container.textContent).not.toMatch(/Live cards come from public APIs|Akşehir is flagged low reliability/);
+      unmount();
+    }
+  });
+});
+
+describe("About section route", () => {
+  it("nav shows About / Hakkında linking /about, and /methods redirects to /about", async () => {
+    for (const [lang, label] of [["en", "About"], ["tr", "Hakkında"]] as const) {
+      const { unmount } = render(<I18nProvider initial={lang}><MemoryRouter initialEntries={["/methods"]}><App /></MemoryRouter></I18nProvider>);
+      const link = screen.getByRole("link", { name: label });
+      expect(link.getAttribute("href")).toBe("/about");
+      await waitFor(() => expect(link.getAttribute("aria-current")).toBe("page"));
+      expect(await screen.findByRole("heading", { level: 1, name: label })).toBeTruthy();
       unmount();
     }
   });
