@@ -138,3 +138,17 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
     }
   });
 });
+
+describe("no per-lake method limitation note", () => {
+  it("RefInfo ignores mndwi_note (EN and TR) and the ref.mndwi key is gone", () => {
+    const sum = { ...burdurFull.summary, why_selected: "why text", cadence_note: "every year", mndwi_note: "MNDWI limitation: salt crust SECRET-NOTE" };
+    for (const lang of ["en", "tr"] as const) {
+      const { container, unmount } = render(<I18nProvider initial={lang}><PanelMod.RefInfo s={sum} /></I18nProvider>);
+      expect(container.textContent).toContain("why text");
+      expect(container.textContent).not.toMatch(/SECRET-NOTE|Method limitation|Yöntem sınırlaması/);
+      expect(container.querySelector(".note.warn")).toBeNull();
+      expect(makeT(lang)("ref.mndwi")).toBe("ref.mndwi");
+      unmount();
+    }
+  });
+});

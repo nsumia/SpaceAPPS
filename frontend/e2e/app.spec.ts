@@ -136,3 +136,20 @@ test("top bar: brand, nav with aria-current, TR/EN switch, no overflow at 390 px
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "İçeriğe geç" })).toBeFocused();
 });
+
+test("panel shows no method-limitation note even when the API sends mndwi_note", async ({ page }) => {
+  await page.route(/\/api\/lakes\/[^/?]+$/, async (r) => {
+    const res = await r.fetch(); const j = await res.json();
+    j.summary.why_selected = j.summary.why_selected ?? "why text"; j.summary.cadence_note = j.summary.cadence_note ?? "every year";
+    j.summary.mndwi_note = "MNDWI limitation: SECRET-NOTE salt crust";
+    await r.fulfill({ response: res, json: j });
+  });
+  await openMap(page);
+  await page.evaluate(() => (window as any).__map.jumpTo({ center: [30.17, 37.75], zoom: 6 }));
+  await page.waitForTimeout(500);
+  const p = await px(page, 30.17, 37.75);
+  await page.mouse.click(p.x, p.y);
+  await expect(page.getByTestId("panel")).toBeVisible({ timeout: 3000 });
+  await expect(page.getByTestId("refinfo")).toBeVisible();
+  await expect(page.getByTestId("panel")).not.toContainText(/SECRET-NOTE|Method limitation|Yöntem sınırlaması/);
+});
