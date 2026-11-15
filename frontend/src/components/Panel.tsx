@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useI18n } from "../i18n";
-import { useCompareIds, useLake, useLakes, useLive } from "../hooks";
-import { api, ApiError } from "../lib/api";
-import { summarySentence } from "../lib/summary";
-import { AreaChart, ClimateChart, LstChart, VolumeChart } from "./Charts";
-import { LiveCards } from "./LiveCards";
+import { api, ApiError, useCompareIds, useLake, useLakes, useLive, type Job, type LakeFull, type Live, type LiveCard } from "../lib/api";
+import { Info, summarySentence } from "../lib/util";
+import { AreaChart, ClimateChart, ForecastChart, LstChart, VolumeChart } from "./Charts";
 import { Link } from "react-router-dom";
-import { Info } from "./Info";
-import type { Job, LakeFull } from "../lib/types";
 
 export interface Selection { id: string | null; name?: string; polygon?: GeoJSON.Geometry | null }
 
@@ -17,10 +13,27 @@ export function Badges({ d }: { d: LakeFull }) {
   const s = d.summary, rel = s.reliability;
   return (
     <div className="badges">
-      {s.validated && <span className="badge good" title={t("tip.validated")}>✔ {t("badge.validated")}{s.validation_basis ? ` (${s.validation_basis})` : ""}</span>}
-      <span className={"badge " + (rel === "low" ? "bad" : rel === "ok" ? "good" : "")} title={t("tip.rel")}>{rel === "low" ? "⚠ " : ""}{t(`badge.rel.${rel === "ok" || rel === "low" ? rel : "unknown"}`)}</span>
+      {s.validated && <span className="badge good" title={t("tip.validated")}>{t("badge.validated")}{s.validation_basis ? ` (${s.validation_basis})` : ""}</span>}
+      <span className={"badge " + (rel === "low" ? "bad" : rel === "ok" ? "good" : "")} title={t("tip.rel")}>{t(`badge.rel.${rel === "ok" || rel === "low" ? rel : "unknown"}`)}</span>
       <Info text={t("tip.rel")} />
     </div>
+  );
+}
+
+/** Headline numbers, straight from the summary record. */
+export function Stats({ s }: { s: LakeFull["summary"] }) {
+  const { t } = useI18n();
+  const signed = (x: number, d = 0) => (x > 0 ? "+" : x < 0 ? "\u2212" : "") + Math.abs(x).toFixed(d);
+  const rf = s.ref_years ?? [1985, 1990], change = s.total_loss_pct == null ? null : -s.total_loss_pct, tr = s.trend_pct_per_decade;
+  const cls = (x: number | null | undefined) => (x == null || x === 0 ? "" : x < 0 ? "down" : "up");
+  const na = <span className="muted">{"\u2013"}</span>;
+  return (
+    <dl className="stats" data-testid="stats">
+      <div><dt>{t("stat.now", { year: s.latest_area_year ?? "" })}</dt><dd>{s.latest_area_km2 == null ? na : <>{s.latest_area_km2.toFixed(0)} <small>km²</small></>}</dd></div>
+      <div><dt>{t("stat.change", { r0: rf[0], r1: rf[1] })}</dt><dd className={cls(change)}>{change == null ? na : <>{signed(change)} <small>%</small></>}</dd></div>
+      <div><dt>{t("stat.trend")}</dt><dd className={s.trend_p != null && s.trend_p < 0.05 ? cls(tr) : ""}>{tr == null ? na : <>{signed(tr, 1)} <small>%{s.trend_p != null && s.trend_p >= 0.05 ? ` (${t("sig.no.long")})` : ""}</small></>}</dd></div>
+      <div><dt>{t("stat.fc", { year: s.forecast_year ?? 2040 })}</dt><dd>{s.forecast_km2 == null ? na : <>{s.forecast_km2.toFixed(0)} <small>km²</small></>}</dd></div>
+    </dl>
   );
 }
 
@@ -54,6 +67,77 @@ export function AnalysisProgress({ job, started }: { job: Job; started: number }
         <div style={{ width: `${Math.max(2, job.progress)}%` }} />
       </div>
       <div className="small">{Math.round(job.progress)}% | {t("an.year")}: {job.current_year ?? "-"} | {t("an.phase")}: {job.phase ?? "-"} | {t("an.eta")}: {e ?? "..."}</div>
+    </div>
+  );
+}
+
+const num = (x: unknown, d = 1) => (typeof x === "number" ? x.toFixed(d) : "-");
+
+function Card({ title, card, children, date }: { title: string; card?: LiveCard; children?: React.ReactNode; date?: string }) {
+  const { t } = useI18n();
+  const ok = card?.ok;
+  return (
+    <div className="card" data-testid="live-card">
+      <div className="card-h">
+        <span>{title}</span>
+        {card?.cached && <span className="tag" data-testid="cache-tag" title={t("tip.cache")}>{t("live.cache")}</span>}
+        {card?.stale && <span className="tag warn" title={t("tip.stale")}>{t("live.stale")}</span>}
+      </div>
+      {ok ? <div className="card-v">{children}</div> : <div className="card-v muted">{t("live.nodata")}{card?.error ? <div className="small">{card.error}</div> : null}</div>}
+      <div className="src small">
+        {t("live.source")}: {card?.source ?? "-"}{date ? <> | {t("live.data")}: {date}</> : null}
+        {card?.refresh_error ? <div>{card.refresh_error}</div> : null}
+      </div>
+    </div>
+  );
+}
+
+function Snapshot({ card }: { card?: LiveCard }) {
+  const { t } = useI18n();
+  const live = typeof card?.image_url === "string" ? card.image_url : null;
+  const snap = typeof card?.snapshot_url === "string" ? card.snapshot_url : null;
+  const [src, setSrc] = useState(live ?? snap);
+  if (!src) return (
+    <div className="card" data-testid="gibs-card-empty">
+      <div className="card-h"><span>{t("live.snapshot")}</span></div>
+      <div className="card-v muted">{t("live.nocache")}</div>
+    </div>
+  );
+  return (
+    <div className="card" data-testid="gibs-card">
+      <div className="card-h"><span>{t("live.snapshot")}</span>{src === snap && <span className="tag" data-testid="cache-tag">{t("live.cache")}</span>}</div>
+      <img src={src} alt="VIIRS" onError={() => { if (snap && src !== snap) setSrc(snap); else setSrc(null); }} />
+      <div className="src small">{t("live.source")}: {card?.source ?? "NASA GIBS"}</div>
+    </div>
+  );
+}
+
+export function LiveCards({ live, loading, error }: { live?: Live; loading: boolean; error?: Error | null }) {
+  const { t } = useI18n();
+  if (loading) return <div className="spinner-row" role="status"><span className="spinner" /> {t("live.loading")}</div>;
+  if (error || !live) return <div className="note">{t("live.unavailable")}{error ? `: ${error.message}` : ""}</div>;
+  const c = live.cards;
+  const l = c.landsat, s = c.swot, p = c.precip;
+  const latest = typeof l?.latest_scene === "string" ? l.latest_scene : undefined;
+  return (
+    <div className="cards">
+      <Card title={t("live.area")} card={l} date={latest}>
+        <b>{num(l?.area_km2)}</b> km²
+        <div className="small">{t("live.vsly")}: {num(l?.change_vs_last_year_pct)}%</div>
+      </Card>
+      <Card title={t("live.lst")} card={l} date={latest}>
+        <b>{num(l?.lst_c)}</b> °C
+        <div className="small">{t("live.vsly")}: {num(l?.lst_change_vs_last_year_c)} °C</div>
+      </Card>
+      <Card title={t("live.swot")} card={s} date={typeof s?.last_obs === "string" ? s.last_obs : undefined}>
+        <b>{num(s?.wse_m, 2)}</b> m
+        <div className="small">{t("live.swot1y")}: {num(s?.wse_change_1y_m, 2)} m</div>
+      </Card>
+      <Card title={t("live.precip")} card={p} date={typeof p?.data_until === "string" ? p.data_until : undefined}>
+        <b>{num(p?.precip_mm, 0)}</b> mm
+        <div className="small">{String(p?.pct_of_normal ?? "-")}% {t("live.ofnormal")}</div>
+      </Card>
+      <Snapshot card={c.gibs} />
     </div>
   );
 }
@@ -118,6 +202,7 @@ export default function Panel({ sel, onClose, layout, onLayout }: { sel: Selecti
       </div>
       <h2>{d?.summary.name ?? sel.name ?? "…"}</h2>
       {d && <Badges d={d} />}
+      {d && d.series.length > 0 && <Stats s={d.summary} />}
       {d && <RefInfo s={d.summary} />}
       {d?.reliability?.note && d.summary.reliability === "low" && <div className="note bad">{d.reliability.note}</div>}
       {d && (
@@ -135,10 +220,11 @@ export default function Panel({ sel, onClose, layout, onLayout }: { sel: Selecti
       {d?.unverified && !isSample && <div className="note warn">{t("an.unverified")}</div>}
       {d && d.series.length > 0 && (
         <>
-          <section><h4>{t("sum.title")}</h4><p data-testid="summary">{summarySentence(d.summary, t)}</p></section>
+          <section><h4>{t("sum.title")}</h4><p className="summary" data-testid="summary">{summarySentence(d.summary, t)}</p></section>
           {known && !isSample && <section><h4>{t("live.title")}</h4><LiveCards live={live.data} loading={live.isLoading} error={live.error as Error | null} /></section>}
           <div className="charts">
             <AreaChart d={d} />
+            {!running && <ForecastChart d={d} />}
             <LstChart d={d} />
             {d.climate && <ClimateChart d={d} />}
             {!d.unverified && <VolumeChart d={d} />}

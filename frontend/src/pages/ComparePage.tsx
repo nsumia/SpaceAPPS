@@ -1,15 +1,11 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import ReactECharts from "../lib/ReactECharts";
+import { ReactECharts } from "../components/Charts";
 import type { EChartsOption } from "echarts";
 import { Link } from "react-router-dom";
 import { useI18n } from "../i18n";
-import { useCompareIds, useLakes } from "../hooks";
-import { api } from "../lib/api";
-import { sortLakes, type SortKey } from "../lib/compare";
-import { C, LAKE_COLOURS } from "../lib/palette";
-import type { LakeSummary } from "../lib/types";
-import { Info } from "../components/Info";
+import { api, useCompareIds, useLakes, type LakeSummary } from "../lib/api";
+import { C, FONT, Info, LAKE_COLOURS, sortLakes, type SortKey } from "../lib/util";
 
 const fmt = (x: number | null | undefined, d = 1) => (x == null ? "n/a" : x.toFixed(d));
 const sgn = (x: number, d = 1) => (x > 0 ? "+" : "") + x.toFixed(d);
@@ -60,7 +56,7 @@ export function scatterOption(rows: LakeSummary[], t: (k: string) => string): EC
       return `<b>${d.full}</b>${d.country ? ` (${d.country})` : ""}<br/>${t("tip.warming")}: ${sgn(d.value[0], 2)} °C ${t("tip.perdec")}<br/>${t("tip.trend")}: ${sgn(d.value[1])} % ${t("tip.perdec")}<br/>${t("tip.sig")} ${pWords(d.p, t)}<br/>${t("tip.climate")}: ${d.share == null ? t("tip.nocl") : Math.round(100 * d.share) + " %"}<br/>${t("tip.area")}: ${d.area == null ? t("na.data") : Math.round(d.area).toLocaleString("en") + " km²"}`; } },
     xAxis: { type: "value", name: t("cmp.x"), nameLocation: "middle", nameGap: 30, nameTextStyle: { color: C.text }, scale: true, axisLabel: { color: C.muted, formatter: (v: number) => sgn(v, 1) }, splitLine: { lineStyle: { color: C.grid } } },
     yAxis: { type: "value", name: t("cmp.y"), nameLocation: "middle", nameGap: 44, nameTextStyle: { color: C.text }, scale: true, axisLabel: { color: C.muted, formatter: (v: number) => `${v}%` }, splitLine: { lineStyle: { color: C.grid } } },
-    graphic: [{ type: "text", right: 30, bottom: 62, silent: true, style: { text: `↘ ${t("cmp.quad")}`, fill: "#ffc2a3", font: "12px Roboto Variable, Roboto, system-ui, sans-serif" } }],
+    graphic: [{ type: "text", right: 30, bottom: 62, silent: true, style: { text: `↘ ${t("cmp.quad")}`, fill: "#ffc2a3", font: `12px ${FONT}` } }],
     series: [ser(false), ser(true)],
   };
 }
@@ -128,7 +124,7 @@ export default function ComparePage() {
         </div>
         <table className="rank">
           <thead><tr><th />{head("name", t("col.name"))}{head("trend_pct_per_decade", t("col.trend"), t("tip.col.trend"))}{head("trend_p", t("col.p"), t("tip.col.p"))}{head("emergence_year", t("col.emergence"), t("tip.col.emergence"))}
-            {head("warming_c_per_decade", t("col.warming"), t("tip.col.warming"))}{head("climate_explained_share", t("col.climate"), t("tip.col.climate"))}</tr></thead>
+            {head("warming_c_per_decade", t("col.warming"), t("tip.col.warming"))}{head("climate_explained_share", t("col.climate"), t("tip.col.climate"))}{head("forecast_pct_of_ref", t("col.forecast"), t("tip.col.forecast"))}</tr></thead>
           <tbody>{sorted.map((l) => {
             const inn = ids.includes(l.id) || (!!l.alias && ids.includes(l.alias));
             return (
@@ -140,6 +136,7 @@ export default function ComparePage() {
                 <td>{l.emergence_year == null ? <span className="muted">{t("na.data")}</span> : (l.emergence_censored_at_ref_end ? t("cmp.by") + " " : "") + l.emergence_year}</td>
                 <td>{l.warming_c_per_decade == null ? <span className="muted">{t("na.data")}</span> : fmt(l.warming_c_per_decade, 2)}</td>
                 <td>{l.climate_interpretable && l.climate_explained_share != null ? `${Math.round(100 * l.climate_explained_share)}%` : <span className="muted">{t("na.climate")}</span>}</td>
+                <td>{l.forecast_pct_of_ref == null ? <span className="muted">{t("na.data")}</span> : `${Math.round(l.forecast_pct_of_ref)}%`}</td>
               </tr>);
           })}</tbody>
         </table>

@@ -4,20 +4,82 @@ import json
 import os
 from contextlib import asynccontextmanager
 from functools import partial
+from typing import Literal, Optional
 
 from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, ConfigDict
 
 from backend.api import live_cache, store
 from backend.api.jobs import JobManager
-from backend.api.models import LakesResponse
 from backend.api.store import Settings
 
 MAX_POLYGON_KM2 = 20_000.0
 DIST = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
 SPA_ROUTES = ("compare", "methods")
+
+
+# Response models, so the OpenAPI schema (and openapi-typescript) carry real types for /api/lakes.
+class LakeSummary(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    id: str
+    alias: Optional[str] = None
+    name: Optional[str] = None
+    country: Optional[str] = None
+    centre: Optional[list[float]] = None
+    group: Literal["turkey", "reference", "custom"]
+    validated: bool
+    unverified: bool
+    years: Optional[list[int]] = None
+    latest_area_km2: Optional[float] = None
+    latest_area_year: Optional[int] = None
+    ref_mean_km2: Optional[float] = None
+    ref_years: list[int] = []
+    recent_years: list[int] = []
+    recent_mean_km2: Optional[float] = None
+    total_loss_pct: Optional[float] = None
+    total_loss_basis: str
+    trend_pct_per_decade: Optional[float] = None
+    trend_p: Optional[float] = None
+    trend_direction: Optional[str] = None
+    emergence_year: Optional[int] = None
+    emergence_status: Optional[str] = None
+    emergence_censored_at_ref_end: bool = False
+    emergence_note: Optional[str] = None
+    warming_c_per_decade: Optional[float] = None
+    warming_basis: Optional[str] = None
+    warming_pooled_c_per_decade: Optional[float] = None
+    warming_sensor_break_caveat: str
+    climate_explained_share: Optional[float] = None
+    climate_explained_ci90: Optional[list[float]] = None
+    climate_interpretable: bool = False
+    climate_ci_includes_zero: bool = False
+    climate_flags: list[str] = []
+    climate_wording: Optional[str] = None
+    reliability: str
+    reliability_note: Optional[str] = None
+    status: Optional[str] = None
+    why_selected: Optional[str] = None
+    mndwi_note: Optional[str] = None
+    resolution_m: Optional[int] = None
+    cadence_note: Optional[str] = None
+    cadence_years: Optional[int] = None
+    years_analysed: Optional[list[int]] = None
+    window: Optional[list[str]] = None
+    literature_direction: Optional[str] = None
+    our_direction: Optional[str] = None
+    literature_agrees: Optional[bool] = None
+    literature_agreement: Optional[str] = None
+    validation_basis: Optional[str] = None
+    forecast_year: Optional[int] = None
+    forecast_km2: Optional[float] = None
+    forecast_pct_of_ref: Optional[float] = None
+
+
+class LakesResponse(BaseModel):
+    lakes: list[LakeSummary]
 
 
 def polygon_area_km2(geom):
@@ -124,6 +186,11 @@ def create_app(settings=None, runner=None):
     def lake(lake_id: str):
         need(lake_id)
         return store.full(st, lake_id)
+
+    @app.get("/api/lakes/{lake_id}/forecast", summary="Area forecast: backtested statistical extrapolation with 50/90 % bands")
+    def forecast(lake_id: str, horizon: int = Query(2040, ge=2026, le=2060, description="last forecast year")):
+        need(lake_id)
+        return store.forecast(st, lake_id, horizon)
 
     @app.get("/api/lakes/{lake_id}/masks/{year}", summary="Yearly water mask as PNG (or JSON with bounds)")
     def mask(lake_id: str, year: int, format: str = Query("png", pattern="^(png|json)$")):
@@ -272,6 +339,9 @@ def create_app(settings=None, runner=None):
             app.add_api_route("/" + route, lambda: FileResponse(index_html), include_in_schema=False)
         if os.path.isdir(os.path.join(dist, "assets")):
             app.mount("/assets", StaticFiles(directory=os.path.join(dist, "assets")), name="assets")
+        for icon in ("logo-64.png", "favicon-32.png", "apple-touch-icon.png"):      # team logo + icons from frontend/public
+            if os.path.exists(os.path.join(dist, icon)):
+                app.add_api_route("/" + icon, lambda icon=icon: FileResponse(os.path.join(dist, icon), media_type="image/png", headers={"Cache-Control": "public, max-age=86400"}), include_in_schema=False)
         app.add_api_route("/", lambda: FileResponse(index_html), include_in_schema=False)
     return app
 

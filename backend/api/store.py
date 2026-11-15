@@ -150,6 +150,8 @@ def summary(st, key):
     pooled = stats.get("lst_all")
     dec = ((rec["climate"] or {}).get("decomposition")) or {}
     custom = rec["custom"]
+    fc = forecast(st, key)
+    fm = (fc.get("milestones") or [None])[-1] if fc.get("ok") and fc.get("interpretable") else None
     alias = meta.get("alias")
     reliability = (s.get("reliability") or {}).get("reliability", "unknown")
     group = meta.get("group") or ("custom" if custom else ("turkey" if meta.get("country") == "TR" else "reference"))
@@ -181,7 +183,28 @@ def summary(st, key):
         climate_flags=dec.get("interpretation_flags", []), climate_wording=dec.get("wording"),
         reliability=(s.get("reliability") or {}).get("reliability", "unknown"),
         reliability_note=(s.get("reliability") or {}).get("note"),
+        forecast_year=fm and fm["year"], forecast_km2=fm and fm["median_km2"], forecast_pct_of_ref=fm and fm["median_pct_of_ref"],
         status=(meta.get("analysis") or {}).get("status") if custom else "precomputed")
+
+
+def forecast(st, key, horizon_year=None):
+    """Area forecast (backend/core/stats.py), computed on read from the stored series and cached per series file
+    version, so existing records need no re-precompute. Deterministic (fixed seed)."""
+    from backend.core import stats as fc
+    rec = record(st, key)
+    horizon = int(horizon_year or fc.HORIZON_YEAR)
+    sp = os.path.join(rec["dir"], "series.json")
+    ck = ("forecast", sp, os.path.getmtime(sp), horizon)
+    if ck not in st._cache:
+        s = rec["series"]
+        mv = s.get("min_valid", 0.8)
+        refr, _ = ref_rows(valid_rows(s["series"], mv))
+        out = fc.forecast_area(s["series"], mv, (s.get("reliability") or {}).get("reliability", "unknown"),
+                               ref_mean=float(np.mean([r["area_km2"] for r in refr])) if refr else None, horizon_year=horizon)
+        if (rec["meta"].get("analysis") or {}).get("status") not in (None, "done"):
+            out = dict(out, preliminary=True)          # on-demand job still running: years are still arriving
+        st._cache[ck] = out
+    return st._cache[ck]
 
 
 def list_lakes(st):
@@ -199,7 +222,7 @@ def full(st, key):
     swot = rec["swot"]
     return dict(summary=summary(st, key), meta=rec["meta"], series=rec["series"]["series"], stats=rec["series"].get("stats"),
                 reliability=rec["series"].get("reliability"), min_valid=rec["series"].get("min_valid"),
-                lst=dict(note=LST_SENSOR_BREAK), climate=rec["climate"], swot=swot,
+                lst=dict(note=LST_SENSOR_BREAK), climate=rec["climate"], swot=swot, forecast=forecast(st, key),
                 volume=(swot or {}).get("volume") if (swot or {}).get("ok") else None,
                 unverified=rec["custom"], analysis=rec["meta"].get("analysis"))
 

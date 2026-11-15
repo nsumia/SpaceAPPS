@@ -12,7 +12,7 @@ from backend.api import live_cache, store
 from backend.api.jobs import JobManager
 from backend.api.main import create_app
 from backend.api.store import Settings
-from backend.core import quality
+from backend.core import stats as quality
 from backend.core.stats import emergence
 from backend.jobs import runner as jr
 

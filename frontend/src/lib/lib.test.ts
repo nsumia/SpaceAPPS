@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { makeT } from "../i18n";
 import { burdur } from "../fixtures";
-import { summarySentence } from "./summary";
-import { sortLakes, trendColour } from "./compare";
+import { sortLakes, summarySentence, trendColour, TREND } from "./util";
 import { circleRadius } from "../components/MapView";
-import { TREND } from "./palette";
 
 describe("summary sentence", () => {
   const t = makeT("en");
@@ -48,7 +46,7 @@ describe("compare helpers", () => {
 });
 
 import { scatterOption, scatterPoints, shareColour, markerSize, shortName } from "../pages/ComparePage";
-import type { LakeSummary } from "./types";
+import type { LakeSummary } from "./api";
 
 describe("compare scatter", () => {
   const mk = (o: Partial<LakeSummary>): LakeSummary => ({ ...burdur, group: "reference", ...o } as LakeSummary);

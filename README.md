@@ -1,3 +1,5 @@
+<p align="center"><img src="docs/brand/augmented6th-logo-400.png" width="200" alt="Augmented 6th" /></p>
+
 # Lake Loss Detective
 
 **Is this lake shrinking, since when, and is it the climate or something else?**
@@ -22,6 +24,9 @@ but did not change the main layouts. They were not regenerated in Stage 8.)
 - On-demand analysis of any new lake (Natural Earth lake index or a drawn polygon), run as a background job with
   progress, labelled **unverified**.
 - Live cards: latest Landsat scene, NASA POWER precipitation vs normal, NASA GIBS VIIRS picture, SWOT (see limitations).
+- **Forecast to 2040** in the lake panel: median future area with 50 % and 90 % ranges, chosen and scored by a backtest
+  on past years (`forecast_area` in `backend/core/stats.py`, `GET /api/lakes/{id}/forecast?horizon=2040`). Computed on read from the
+  stored series, so existing records need no re-precompute. Not shown for low-reliability lakes.
 - Compare page: normalised area change (% of the 1985-1990 mean), ranking, scatter, resolution note. TR/EN interface.
 - Offline demo mode: committed cache snapshot, local country-border basemap, pre-computed sample job (Sevan).
 
@@ -93,6 +98,18 @@ Precomputed records live in `data/lakes/<alias>/` (`series.json`, `climate.json`
 On-demand lakes go to `data/custom/`. Live results are cached in `data/live_cache/` and seeded from `data/demo_cache/`.
 Summaries in the UI are filled from templates, so every number comes from the data files.
 
+## Code layout
+- `backend/core/`: `landsat.py` (scenes, water mask, temperature), `geo.py`, `stats.py` (trend, emergence year, reliability
+  flags, forecast), `climate.py`, `basin.py`, `swot.py`, `live.py`, `lakes.py`, `offline.py`.
+- `backend/api/`: `main.py` (app, endpoints, response models), `store.py` (reads records, summaries, forecast cache),
+  `live_cache.py`, `jobs.py`. `backend/jobs/runner.py` runs on-demand analyses; `backend/scripts/` are command-line tools.
+- `frontend/src/`: `App.tsx`, `main.tsx`, `i18n.tsx` (all EN/TR strings and the glossary), `styles.css` (theme and font),
+  `lib/api.ts` (types, client, hooks), `lib/util.tsx` (colours, sorting, summary sentence, help bubble),
+  `components/` (`MapView`, `Panel` incl. live cards, `Charts` incl. the ECharts wrapper), `pages/` (`MapPage` incl. the
+  timeline, `ComparePage`, `MethodsPage`).
+- Design: flat, editorial; Franklin Gothic where it is installed, otherwise the bundled open-source Libre Franklin
+  (Franklin Gothic itself is licensed and is not shipped).
+
 ## Data sources
 | Source | Use | Citation / link |
 |---|---|---|
@@ -119,6 +136,15 @@ Summaries in the UI are filled from templates, so every number comes from the da
 - **Climate decomposition**: area change between observed years is regressed on n_years and sum(P-E) over 1985-1999;
   predicted climate-driven loss afterwards vs observed loss gives the explained share, with a 2000-draw bootstrap 90 % CI.
   Interpretation flags mark weak skill, shares outside 0-1 and CIs including 0.
+- **Forecast**: three candidate models on the valid yearly areas (Sen trend + AR(1) residual memory on the whole
+  record, the same on the last 15 valid years, and persistence = mean of the last 3 valid years). A rolling-origin
+  backtest (fit up to each cut-off with >= 12 valid years, score the next 10 years) picks the model with the lowest mean
+  absolute error; a trend model is used only if it beats persistence by more than 5 %. Bands are the 5-95 % and 25-75 %
+  quantiles of 2000 Monte-Carlo paths (trend refitted on bootstrap samples of the years + simulated AR(1) noise), clipped
+  at 0. Reported with it: skill vs persistence, the share of backtest values inside the 90 % band, the bootstrap 90 % CI
+  of the slope. Flags: no_skill_over_persistence, trend_not_distinguishable_from_zero, band_too_narrow_in_backtest
+  (numbers are then not printed), sparse_cadence. No forecast for low-reliability series or under 15 valid years.
+  Deliberately not a neural network or a language model: at most ~40 yearly values per lake.
 - **SWOT volume**: area-level fit and dV = integral of A dh with an extrapolation flag; unit-tested on synthetic data only.
 
 ## Validation
@@ -132,6 +158,9 @@ Details in [VALIDATION.md](VALIDATION.md).
 - Only Burdur is quantitatively validated. The "validated" badge means: Turkish lake, or reference lake whose direction matches the literature, and not low reliability.
 
 ## Limitations
+- **The forecast is an extrapolation, not a projection**: it continues the past pattern of the area series and uses no
+  future rainfall, temperature, water policy, dam or pumping information. A regime change breaks it. Checked on
+  synthetic series only (`backend/tests/test_forecast.py`); the real lake records were not available when it was written.
 - **Sensor break**: Landsat 5 to 8 (no data in 2012) causes a thermal step of about 2.9 C for Burdur; pooled LST trends are not clean warming rates. Pre-2013 and post-2013 trends are reported separately and the sensors are not cross-calibrated.
 - **EVLAND is a land evapotranspiration proxy**, not open-water evaporation. POWER and MERRA-2 are model data, not stations.
 - The P-E decomposition is **not computable** where the 1985-1999 reference has no skill (Burdur, Van) and for Akşehir (unreliable series). Eğirdir's share is not distinguishable from 0.
