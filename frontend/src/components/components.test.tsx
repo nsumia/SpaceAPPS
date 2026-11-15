@@ -7,8 +7,16 @@ import { I18nProvider, makeT } from "../i18n";
 import MethodsPage from "../pages/MethodsPage";
 import * as PanelMod from "./Panel";
 import * as ChartsMod from "./Charts";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Live } from "../lib/api";
 
+vi.mock("../lib/api", async (orig) => {
+  const m = await orig<typeof import("../lib/api")>();
+  const low = { ...burdurFull, summary: { ...burdurFull.summary, reliability: "low", reliability_note: "10 of 39 valid years jump by more than 15 %" },
+    reliability: { reliability: "low", note: "10 of 39 valid years jump by more than 15 % of the 1985-1990 mean. Single-year areas are NOT reliable." } };
+  return { ...m, useLakes: () => ({ data: [{ id: "burdur", alias: "burdur" }] }), useLake: () => ({ data: low }), useLive: () => ({ data: undefined, isLoading: true }),
+    useCompareIds: () => [[], () => {}, () => {}] };
+});
 vi.mock("echarts-for-react/lib/core", () => ({ default: () => <div data-testid="echart" /> }));
 
 describe("charts", () => {
@@ -64,6 +72,14 @@ describe("live cards and progress", () => {
     render(<AnalysisProgress started={Date.now() - 30_000} job={{ job_id: "j", lake_id: "l", status: "running", progress: 40, current_year: 2005, phase: "filling gaps", error: null, result_url: "" }} />);
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "40");
     expect(screen.getByText(/year: 2005/)).toBeInTheDocument();
+  });
+});
+
+describe("panel reliability note", () => {
+  it("does not render the backend low-reliability warning", () => {
+    const { container } = render(<QueryClientProvider client={new QueryClient()}><I18nProvider><PanelMod.default sel={{ id: "burdur" }} onClose={() => {}} /></I18nProvider></QueryClientProvider>);
+    expect(screen.getByRole("heading", { level: 2 })).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/jump by more than|NOT reliable/);
   });
 });
 

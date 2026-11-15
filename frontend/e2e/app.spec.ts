@@ -51,6 +51,10 @@ test("map -> click Burdur -> panel within 2 s -> add to compare", async ({ page 
   await expect(page.getByTestId("chosen")).toContainText("Burdur");
   await expect(page.getByTestId("chosen")).not.toContainText("★");
   await expect(page.locator("tbody")).not.toContainText("★");
+  const trCell = page.locator(".rank .tr-lake td:nth-child(2)").first();
+  await expect(trCell).toBeVisible();
+  await expect(trCell).not.toContainText("★");
+  expect(await trCell.evaluate((e) => getComputedStyle(e).boxShadow)).toBe("none");
   expect(await page.locator(".chip").first().evaluate((e) => getComputedStyle(e).borderLeftWidth)).toBe("0px");
   await page.screenshot({ path: process.env.SHOT_COMPARE ?? "test-results/compare.png", fullPage: true });
 });
