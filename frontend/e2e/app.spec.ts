@@ -104,6 +104,8 @@ test("top bar: brand, nav with aria-current, TR/EN switch, no overflow at 390 px
   await page.goto("/methods");
   const nav = page.getByRole("navigation", { name: "Main" });
   await expect(nav.getByRole("link", { name: "Methods" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { name: "Methods", exact: true, level: 1 })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /limitations/i })).toHaveCount(0);
   expect(await page.locator(".brand-name").evaluate((e) => getComputedStyle(e).textTransform)).toBe("none");
   await expect(page.locator(".brand-name")).toHaveText("Lake Loss Detective");
   expect(await nav.getByRole("link", { name: "Methods" }).evaluate((e) => getComputedStyle(e).borderBottomWidth)).toBe("0px");

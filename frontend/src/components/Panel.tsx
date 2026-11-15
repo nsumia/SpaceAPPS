@@ -68,13 +68,10 @@ function Card({ title, card, children, date }: { title: string; card?: LiveCard;
     <div className="card" data-testid="live-card">
       <div className="card-h">
         <span>{title}</span>
-        {card?.cached && <span className="tag" data-testid="cache-tag" title={t("tip.cache")}>{t("live.cache")}</span>}
-        {card?.stale && <span className="tag warn" title={t("tip.stale")}>{t("live.stale")}</span>}
       </div>
       {ok ? <div className="card-v">{children}</div> : <div className="card-v muted">{t("live.nodata")}{card?.error ? <div className="small">{card.error}</div> : null}</div>}
       <div className="src small">
         {t("live.source")}: {card?.source ?? "-"}{date ? <> | {t("live.data")}: {date}</> : null}
-        {card?.refresh_error ? <div>{card.refresh_error}</div> : null}
       </div>
     </div>
   );
@@ -93,7 +90,7 @@ function Snapshot({ card }: { card?: LiveCard }) {
   );
   return (
     <div className="card" data-testid="gibs-card">
-      <div className="card-h"><span>{t("live.snapshot")}</span>{src === snap && <span className="tag" data-testid="cache-tag">{t("live.cache")}</span>}</div>
+      <div className="card-h"><span>{t("live.snapshot")}</span></div>
       <img src={src} alt="VIIRS" onError={() => { if (snap && src !== snap) setSrc(snap); else setSrc(null); }} />
       <div className="src small">{t("live.source")}: {card?.source ?? "NASA GIBS"}</div>
     </div>

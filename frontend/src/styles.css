@@ -122,8 +122,6 @@ input[type=range] { accent-color: var(--red); }
 .card-v { margin: 2px 0; color: var(--text-2); }
 .card-v b { font-size: 24px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
 .card img { width: 100%; display: block; margin: 4px 0; }
-.tag { padding: 0 4px; border: 1px solid var(--line-strong); font-size: 10px; color: var(--text-2); white-space: nowrap; }
-.tag.warn { color: var(--red-lt); border-color: var(--red-lt); }
 .charts { display: block; }
 @container (min-width: 760px) { .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; } }
 .chart { margin-top: 12px; }

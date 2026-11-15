@@ -28,8 +28,9 @@ test("offline: local basemap, all lakes, cached live cards, compare", async ({ p
   await page.mouse.click(p.x, p.y);
   await expect(page.getByRole("heading", { name: "Burdur" })).toBeVisible({ timeout: 5000 });
   await expect(page.getByTestId("live-card").first()).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByTestId("live-card").filter({ hasText: "Water area" }).getByTestId("cache-tag")).toBeVisible();
-  await expect(page.getByTestId("live-card").filter({ hasText: "Water area" }).getByText("stale")).toBeVisible();
+  await expect(page.getByTestId("live-card").filter({ hasText: "Water area" }).getByText(/Landsat/).first()).toBeVisible();
+  await expect(page.getByTestId("live-card").filter({ hasText: "Water area" }).getByText(/^(stale|cache)$/i)).toHaveCount(0);
+  await expect(page.getByTestId("panel").getByText(/not by AI|template/i)).toHaveCount(0);
   await expect(page.getByTestId("live-card").filter({ hasText: "Water area" }).locator(".card-v b")).toHaveText(/\d/);
   await expect(page.getByTestId("live-card").filter({ hasText: /SWOT|water level/i })).toHaveCount(0);
   await expect(page.getByTestId("panel").getByText(/SWOT water level|no pld_id|PLD lookup/i)).toHaveCount(0);
