@@ -152,3 +152,19 @@ describe("no per-lake method limitation note", () => {
     }
   });
 });
+
+describe("removed UI: Turkish / reference lake distinction", () => {
+  it("group strings are gone in EN and TR, legend size key and light basemap strings exist", () => {
+    for (const lang of ["en", "tr"] as const) {
+      const t = makeT(lang);
+      for (const k of ["cmp.turkey", "cmp.reference", "grp.all", "grp.turkey", "grp.reference", "col.group", "leg.turkey", "cmp.leg.turkey", "cmp.leg.reference"]) expect(t(k)).toBe(k);
+      for (const k of ["bm.vectorlight", "leg.size.title", "leg.size.rule", "leg.size.clamp", "map.date.min"]) expect(t(k)).not.toBe(k);
+    }
+    expect(makeT("en")("bm.vectorlight")).toBe("Vector (light)");
+    expect(makeT("tr")("bm.vectorlight")).toBe("Vektör (açık)");
+  });
+  it("Methods page no longer talks about reference lakes", () => {
+    const { container } = render(<I18nProvider initial="en"><MethodsPage /></I18nProvider>);
+    expect(container.textContent).not.toMatch(/reference lakes/i);
+  });
+});

@@ -33,22 +33,21 @@ export function scatterPoints(rows: LakeSummary[]) {
 
 export function scatterOption(rows: LakeSummary[], t: (k: string) => string): EChartsOption {
   const { shown } = scatterPoints(rows);
-  const mk = (turkey: boolean) => shown.filter((r) => (r.group === "turkey") === turkey).map((r) => {
+  const data = shown.map((r) => {
     const share = r.climate_interpretable ? r.climate_explained_share : null;
     const hollow = share == null;
     return { name: shortName(r.name), full: r.name, country: r.country, p: r.trend_p, share, area: r.latest_area_km2,
-      value: [r.warming_c_per_decade, r.trend_pct_per_decade], symbolSize: markerSize(r.latest_area_km2) + (turkey ? 4 : 0),
-      itemStyle: { color: shareColour(share), borderColor: hollow ? HOLLOW.line : turkey ? C.turkey : "#0e0e0e", borderWidth: hollow ? 2 : turkey ? 3 : 1.5, opacity: 1 } };
+      value: [r.warming_c_per_decade, r.trend_pct_per_decade], symbolSize: markerSize(r.latest_area_km2),
+      itemStyle: { color: shareColour(share), borderColor: hollow ? HOLLOW.line : "#0e0e0e", borderWidth: hollow ? 2 : 1.5, opacity: 1 } };
   });
-  const ser = (turkey: boolean): any => ({
-    name: t(turkey ? "cmp.turkey" : "cmp.reference"), type: "scatter", data: mk(turkey), z: turkey ? 5 : 3,
-    symbol: turkey ? "diamond" : "circle",
-    label: { show: true, formatter: (p: any) => p.name, color: turkey ? C.turkey : C.text, fontWeight: turkey ? "bold" : "normal", position: "top", fontSize: 11, distance: 3 },
+  const ser: any = {
+    name: t("cmp.scatter"), type: "scatter", data, z: 4, symbol: "circle",
+    label: { show: true, formatter: (p: any) => p.name, color: C.text, fontWeight: "normal", position: "top", fontSize: 11, distance: 3 },
     labelLayout: { hideOverlap: true, moveOverlap: "shiftY" },
     labelLine: { show: false },
     emphasis: { focus: "self", scale: 1.3, label: { show: true, fontSize: 13 } },
-    markLine: turkey ? { silent: true, symbol: "none", label: { show: false }, lineStyle: { color: C.muted, type: "dashed", width: 1 }, data: [{ xAxis: 0 }, { yAxis: 0 }] } : undefined,
-  });
+    markLine: { silent: true, symbol: "none", label: { show: false }, lineStyle: { color: C.muted, type: "dashed", width: 1 }, data: [{ xAxis: 0 }, { yAxis: 0 }] },
+  };
   return {
     backgroundColor: "transparent", textStyle: { color: C.text },
     grid: { left: 64, right: 24, top: 24, bottom: 56 },
@@ -57,7 +56,7 @@ export function scatterOption(rows: LakeSummary[], t: (k: string) => string): EC
     xAxis: { type: "value", name: t("cmp.x"), nameLocation: "middle", nameGap: 30, nameTextStyle: { color: C.text }, scale: true, axisLabel: { color: C.muted, formatter: (v: number) => sgn(v, 1) }, splitLine: { lineStyle: { color: C.grid } } },
     yAxis: { type: "value", name: t("cmp.y"), nameLocation: "middle", nameGap: 44, nameTextStyle: { color: C.text }, scale: true, axisLabel: { color: C.muted, formatter: (v: number) => `${v}%` }, splitLine: { lineStyle: { color: C.grid } } },
     graphic: [{ type: "text", right: 30, bottom: 62, silent: true, style: { text: `↘ ${t("cmp.quad")}`, fill: "#ffc2a3", font: `12px ${FONT}` } }],
-    series: [ser(false), ser(true)],
+    series: [ser],
   };
 }
 
@@ -65,8 +64,6 @@ export function ScatterLegend({ excluded }: { excluded: LakeSummary[] }) {
   const { t } = useI18n();
   return (
     <div className="scatter-legend" data-testid="scatter-legend">
-      <span><i className="mk diamond" /> {t("cmp.leg.turkey")}</span>
-      <span><i className="mk circle" /> {t("cmp.leg.reference")}</span>
       <span><i className="mk hollow" /> {t("cmp.leg.na")}</span>
       <span className="grad-wrap">{t("cmp.leg.colour")}: {t("cmp.leg.low")} <i className="grad" /> {t("cmp.leg.high")}</span>
       <span>{t("cmp.leg.size")}</span>
@@ -82,7 +79,6 @@ export default function ComparePage() {
   const [ids, add, remove] = useCompareIds();
   const [key, setKey] = useState<SortKey>("trend_pct_per_decade");
   const [dir, setDir] = useState<1 | -1>(1);
-  const [grp, setGrp] = useState<"all" | "turkey" | "reference">("all");
   const all = lakes.data ?? [];
   const chosen = useMemo(() => ids.map((i) => all.find((l) => l.id === i || l.alias === i)).filter(Boolean) as LakeSummary[], [ids, all]);
   const cmp = useQuery({ queryKey: ["compare", ids], queryFn: () => api.compare(chosen.map((l) => l.id)), enabled: chosen.length > 0 });
@@ -97,7 +93,7 @@ export default function ComparePage() {
       color: LAKE_COLOURS[i % 6], lineStyle: { width: 2, type: (["solid", "dashed", "dotted"] as const)[i % 3] }, emphasis: { focus: "series" as const },
       markLine: i === 0 ? { symbol: "none", silent: true, lineStyle: { color: C.muted, type: "dotted" as const }, data: [{ yAxis: 100 }], label: { formatter: "100%", color: C.muted, position: "insideStartTop" as const } } : undefined, id: k })),
   };
-  const sorted = sortLakes(all, key, dir).filter((l) => grp === "all" || l.group === grp);
+  const sorted = sortLakes(all, key, dir);
   const head = (k: SortKey, label: string, tip?: string) => (
     <th aria-sort={key === k ? (dir === 1 ? "ascending" : "descending") : "none"}><button className="sort" onClick={() => { setDir(key === k ? (dir === 1 ? -1 : 1) : 1); setKey(k); }}>
       {label}{key === k ? (dir === 1 ? " ▲" : " ▼") : ""}</button>{tip && <> <Info text={tip} /></>}</th>);
@@ -119,18 +115,15 @@ export default function ComparePage() {
       <section className="chart wide">
         <h3>{t("cmp.table")}</h3>
         <p className="what">{t("cmp.table.help")}</p>
-        <div className="seg" role="group" aria-label={t("col.group")} data-testid="group-filter">
-          {(["all", "turkey", "reference"] as const).map((g) => <button key={g} className={grp === g ? "on" : ""} onClick={() => setGrp(g)}>{t(`grp.${g}`)}</button>)}
-        </div>
         <table className="rank">
           <thead><tr><th />{head("name", t("col.name"))}{head("trend_pct_per_decade", t("col.trend"), t("tip.col.trend"))}{head("trend_p", t("col.p"), t("tip.col.p"))}{head("emergence_year", t("col.emergence"), t("tip.col.emergence"))}
             {head("warming_c_per_decade", t("col.warming"), t("tip.col.warming"))}{head("climate_explained_share", t("col.climate"), t("tip.col.climate"))}{head("forecast_pct_of_ref", t("col.forecast"), t("tip.col.forecast"))}</tr></thead>
           <tbody>{sorted.map((l) => {
             const inn = ids.includes(l.id) || (!!l.alias && ids.includes(l.alias));
             return (
-              <tr key={l.id} className={l.group === "turkey" ? "tr-lake" : ""}>
+              <tr key={l.id}>
                 <td><button disabled={!inn && ids.length >= 6} title={ids.length >= 6 && !inn ? t("cmp.max") : ""} onClick={() => (inn ? remove(l.id, l.alias ?? "") : add(l.id))}>{inn ? t("cmp.remove") : t("cmp.add")}</button></td>
-                <td>{l.name}{l.reliability === "low" ? <span title={t("tip.lowrel")} aria-label={t("tip.lowrel")}> ⚠</span> : ""} <span className="muted small">{l.group === "reference" ? `${l.country ?? ""}${l.cadence_years && l.cadence_years > 1 ? `, ${t("cmp.cadence", { n: l.cadence_years })}` : ""}` : ""}</span></td>
+                <td>{l.name}{l.reliability === "low" ? <span title={t("tip.lowrel")} aria-label={t("tip.lowrel")}> ⚠</span> : ""} <span className="muted small">{`${l.country ?? ""}${l.cadence_years && l.cadence_years > 1 ? `, ${t("cmp.cadence", { n: l.cadence_years })}` : ""}`}</span></td>
                 <td>{l.trend_pct_per_decade == null ? <span className="muted">{t("na.data")}</span> : fmt(l.trend_pct_per_decade)}</td>
                 <td>{l.trend_p == null ? <span className="muted">{t("na.data")}</span> : <>{t(l.trend_p < 0.05 ? "sig.yes" : "sig.no")} <span className="muted small">(p {l.trend_p < 0.001 ? "< 0.001" : "= " + l.trend_p.toFixed(3)})</span></>}</td>
                 <td>{l.emergence_year == null ? <span className="muted">{t("na.data")}</span> : (l.emergence_censored_at_ref_end ? t("cmp.by") + " " : "") + l.emergence_year}</td>
@@ -140,7 +133,7 @@ export default function ComparePage() {
               </tr>);
           })}</tbody>
         </table>
-        <div className="src">{t("cmp.turkey.note")} {t("chart.source.landsat")}</div>
+        <div className="src">{t("cmp.lowrel.note")} {t("chart.source.landsat")}</div>
       </section>
       <section className="chart wide">
         <h3>{t("cmp.scatter")}</h3>

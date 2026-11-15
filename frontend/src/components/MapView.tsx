@@ -8,7 +8,8 @@ import type { Selection } from "./Panel";
 
 maplibregl.setWorkerUrl(workerUrl);
 
-export type Basemap = "vector" | "bluemarble" | "viirs" | "offline";
+export type Basemap = "vector" | "vectorlight" | "bluemarble" | "viirs" | "offline";
+export const isVector = (bm: Basemap) => bm === "vector" || bm === "vectorlight";
 const GIBS = "https://gibs.earthdata.nasa.gov/wmts/epsg3857/best";
 const BG = "#0e0e0e";
 
@@ -19,6 +20,7 @@ export function basemapStyle(bm: Basemap, date: string): StyleSpecification | st
     layers: [{ id: "bg", type: "background", paint: { "background-color": BG } }, { id, type: "raster", source: id }],
   });
   if (bm === "vector") return "https://tiles.openfreemap.org/styles/dark";
+  if (bm === "vectorlight") return "https://tiles.openfreemap.org/styles/positron"; // same provider (OpenFreeMap), light style, no key
   if (bm === "bluemarble")
     return raster("gibs", `${GIBS}/BlueMarble_ShadedRelief_Bathymetry/default/2004-08-01/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg`, 8, "NASA GIBS Blue Marble");
   if (bm === "viirs")
@@ -30,8 +32,14 @@ export function basemapStyle(bm: Basemap, date: string): StyleSpecification | st
     { id: "countries-line", type: "line", source: "countries", paint: { "line-color": "#7d7d7d", "line-width": 0.9 } }] };
 }
 
+/** Map circle size rule (CSS px radius): circle AREA is proportional to lake area, r = SIZE_K * sqrt(area km2), clamped to [R_MIN, R_MAX].
+ * Proportional range: SIZE_K^-2 * R^2 = 225 .. 3,600 km2; lakes outside it (or without an area) are drawn at the clamp. */
+export const R_MIN = 6, R_MAX = 24, SIZE_K = 0.4;
+/** Lake areas (km2) shown as sample circles in the legend; all inside the proportional range. */
+export const SIZE_KEY_AREAS = [300, 1000, 3000];
+export const sizeRange = () => ({ min: (R_MIN / SIZE_K) ** 2, max: (R_MAX / SIZE_K) ** 2 });
 export function circleRadius(area: number | null): number {
-  return Math.max(6, Math.min(24, 4 + Math.sqrt(area ?? 20) * 0.55));
+  return Math.max(R_MIN, Math.min(R_MAX, SIZE_K * Math.sqrt(area ?? 0)));
 }
 
 /** Turn the uint8 mask PNG (255 water, 90 land, 0 no data) into a translucent single-colour overlay. */
@@ -72,7 +80,7 @@ export default function MapView(props: MapProps) {
     type: "FeatureCollection",
     features: pr.current.lakes.filter((l) => l.centre).map((l) => ({
       type: "Feature", geometry: { type: "Point", coordinates: l.centre as [number, number] },
-      properties: { id: l.id, name: l.name, ...(trendValue(l) != null ? { trend: trendValue(l) } : {}), ring: l.group === "turkey" ? "#f472ae" : "#ffffff", r: circleRadius(l.latest_area_km2), area: l.latest_area_km2 ?? 0 } })),
+      properties: { id: l.id, name: l.name, ...(trendValue(l) != null ? { trend: trendValue(l) } : {}), r: circleRadius(l.latest_area_km2), area: l.latest_area_km2 ?? 0 } })),
   });
 
   const syncAll = () => {
@@ -84,16 +92,17 @@ export default function MapView(props: MapProps) {
       map.addSource("index", { type: "geojson", data: empty });
       map.addSource("lakes", { type: "geojson", data: empty });
       map.addSource("hl", { type: "geojson", data: empty });
-      // Fit the OpenFreeMap dark style to the navy theme (guarded: ids may differ between style versions).
-      for (const [id, prop, col] of [["background", "background-color", BG], ["water", "fill-color", "#0a1830"], ["landcover_wood", "fill-color", "#161616"], ["landuse_park", "fill-color", "#161616"]] as const)
-        if (map.getLayer(id)) { try { map.setPaintProperty(id, prop, col); } catch { /* keep the stock colour */ } }
+      // Fit the OpenFreeMap dark style to the navy theme (guarded: ids may differ between style versions). The light style keeps its stock colours.
+      if (p.basemap === "vector")
+        for (const [id, prop, col] of [["background", "background-color", BG], ["water", "fill-color", "#0a1830"], ["landcover_wood", "fill-color", "#161616"], ["landuse_park", "fill-color", "#161616"]] as const)
+          if (map.getLayer(id)) { try { map.setPaintProperty(id, prop, col); } catch { /* keep the stock colour */ } }
       map.addLayer({ id: "index-fill", type: "fill", source: "index", minzoom: 5.5, paint: { "fill-color": "#4cc9e0", "fill-opacity": 0.22 } });
       map.addLayer({ id: "index-line", type: "line", source: "index", minzoom: 5.5, paint: { "line-color": "#a9e3f2", "line-width": 1, "line-opacity": 0.85 } });
       map.addLayer({ id: "hl-fill", type: "fill", source: "hl", paint: { "fill-color": "#ffffff", "fill-opacity": 0.1 } });
       map.addLayer({ id: "hl-line", type: "line", source: "hl", paint: { "line-color": "#ffffff", "line-width": 2, "line-dasharray": [2, 1] } });
-      map.addLayer({ id: "lakes-halo", type: "circle", source: "lakes", paint: { "circle-color": "#0e0e0e", "circle-opacity": 0.85, "circle-radius": ["+", ["get", "r"], 3.5], "circle-blur": 0.15 } });
+      map.addLayer({ id: "lakes-halo", type: "circle", source: "lakes", paint: { "circle-color": "#0e0e0e", "circle-opacity": 0.92, "circle-radius": ["+", ["get", "r"], 4.5], "circle-blur": 0.15 } });
       map.addLayer({ id: "lakes-circle", type: "circle", source: "lakes", paint: {
-        "circle-color": spectrumExpression() as never, "circle-radius": ["get", "r"], "circle-opacity": 0.92, "circle-stroke-color": ["get", "ring"], "circle-stroke-width": 2 } });
+        "circle-color": spectrumExpression() as never, "circle-radius": ["get", "r"], "circle-opacity": 0.92, "circle-stroke-color": "#ffffff", "circle-stroke-width": 2 } });
       map.addLayer({ id: "lakes-sel", type: "circle", source: "lakes", filter: ["==", ["get", "id"], ""], paint: {
         "circle-color": "rgba(0,0,0,0)", "circle-radius": ["+", ["get", "r"], 4], "circle-stroke-color": "#ffffff", "circle-stroke-width": 2.5 } });
     }
@@ -136,7 +145,7 @@ export default function MapView(props: MapProps) {
       const err = (e as any).error;
       const url = String(err?.url ?? err?.message ?? "");
       if (pr.current.basemap === "offline") return;
-      if (!styleOk.current && pr.current.basemap === "vector" && /openfreemap|Failed to fetch|NetworkError|style/i.test(url)) { pr.current.onBasemapFallback(); return; }
+      if (!styleOk.current && isVector(pr.current.basemap) && /openfreemap|Failed to fetch|NetworkError|style/i.test(url)) { pr.current.onBasemapFallback(); return; }
       // tile servers unreachable after the style loaded (GIBS, OpenFreeMap tiles): after a few failures use the offline basemap
       if (/Failed to fetch|NetworkError|Load failed|ERR_INTERNET|ERR_NAME|ERR_FAILED/i.test(String(err?.message ?? "")) && ++netErrors >= 3) pr.current.onBasemapFallback();
     });
