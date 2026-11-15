@@ -15,7 +15,7 @@ const fmt = (x: number | null | undefined, d = 1) => (x == null ? "n/a" : x.toFi
 const sgn = (x: number, d = 1) => (x > 0 ? "+" : "") + x.toFixed(d);
 /** Short label: drop the bracketed qualifier ("Aral Sea (South / Large Aral)" -> "Aral Sea (South)" would be ambiguous, so keep the first bracket word). */
 export const shortName = (n: string) => n.replace(/\s*\((\w+)[^)]*\)/, " ($1)").replace(/^Custom lake /, "Custom ");
-const HOLLOW = { fill: "#08121d", line: "#b8c9d8" };
+const HOLLOW = { fill: "#171915", line: "#c9c4b4" };
 /** climate share 0..1 -> colour (light yellow -> orange -> dark red). null / not interpretable -> hollow grey marker. */
 export function shareColour(share: number | null): string {
   if (share == null || Number.isNaN(share)) return HOLLOW.fill;
@@ -42,7 +42,7 @@ export function scatterOption(rows: LakeSummary[], t: (k: string) => string): EC
     const hollow = share == null;
     return { name: shortName(r.name), full: r.name, country: r.country, p: r.trend_p, share, area: r.latest_area_km2,
       value: [r.warming_c_per_decade, r.trend_pct_per_decade], symbolSize: markerSize(r.latest_area_km2) + (turkey ? 4 : 0),
-      itemStyle: { color: shareColour(share), borderColor: hollow ? HOLLOW.line : turkey ? C.sand : "#06101a", borderWidth: hollow ? 2 : turkey ? 3 : 1.5, opacity: 1 } };
+      itemStyle: { color: shareColour(share), borderColor: hollow ? HOLLOW.line : turkey ? C.sand : "#14110a", borderWidth: hollow ? 2 : turkey ? 3 : 1.5, opacity: 1 } };
   });
   const ser = (turkey: boolean): any => ({
     name: t(turkey ? "cmp.turkey" : "cmp.reference"), type: "scatter", data: mk(turkey), z: turkey ? 5 : 3,

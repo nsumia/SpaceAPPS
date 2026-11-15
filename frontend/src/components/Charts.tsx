@@ -1,4 +1,3 @@
-import { useState } from "react";
 import ReactECharts from "../lib/ReactECharts";
 import type { EChartsOption } from "echarts";
 import { C, LST5 } from "../lib/palette";
@@ -25,12 +24,6 @@ const base = (t: TFn, yName: string): EChartsOption => ({
   yAxis: { type: "value", name: yName, nameTextStyle: { color: C.muted, align: "left" }, scale: true,
     axisLabel: { color: C.muted }, splitLine: { lineStyle: { color: C.grid } } },
 });
-
-/** "not computable / not interpretable: weak_reference_skill: ...; share_outside_0_1: ..." -> plain sentences (raw text kept as a small technical line). */
-export function plainReasons(w: string | undefined, t: TFn): string[] {
-  if (!w) return [];
-  return w.replace(/^[^:]*:\s*/, "").split(/;\s*/).map((x) => x.split(":")[0].trim()).map((c) => t(`flag.${c}`)).filter((x) => !x.startsWith("flag."));
-}
 
 function Frame({ title, source, children, note, help }: { title: string; source: string; children: React.ReactNode; note?: React.ReactNode; help?: string }) {
   const { t } = useI18n();
@@ -111,21 +104,14 @@ export function LstChart({ d }: { d: LakeFull }) {
 
 export function ClimateChart({ d }: { d: LakeFull }) {
   const { t } = useI18n();
-  const [show, setShow] = useState(false);
   const dec = d.climate?.decomposition;
-  const ok = !!dec && dec.ok && dec.interpretable !== false;
+  // always show the observed vs climate-predicted curves when they exist (no numeric "share explained" is printed here)
+  const ok = !!dec && dec.ok && !!dec.years?.length;
   return (
     <Frame title={t("chart.climate")} help={t("help.climate")} source={t("chart.source.climate")}
       note={<div className="note small">{t("climate.note")} {d.climate?.evaporation_label}</div>}>
       {ok && dec ? <ReactECharts option={climateOption(dec, t)} style={{ height: 260 }} notMerge /> : (
-        <div className="na" role="status">
-          <strong>{t("climate.na")}</strong>
-          {plainReasons(dec?.wording, t).map((r) => <div key={r}>{t("climate.reason")}: {r}</div>)}
-          <div className="small muted">{t("tech.raw")} {dec?.wording ?? "no climate data"}</div>
-          {dec?.ok && (
-            <label className="small"><input type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} /> {t("climate.show")}</label>)}
-          {show && dec?.ok && <ReactECharts option={climateOption(dec, t)} style={{ height: 240 }} notMerge />}
-        </div>)}
+        <div className="na" role="status"><strong>{t("na.data")}</strong></div>)}
     </Frame>
   );
 }

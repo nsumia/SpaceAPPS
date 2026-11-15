@@ -18,7 +18,7 @@ export default function MapPage() {
   const lakes = useLakes();
   const index = useIndex();
   const [sel, setSel] = useState<Selection | null>(null);
-  const [basemap, setBasemap] = useState<Basemap>(typeof navigator !== "undefined" && navigator.onLine === false ? "offline" : "vector");
+  const [basemap, setBasemap] = useState<Basemap>(typeof navigator !== "undefined" && navigator.onLine === false ? "offline" : "bluemarble"); // default NASA Blue Marble; offline/unreachable -> local country basemap (no saved choice exists)
   const [autoOffline, setAutoOffline] = useState(false);
   const [date, setDate] = useState(yesterday());
   const [draw, setDraw] = useState<DrawMode>("off");

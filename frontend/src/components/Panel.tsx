@@ -17,7 +17,7 @@ export function Badges({ d }: { d: LakeFull }) {
   const s = d.summary, rel = s.reliability;
   return (
     <div className="badges">
-      <span className={"badge " + (s.validated ? "good" : "warn")} title={t(s.validated ? "tip.validated" : "tip.unverified")}>{s.validated ? "✔ " : "? "}{t(s.validated ? "badge.validated" : "badge.unverified")}{s.validated && s.validation_basis ? ` (${s.validation_basis})` : ""}</span>
+      {s.validated && <span className="badge good" title={t("tip.validated")}>✔ {t("badge.validated")}{s.validation_basis ? ` (${s.validation_basis})` : ""}</span>}
       <span className={"badge " + (rel === "low" ? "bad" : rel === "ok" ? "good" : "")} title={t("tip.rel")}>{rel === "low" ? "⚠ " : ""}{t(`badge.rel.${rel === "ok" || rel === "low" ? rel : "unknown"}`)}</span>
       <Info text={t("tip.rel")} />
     </div>

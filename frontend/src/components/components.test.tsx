@@ -3,19 +3,28 @@ import { render, screen } from "@testing-library/react";
 import { burdurFull } from "../fixtures";
 import { areaOption, ClimateChart, VolumeChart } from "./Charts";
 import { LiveCards } from "./LiveCards";
-import { AnalysisProgress, eta } from "./Panel";
+import { AnalysisProgress, Badges, eta } from "./Panel";
 import { makeT } from "../i18n";
 import type { Live } from "../lib/types";
 
 vi.mock("../lib/ReactECharts", () => ({ default: () => <div data-testid="echart" /> }));
 
 describe("charts", () => {
-  it("climate chart says 'not computable' with the reason instead of a chart when not interpretable", () => {
+  it("climate chart always shows the curves, with no 'Not computable' block, reasons, technical line or toggle", () => {
     render(<ClimateChart d={burdurFull} />);
-    expect(screen.getByText("Not computable")).toBeInTheDocument();
-    expect(screen.getByText(/weak_reference_skill/)).toBeInTheDocument();
-    expect(screen.queryByTestId("echart")).toBeNull();
+    expect(screen.getByTestId("echart")).toBeInTheDocument();
+    expect(screen.queryByText(/not computable/i)).toBeNull();
+    expect(screen.queryByText(/weak_reference_skill/)).toBeNull();
+    expect(screen.queryByText(/Why:|Reason:/)).toBeNull();
+    expect(screen.queryByRole("checkbox")).toBeNull();
     expect(screen.getByText(/sign, not proof/)).toBeInTheDocument();
+  });
+  it("badges: validated badge shown, no 'not checked against published data' badge", () => {
+    const { rerender } = render(<Badges d={burdurFull} />);
+    expect(screen.getByText(/validated against published data/)).toBeInTheDocument();
+    rerender(<Badges d={{ ...burdurFull, summary: { ...burdurFull.summary, validated: false } }} />);
+    expect(screen.queryByText(/published data/)).toBeNull();
+    expect(screen.queryByText(/not checked/)).toBeNull();
   });
   it("volume chart shows 'No data' and the reason when SWOT is unavailable", () => {
     render(<VolumeChart d={burdurFull} />);
