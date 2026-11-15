@@ -203,16 +203,3 @@ export function ClimateChart({ d }: { d: LakeFull }) {
     </Frame>
   );
 }
-
-export function VolumeChart({ d }: { d: LakeFull }) {
-  const { t } = useI18n();
-  const v = d.volume;
-  const opt: EChartsOption | null = v && v.length ? { ...base(t, t("ax.dv")), series: [
-    { name: t("ax.dv"), type: "line", color: C.water, data: v.map((r) => ({ value: [r.year, r.dV_km3], itemStyle: { opacity: r.extrapolated ? 0.4 : 1 } })) }] } : null;
-  return (
-    <Frame title={t("chart.volume")} help={t("help.volume")} source={t("chart.source.swot")}>
-      {opt ? <ReactECharts option={opt} style={{ height: 230 }} notMerge /> : (
-        <div className="na" role="status"><strong>{t("volume.none")}</strong><div className="small">{d.swot?.reason ?? ""}</div></div>)}
-    </Frame>
-  );
-}
