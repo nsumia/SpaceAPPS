@@ -1,6 +1,7 @@
 """Metalimnion API. Run: .venv/bin/uvicorn backend.api.main:app   (OpenAPI UI at /docs)"""
 import hashlib
 import json
+import logging
 import os
 from contextlib import asynccontextmanager
 from functools import partial
@@ -8,13 +9,14 @@ from typing import Literal, Optional
 
 from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict
 
 from backend.api import live_cache, store
 from backend.api.jobs import JobManager
 from backend.api.store import Settings
+from backend.core.jsonsafe import SafeJSONResponse as JSONResponse        # NaN/Inf -> null, never a 500
 
 MAX_POLYGON_KM2 = 20_000.0
 DIST = os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
@@ -156,7 +158,7 @@ def create_app(settings=None, runner=None):
         yield
         jobs_holder["m"].close()
 
-    app = FastAPI(title="Metalimnion API", version="0.4.0", lifespan=lifespan,
+    app = FastAPI(title="Metalimnion API", version="0.4.0", lifespan=lifespan, default_response_class=JSONResponse,
                   description="Lake area / surface temperature / climate attribution from Landsat, NASA POWER, SWOT. "
                               "On-demand (custom) results are unverified.")
     app.state.settings = st
@@ -177,6 +179,19 @@ def create_app(settings=None, runner=None):
     @app.get("/api/health")
     def health():
         return {"status": "ok"}
+
+    ready = {}
+
+    @app.get("/api/health/analysis", summary="Can on-demand analysis run? (native libraries import)")
+    def health_analysis():
+        """analysis_ready=false means a native library is missing in this image, so analyses will fail. Checked once
+        (the imports are heavy) and logged as an error; /api/health stays a plain liveness probe."""
+        if "bad" not in ready:
+            from backend.core import native_check
+            ready["bad"] = native_check.check()
+            if ready["bad"]:
+                logging.getLogger("health").error("analysis imports broken: %s", ready["bad"])
+        return {"status": "ok", "analysis_ready": not ready["bad"], "analysis_problems": sorted(ready["bad"])}
 
     @app.get("/api/lakes", summary="Summary of all computed lakes", response_model=LakesResponse)
     def lakes():

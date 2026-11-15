@@ -168,3 +168,34 @@ describe("removed UI: Turkish / reference lake distinction", () => {
     expect(container.textContent).not.toMatch(/reference lakes/i);
   });
 });
+
+describe("null numbers from the server (NaN is sent as null)", () => {
+  const t = makeT("en");
+  const nullStats = { n: 41, trend: "no trend", p: null, sen_slope_per_year: null, sen_slope_per_decade: null, intercept: null, intercept_year: 1985 };
+  it("area and LST options skip a Sen line whose numbers are null instead of crashing", () => {
+    const d = { ...burdurFull, stats: { area: nullStats, lst_1985_2012: nullStats } };
+    const a: any = areaOption(d, t);
+    expect(a.series.map((s: any) => s.name)).not.toContain(t("ser.sen"));
+    const l: any = ChartsMod.lstOption(d, t);
+    expect(l.series.map((s: any) => s.name)).not.toContain(t("ser.lst5"));
+  });
+  it("forecast tooltip and sentences tolerate null values", () => {
+    const yrs = [2026, 2027];
+    const f = { ok: true, horizon_year: 2027, n_valid: 40, note: "x", model: "sen_recent" as const, last_observed_year: 2025, last_observed_km2: 100, interpretable: true,
+      years: yrs, median: [null, 90], lo90: [null, 80], hi90: [null, 95], lo50: [null, 85], hi50: [null, 92], flags: [],
+      milestones: [{ year: 2027, median_km2: null, lo90_km2: null, hi90_km2: null, median_pct_of_ref: null }],
+      backtest: { n_origins: 5, n_pairs: 10, max_horizon_years: 5, mae_km2: {}, skill_vs_persistence: {}, chosen_skill: null, coverage90: null } };
+    const o: any = ChartsMod.forecastOption({ ...burdurFull, forecast: f }, f, t);
+    const tip = o.tooltip.formatter([{ value: [2026, 1], seriesName: "x" }]);
+    expect(tip).not.toMatch(/NaN|undefined|null/);
+    expect(() => ChartsMod.forecastSentences(f, burdurFull.summary, t)).not.toThrow();
+    expect(() => render(<ForecastChart d={{ ...burdurFull, forecast: f }} />)).not.toThrow();
+  });
+  it("the failed-analysis message reads cleanly in EN and TR and leaks no server wording", () => {
+    for (const lang of ["en", "tr"] as const) {
+      const msg = makeT(lang)("an.failed.msg");
+      expect(msg).not.toBe("an.failed.msg");
+      expect(msg).not.toMatch(/server log|analysis failed/i);
+    }
+  });
+});

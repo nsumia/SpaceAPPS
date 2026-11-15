@@ -9,7 +9,7 @@ from datetime import date, datetime, timezone
 
 import pandas as pd
 
-from backend.core import geo, landsat
+from backend.core import geo, jsonsafe, landsat
 from backend.core.stats import compute_stats
 from backend.scripts.precompute import box_geojson, detect_polygon, save_mask, write_geojson
 
@@ -30,7 +30,7 @@ def plan_years(start=1985, end=None, step=5):
 def _write(out, name, obj):
     tmp = os.path.join(out, name + ".tmp")
     with open(tmp, "w") as f:
-        json.dump(obj, f, indent=1, default=str)
+        json.dump(jsonsafe.sanitize(obj), f, indent=1, default=str, allow_nan=False)      # NaN/Inf -> null, never on disk
     os.replace(tmp, os.path.join(out, name))
 
 
@@ -89,7 +89,7 @@ def _run_analysis(st, lake_id, request, progress, catalog=None, analyze_year=Non
         if w is not None:
             save_mask(os.path.join(out, "masks", f"{y}.png"), w, v)
             grid = dict(crs=crs, affine=list(tf)[:6], shape=list(w.shape), resolution_m=res)
-        rows.append({k: (None if isinstance(x, float) and x != x else x) for k, x in row.items()})
+        rows.append(jsonsafe.sanitize(row))
         rows.sort(key=lambda r: r["year"])
         if grid:
             _write(os.path.join(out, "masks"), "grid.json", grid)

@@ -38,6 +38,8 @@ import os
 
 import numpy as np
 
+from backend.core import jsonsafe
+
 REASON_NO_PLD = ("No SWOT Prior Lake Database (PLD) id for this lake: Hydrocron has no lookup-by-location endpoint and the PLD "
                  "file (PO.DAAC SWOT_PRIOR_LAKE_DATABASE) needs an Earthdata login that this pipeline does not use. "
                  "Set pld_id in backend/core/lakes.py to enable; nothing is estimated or faked.")
@@ -86,5 +88,5 @@ def run(alias, out_path=None):
         except Exception as e:  # noqa: BLE001
             out = dict(alias=alias, ok=False, pld_id=pld, reason=f"{type(e).__name__}: {e}"[:300])
     with open(out_path or os.path.join(lake_dir(alias), "swot.json"), "w") as f:
-        json.dump(out, f, indent=1)
+        jsonsafe.dump(out, f, indent=1)
     return out

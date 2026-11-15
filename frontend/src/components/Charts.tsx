@@ -84,8 +84,8 @@ export function areaOption(d: LakeFull, t: TFn): EChartsOption {
   series.push({ name: t("ser.observed"), type: "line", data: rows.map((r) => pt(r, r.area_km2)), color: C.water, symbolSize: 5, lineStyle: { width: 2 },
     markLine: em?.year != null ? { symbol: "none", lineStyle: { color: C.emergence, type: "dashed" }, data: [{ xAxis: em.year,
       label: { formatter: t(em.censored_at_ref_end ? "em.by" : "em.at", { year: em.year }), color: C.emergence, position: "insideEndTop" } }] } : undefined });
-  if (a) series.push({ name: t("ser.sen"), type: "line", showSymbol: false, color: C.loss, lineStyle: { type: "dashed", width: 2 },
-    data: [x0, x1].map((y) => [y, a.intercept + a.sen_slope_per_year * (y - a.intercept_year)]) });
+  if (a && a.intercept != null && a.sen_slope_per_year != null) series.push({ name: t("ser.sen"), type: "line", showSymbol: false, color: C.loss, lineStyle: { type: "dashed", width: 2 },
+    data: [x0, x1].map((y) => [y, a.intercept! + a.sen_slope_per_year! * (y - a.intercept_year)]) });
   return { ...b, series, tooltip: { trigger: "axis", formatter: sceneTooltip(t) }, legend: { ...(b.legend as object), data: [t("ser.observed"), t("ser.sen"), t("ser.band")] } };
 }
 
@@ -95,8 +95,8 @@ export function lstOption(d: LakeFull, t: TFn): EChartsOption {
   const b = base(t, t("ax.temp"));
   const series: any[] = [{ name: t("ser.lst"), type: "line", data: rows.map((r) => pt(r, r.lst_c)), color: C.temp, symbolSize: 5,
     markLine: { symbol: "none", lineStyle: { color: C.muted, type: "dotted" }, data: [{ xAxis: 2012.5, label: { formatter: "Landsat 5 | 8", color: C.muted, position: "insideEndTop" } }] } }];
-  if (l5) series.push({ name: t("ser.lst5"), type: "line", showSymbol: false, color: LST5, lineStyle: { type: "dashed" },
-    data: [1985, 2012].map((y) => [y, l5.intercept + l5.sen_slope_per_year * (y - l5.intercept_year)]) });
+  if (l5 && l5.intercept != null && l5.sen_slope_per_year != null) series.push({ name: t("ser.lst5"), type: "line", showSymbol: false, color: LST5, lineStyle: { type: "dashed" },
+    data: [1985, 2012].map((y) => [y, l5.intercept! + l5.sen_slope_per_year! * (y - l5.intercept_year)]) });
   return { ...b, series, tooltip: { trigger: "axis", formatter: sceneTooltip(t) } };
 }
 
@@ -117,16 +117,17 @@ export function forecastOption(d: LakeFull, f: Forecast, t: TFn): EChartsOption 
   const mv = d.min_valid ?? 0.8;
   const rows = d.series.filter((r) => r.area_km2 != null && (r.valid_frac ?? 1) >= mv);
   const yrs = f.years ?? [], y0 = f.last_observed_year!, v0 = f.last_observed_km2!;
-  const line = (a: number[] = []) => [[y0, v0], ...yrs.map((y, i) => [y, a[i]])];
-  const band = (name: string, lo: number[] = [], hi: number[] = [], opacity: number): any[] => [
+  const line = (a: (number | null)[] = []) => [[y0, v0], ...yrs.map((y, i) => [y, a[i]])];
+  const band = (name: string, lo: (number | null)[] = [], hi: (number | null)[] = [], opacity: number): any[] => [
     { name, type: "line", stack: name, data: line(lo), showSymbol: false, silent: true, color: C.waterPale, lineStyle: { opacity: 0 }, tooltip: { show: false } },
-    { name, type: "line", stack: name, data: [[y0, 0], ...yrs.map((y, i) => [y, hi[i] - lo[i]])], showSymbol: false, silent: true, color: C.waterPale, lineStyle: { opacity: 0 },
+    { name, type: "line", stack: name, data: [[y0, 0], ...yrs.map((y, i) => [y, hi[i] != null && lo[i] != null ? hi[i]! - lo[i]! : null])], showSymbol: false, silent: true, color: C.waterPale, lineStyle: { opacity: 0 },
       areaStyle: { color: C.waterPale, opacity }, tooltip: { show: false } }];
   const b = base(t, t("ax.area"));
   const tip = (ps: any) => {
     const arr = Array.isArray(ps) ? ps : [ps], year = arr[0]?.value?.[0], i = yrs.indexOf(year);
     if (i < 0) return sceneTooltip(t)(arr.filter((p: any) => p.seriesName === t("ser.observed")));
-    return `${year}<br/>${t("ser.fc.median")}: ${f.median![i].toFixed(1)}<br/>${t("ser.fc.b50")}: ${f.lo50![i].toFixed(1)} - ${f.hi50![i].toFixed(1)}<br/>${t("ser.fc.b90")}: ${f.lo90![i].toFixed(1)} - ${f.hi90![i].toFixed(1)}`;
+    const n = (x: number | null | undefined) => (x == null ? "\u2013" : x.toFixed(1));          // null = no value (NaN on the server)
+    return `${year}<br/>${t("ser.fc.median")}: ${n(f.median?.[i])}<br/>${t("ser.fc.b50")}: ${n(f.lo50?.[i])} - ${n(f.hi50?.[i])}<br/>${t("ser.fc.b90")}: ${n(f.lo90?.[i])} - ${n(f.hi90?.[i])}`;
   };
   return { ...b, yAxis: { ...(b.yAxis as object), scale: false, min: 0 }, tooltip: { trigger: "axis", formatter: tip },
     legend: { ...(b.legend as object), data: [t("ser.observed"), t("ser.fc.median"), t("ser.fc.b50"), t("ser.fc.b90")] },
@@ -144,12 +145,12 @@ export function forecastSentences(f: Forecast, s: LakeFull["summary"], t: TFn): 
   const out: string[] = [], bt = f.backtest, flags = f.flags ?? [], m = (f.milestones ?? []).at(-1);
   const cov = bt?.coverage90 == null ? "?" : Math.round(100 * bt.coverage90);
   if (!f.interpretable) out.push(t("fc.narrow", { cov }));
-  else if (m) {
+  else if (m && m.median_km2 != null && m.lo90_km2 != null && m.hi90_km2 != null) {
     const rf = s.ref_years ?? [1985, 1990];
     out.push(t(f.model === "persistence" ? "fc.flat" : "fc.trend", { year: m.year, med: m.median_km2.toFixed(0), lo: m.lo90_km2.toFixed(0), hi: m.hi90_km2.toFixed(0) })
       + (m.median_pct_of_ref != null ? " " + t("fc.pct", { pct: Math.round(m.median_pct_of_ref), r0: rf[0], r1: rf[1] }) : ""));
     if (flags.includes("trend_not_distinguishable_from_zero")) out.push(t("fc.zero"));
-    if (bt) out.push(t(f.model === "persistence" ? "fc.test.flat" : "fc.test", { skill: Math.round(100 * bt.chosen_skill), cov, h: bt.max_horizon_years, n: bt.n_pairs }));
+    if (bt && bt.chosen_skill != null) out.push(t(f.model === "persistence" ? "fc.test.flat" : "fc.test", { skill: Math.round(100 * bt.chosen_skill), cov, h: bt.max_horizon_years, n: bt.n_pairs }));
   }
   if (flags.includes("sparse_cadence")) out.push(t("fc.sparse"));
   return out;

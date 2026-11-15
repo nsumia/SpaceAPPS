@@ -2,11 +2,13 @@
 compare. Pure functions over a Settings object so tests can point them at temp dirs."""
 import base64
 import json
+import math
 import os
 from dataclasses import dataclass, field
 
 import numpy as np
 
+from backend.core import jsonsafe
 from backend.core.lakes import ROOT
 
 # Validation (VALIDATION.md): Turkish lakes are validated (Burdur quantitatively against Sabuncu 2020, the others by the
@@ -43,7 +45,7 @@ class Settings:
 
 def _load(path):
     with open(path) as f:
-        return json.load(f)
+        return jsonsafe.sanitize(json.load(f))          # older files may hold NaN/Infinity literals: read them as null
 
 
 def lake_dirs(st):
@@ -80,8 +82,12 @@ def record(st, key):
     return rec
 
 
+def _finite(x):
+    return isinstance(x, (int, float)) and math.isfinite(x)
+
+
 def valid_rows(series, min_valid):
-    return [r for r in series if r.get("area_km2") is not None and (r.get("valid_frac") or 0) >= min_valid]
+    return [r for r in series if _finite(r.get("area_km2")) and (r.get("valid_frac") or 0) >= min_valid]
 
 
 def ref_rows(rows):
@@ -116,6 +122,12 @@ def _cadence(meta):
         f"every year, {ys[0]}-{ys[-1]}" + (" (series starts late: no earlier Landsat 5 scenes in the archive)" if ys[0] > 1985 else "")
 
 
+def _r(d, k, n):
+    """round(d[k], n) or None when the stat block or the value is missing (null after NaN sanitising)."""
+    v = (d or {}).get(k)
+    return None if v is None else round(v, n)
+
+
 def alias_of(meta, key):
     return meta.get("alias") or key
 
@@ -132,7 +144,7 @@ def summary(st, key):
     loss = trend = None
     if ref_mean and last:
         loss = round(100 * (ref_mean - float(np.mean(last))) / ref_mean, 1)
-        if area:
+        if area and area.get("sen_slope_per_decade") is not None:
             trend = round(100 * area["sen_slope_per_decade"] / ref_mean, 2)
     em = stats.get("area_emergence") or {}
     lit = LITERATURE.get(alias_of(meta, key))
@@ -169,12 +181,12 @@ def summary(st, key):
         years=meta.get("years"), latest_area_km2=latest_area(st, key)[0], latest_area_year=latest_area(st, key)[1],
         ref_mean_km2=None if ref_mean is None else round(ref_mean, 1),
         total_loss_pct=loss, total_loss_basis=f"mean {ref_years[0]}-{ref_years[1]} vs mean of last 3 valid years",
-        trend_pct_per_decade=trend, trend_p=area and round(area["p"], 6), trend_direction=area and area["trend"],
+        trend_pct_per_decade=trend, trend_p=None if not area or area.get("p") is None else round(area["p"], 6), trend_direction=area and area["trend"],
         emergence_year=em.get("year"), emergence_status=em.get("status"),
         emergence_censored_at_ref_end=bool(em.get("censored_at_ref_end")), emergence_note=em.get("censored_note"),
-        warming_c_per_decade=l5 and round(l5["sen_slope_per_decade"], 2),
+        warming_c_per_decade=_r(l5, "sen_slope_per_decade", 2),
         warming_basis="Landsat 5 only, 1985-2012" if l5 else None,
-        warming_pooled_c_per_decade=pooled and round(pooled["sen_slope_per_decade"], 2),
+        warming_pooled_c_per_decade=_r(pooled, "sen_slope_per_decade", 2),
         warming_sensor_break_caveat=LST_SENSOR_BREAK,
         climate_explained_share=dec.get("explained_share") if dec.get("ok") else None,
         climate_explained_ci90=dec.get("explained_share_ci90") if dec.get("ok") else None,
