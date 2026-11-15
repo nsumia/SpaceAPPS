@@ -137,7 +137,7 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
       expect(container.querySelector("h1")?.textContent).toBe(lang === "en" ? "About" : "Hakkında");
       const heads = [...container.querySelectorAll("h2")].map((h) => h.textContent);
       expect(heads).toEqual(lang === "en" ? ["Project summary", "How to read this app", "Plain-language glossary", "Data sources"] : ["Proje özeti", "Bu uygulama nasıl okunur", "Sade dille sözlük", "Veri kaynakları"]);
-      expect([...container.querySelectorAll("h3")].map((h) => h.textContent)).toEqual(lang === "en" ? ["NASA", "Non-NASA"] : ["NASA", "NASA dışı"]);
+      expect([...container.querySelectorAll("h3")].map((h) => h.textContent)).toEqual(lang === "en" ? ["NASA", "NASA Partnered", "Non-NASA"] : ["NASA", "NASA Ortaklı", "NASA dışı"]);
       const t = makeT(lang);
       expect(container.querySelectorAll("p").length).toBe(3);
       expect(container.querySelectorAll("p")[0].textContent).toBe(t("sum.proj.body"));
@@ -153,7 +153,7 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
         expect(screen.queryByRole("heading", { name })).toBeNull();
       }
       expect(container.querySelector("table, ul")).toBeNull();
-      expect(container.querySelectorAll("ol").length).toBe(2);
+      expect(container.querySelectorAll("ol").length).toBe(3);
       expect(container.textContent).not.toMatch(/Live cards come from public APIs|Akşehir is flagged low reliability|Landsat Collection 2|Sabuncu/);
       unmount();
     }
@@ -161,12 +161,12 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
   it("About Data sources: 10 items in order, exact hrefs, new-tab links, no doi.org (EN and TR)", () => {
     const GIBS = "https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs-api";
     const EXPECTED: [string, string][] = [
-      ["Landsat 4-5 TM Collection 2 Level-2 (NASA/USGS)", "https://www.usgs.gov/centers/eros/science/usgs-eros-archive-landsat-archives-landsat-4-5-tm-collection-2-level-2-science"],
-      ["Landsat 8-9 OLI/TIRS Collection 2 Level-2 (NASA/USGS)", "https://www.usgs.gov/centers/eros/science/usgs-eros-archive-landsat-archives-landsat-8-9-olitirs-collection-2-level-2"],
       ["NASA POWER monthly API", "https://power.larc.nasa.gov/"],
       ["MERRA-2 tavg1_2d_lnd_Nx (NASA GMAO)", "https://www.earthdata.nasa.gov/data/catalog/ges-disc-m2t1nxlnd-5.12.4"],
       ["NASA GIBS, layer VIIRS NOAA-20 Corrected Reflectance True Color", GIBS],
       ["NASA GIBS, layer Blue Marble Shaded Relief and Bathymetry", GIBS],
+      ["Landsat 4-5 TM Collection 2 Level-2 (NASA/USGS)", "https://www.usgs.gov/centers/eros/science/usgs-eros-archive-landsat-archives-landsat-4-5-tm-collection-2-level-2-science"],
+      ["Landsat 8-9 OLI/TIRS Collection 2 Level-2 (NASA/USGS)", "https://www.usgs.gov/centers/eros/science/usgs-eros-archive-landsat-archives-landsat-8-9-olitirs-collection-2-level-2"],
       ["Microsoft Planetary Computer", "https://planetarycomputer.microsoft.com/dataset/landsat-c2-l2"],
       ["HydroBASINS (HydroSHEDS)", "https://www.hydrosheds.org/products/hydrobasins"],
       ["Natural Earth 10m lakes and countries", "https://www.naturalearthdata.com/downloads/10m-physical-vectors/"],
@@ -179,8 +179,10 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
       const lis = [...container.querySelectorAll("ol li")];
       expect(lis.length).toBe(10);
       lis.forEach((li, i) => { expect(li.querySelector("a")).toBe(links[i]); expect(li.textContent!.length).toBeGreaterThan(links[i].textContent!.length + 5); });
-      expect(container.querySelectorAll("ol")[0].querySelectorAll("li").length).toBe(6);
-      expect(container.querySelectorAll("ol")[1].getAttribute("start")).toBe("7");
+      const ols = [...container.querySelectorAll("ol")];
+      expect(ols.map((o) => o.querySelectorAll("li").length)).toEqual([4, 2, 4]);
+      expect(ols.map((o) => o.getAttribute("start"))).toEqual(["1", "5", "7"]);
+      expect(ols[1].textContent).toMatch(/^Landsat 4-5 TM.*Landsat 8-9 OLI\/TIRS/);
       for (const a of links) {
         expect(a.getAttribute("target")).toBe("_blank");
         expect(a.getAttribute("rel")).toBe("noopener noreferrer");
@@ -197,7 +199,8 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
     }
   });
   it("About glossary: one dt/dd pair per GLOSSARY entry, in order, EN and TR", () => {
-    expect(GLOSSARY.length).toBe(15);
+    expect(GLOSSARY.length).toBe(14);
+    expect(GLOSSARY.map((g) => g[0])).toEqual(["Landsat", "MNDWI", "Sen slope", "p-value / significant", "σ (sigma) and normal range", "Emergence year", "Surface temperature (LST)", "Sensor break", "P−E", "EVLAND", "Climate share", "Not computable", "Reliability", "SWOT"]);
     for (const lang of ["en", "tr"] as const) {
       const { container, unmount } = render(<I18nProvider initial={lang}><MethodsPage /></I18nProvider>);
       const dl = container.querySelector("dl.glossary")!;
@@ -207,6 +210,7 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
       expect([...dl.querySelectorAll("dt")].map((e) => e.textContent)).toEqual(GLOSSARY.map((g) => g[0]));
       expect([...dl.querySelectorAll("dd")].map((e) => e.textContent)).toEqual(GLOSSARY.map((g) => g[lang === "tr" ? 2 : 1]));
       expect(container.querySelector("h2#glossary")?.textContent).toBe(lang === "en" ? "Plain-language glossary" : "Sade dille sözlük");
+      expect(container.querySelector("dl.glossary")!.textContent).not.toMatch(/1997|censored/);
       expect(container.textContent).not.toMatch(/\(see About\)|Hakkında sayfasına bakın/);
       unmount();
     }
