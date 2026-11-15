@@ -114,6 +114,10 @@ test("top bar: brand, nav with aria-current, TR/EN switch, no overflow at 390 px
   await expect(nav.getByRole("link", { name: "About" })).toHaveAttribute("aria-current", "page");
   await expect(page.getByRole("heading", { name: "About", exact: true, level: 1 })).toBeVisible();
   await expect(page.getByRole("heading", { name: /limitations/i })).toHaveCount(0);
+  await expect(page.getByRole("heading", { level: 2 })).toHaveText(["Project summary", "How to read this app"]);
+  await expect(page.getByRole("heading", { name: /glossary|data sources|validation/i })).toHaveCount(0);
+  await expect(page.locator("main, .page").getByText(/^Metalimnion is a visual analysis app which simplifies/)).toBeVisible();
+  await expect(page.getByText("Report Summary")).toHaveCount(0);
   expect(await page.locator(".brand-name").evaluate((e) => getComputedStyle(e).textTransform)).toBe("none");
   await expect(page.locator(".brand-name")).toHaveText("Metalimnion");
   await expect(page).toHaveTitle("Metalimnion");
@@ -130,6 +134,9 @@ test("top bar: brand, nav with aria-current, TR/EN switch, no overflow at 390 px
   await page.getByRole("button", { name: /Switch language/ }).click();
   await expect(page.locator(".brand-name")).toHaveText("Metalimnion");
   await expect(page.getByRole("navigation", { name: "Ana menü" }).getByRole("link", { name: "Hakkında" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("heading", { level: 2 })).toHaveText(["Proje özeti", "Bu uygulama nasıl okunur"]);
+  await expect(page.getByText(/^Metalimnion, dünya genelindeki göllerin/)).toBeVisible();
+  await expect(page.getByRole("heading", { name: /sözlük|veri kaynakları|doğrulama/i })).toHaveCount(0);
   await page.setViewportSize({ width: 390, height: 800 });
   const w = await page.evaluate(() => { const h = document.querySelector("header.top")!; return [h.scrollWidth, h.clientWidth]; });
   expect(w[0]).toBeLessThanOrEqual(w[1]);

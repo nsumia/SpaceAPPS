@@ -130,14 +130,37 @@ describe("removed UI: summary disclaimer, cache/stale labels, limitations sectio
       for (const k of ["live.cache", "live.stale", "tip.cache", "tip.stale"]) expect(t(k)).toBe(k);
     }
   });
-  it("About page is titled About / Hakkında and has no Limitations section (EN and TR)", () => {
+  it("About page shows only the page title, Project summary and How to read this app (EN and TR)", () => {
+    const SUMMARY_EN = "Metalimnion is a visual analysis app which simplifies the viewing and observation of lakes worldwide and significant changes that have affected said lakes. Metalimnion is a sophisticated app that can display individual measurements of area and surface temperature over the years and analyze these measurements to attribute changes to climatological phenomena or human activity. The analyses are then evaluated on the basis of reliability and are summarized. All analyzed lakes are shown on the various available easy-to-navigate maps with helpful circles and name descriptors. It addresses the challenge by making significant changes regarding lakes much easier to view and reason about, especially for non-experts. It allows everyone to see the change and future predictions concerning water area and surface temperature allowing them to act against the day by day shrinking of water resources, which are already very limited. This matters because global water trends affect many living things worldwide, and more attention must be drawn to crucial concerns such as this if we, the people, want to tend to our planet well.";
     for (const lang of ["en", "tr"] as const) {
       const { container, unmount } = render(<I18nProvider initial={lang}><MethodsPage /></I18nProvider>);
       expect(container.querySelector("h1")?.textContent).toBe(lang === "en" ? "About" : "Hakkında");
-      expect(screen.queryByRole("heading", { name: /limitations|sınırlamalar/i })).toBeNull();
-      expect(container.textContent).not.toMatch(/Live cards come from public APIs|Akşehir is flagged low reliability/);
+      const heads = [...container.querySelectorAll("h2")].map((h) => h.textContent);
+      expect(heads).toEqual(lang === "en" ? ["Project summary", "How to read this app"] : ["Proje özeti", "Bu uygulama nasıl okunur"]);
+      const t = makeT(lang);
+      expect(container.querySelectorAll("p").length).toBe(2);
+      expect(container.querySelectorAll("p")[0].textContent).toBe(t("sum.proj.body"));
+      expect(container.querySelectorAll("p")[1].textContent).toBe(t("how.body"));
+      if (lang === "en") {
+        expect(container.querySelectorAll("p")[0].textContent).toBe(SUMMARY_EN);
+      } else {
+        expect(container.querySelectorAll("p")[0].textContent).toMatch(/^Metalimnion, dünya genelindeki göllerin/);
+      }
+      expect(container.textContent).not.toMatch(/Report Summary|Update III/);
+      for (const name of [/limitations|sınırlamalar/i, /glossary|sözlük/i, /data sources|veri kaynakları/i, /^method$|^yöntem$/i, /validation|doğrulama/i]) {
+        expect(screen.queryByRole("heading", { name })).toBeNull();
+      }
+      expect(container.querySelector("table, ul, dl, [data-testid=glossary]")).toBeNull();
+      expect(container.textContent).not.toMatch(/Live cards come from public APIs|Akşehir is flagged low reliability|Landsat Collection 2|Sabuncu/);
       unmount();
     }
+  });
+  it("removed About strings and the glossary export are gone", async () => {
+    for (const lang of ["en", "tr"] as const) {
+      const t = makeT(lang);
+      for (const k of ["gl.title", "gl.intro"]) expect(t(k)).toBe(k);
+    }
+    expect("GLOSSARY" in (await import("../i18n"))).toBe(false);
   });
 });
 
